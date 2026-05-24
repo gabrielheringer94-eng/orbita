@@ -56,11 +56,8 @@
     font-family: 'Inter', sans-serif;
     min-height: 100vh;
     -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
   }
-  /* Impede o transform: translateX(100%) da .sidebar (mobile) de criar
-     scroll horizontal no iOS Safari, sem virar o body em scroll container
-     (o que quebraria o position: sticky do .m-header). */
-  html { overflow-x: hidden; }
 
   /* Texture overlay */
   body::before {
@@ -1648,8 +1645,10 @@
     /* Header mobile fixo no topo */
     .m-header {
       display: flex;
-      position: sticky;
+      position: fixed;
       top: 0;
+      left: 0;
+      right: 0;
       z-index: 50;
       background: var(--bg);
       border-bottom: 1px solid var(--line);
@@ -1659,6 +1658,8 @@
       height: 56px;
       box-sizing: border-box;
     }
+    /* Compensa a altura do .m-header fixo pra o conteúdo não ficar atrás */
+    .app { padding-top: 56px; }
     .m-brand {
       font-weight: 700;
       font-size: 17px;
@@ -1708,8 +1709,10 @@
       transition: opacity 0.2s, visibility 0s;
     }
 
-    /* App vira coluna única */
-    .app { grid-template-columns: 1fr; }
+    /* App vira coluna única. minmax(0, 1fr) (em vez de 1fr puro) impede que
+       um filho com min-content largo (ex: filter-row com overflow-x: auto)
+       force a coluna a esticar além da viewport. */
+    .app { grid-template-columns: minmax(0, 1fr); }
 
     /* Sidebar vira drawer lateral */
     .sidebar {
