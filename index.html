@@ -57,6 +57,10 @@
     min-height: 100vh;
     -webkit-font-smoothing: antialiased;
   }
+  /* Impede o transform: translateX(100%) da .sidebar (mobile) de criar
+     scroll horizontal no iOS Safari, sem virar o body em scroll container
+     (o que quebraria o position: sticky do .m-header). */
+  html { overflow-x: hidden; }
 
   /* Texture overlay */
   body::before {
