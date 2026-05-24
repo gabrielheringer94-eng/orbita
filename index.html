@@ -1695,11 +1695,13 @@
       z-index: 99;
       opacity: 0;
       visibility: hidden;
+      pointer-events: none;
       transition: opacity 0.2s, visibility 0s linear 0.2s;
     }
     .m-overlay.show {
       opacity: 1;
       visibility: visible;
+      pointer-events: auto;
       transition: opacity 0.2s, visibility 0s;
     }
 
