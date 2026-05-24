@@ -1,0 +1,4 @@
+project_id = "dnhcfehwcnkxsfrhdevi"
+
+[functions.smart-capture]
+verify_jwt = true
