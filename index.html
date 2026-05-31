@@ -1092,6 +1092,16 @@
     font-size: 9px;
     padding: 1px 4px;
   }
+  /* divIcon do pin colorido (verde/azul) — sem background nem borda do Leaflet */
+  .leaflet-div-icon.place-pin-icon,
+  .place-pin-icon {
+    background: transparent;
+    border: none;
+  }
+  .place-pin-icon svg {
+    display: block;
+    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.25));
+  }
 
   .place-card-header {
     display: flex;
@@ -4568,7 +4578,7 @@ function renderPlacesGrid() {
     const hasGeocodable = !hasCoords && (p.address || p.neighborhood || p.city);
     const mapClass = hasCoords ? '' : (hasGeocodable && !p.geocodeFailed ? 'is-loading' : 'is-placeholder');
     const mapAttrs = hasCoords
-      ? `data-place-map data-lat="${p.lat}" data-lng="${p.lng}" data-name="${escapeHTML(p.name)}" data-maps-url="${mapsUrl}"`
+      ? `data-place-map data-lat="${p.lat}" data-lng="${p.lng}" data-name="${escapeHTML(p.name)}" data-maps-url="${mapsUrl}" data-status="${p.status}"`
       : '';
     return `
       <div class="place-card ${isRecommended ? 'is-recommended' : ''}">
@@ -4720,6 +4730,24 @@ function initPlaceMaps() {
   });
 }
 
+// SVG de pin colorido. Verde = já fui, azul = quero ir, cinza = fallback.
+function placePinIcon(status) {
+  const color = status === 'visited' ? '#16a34a'
+              : status === 'wishlist' ? '#2563eb'
+              : '#737373';
+  const svg = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="36" viewBox="0 0 28 36">
+      <path d="M14 0C6.3 0 0 6.1 0 13.6c0 9.6 12.5 21.4 13 21.9.3.2.7.2 1 0 .5-.5 13-12.3 13-21.9C27 6.1 21.7 0 14 0z" fill="${color}" stroke="#fff" stroke-width="1.5"/>
+      <circle cx="14" cy="13.5" r="5" fill="#fff"/>
+    </svg>`;
+  return L.divIcon({
+    html: svg,
+    className: 'place-pin-icon',
+    iconSize: [28, 36],
+    iconAnchor: [14, 36],
+  });
+}
+
 function mountLeafletMap(el) {
   if (el.dataset.mounted) return;
   const lat = parseFloat(el.dataset.lat);
@@ -4744,7 +4772,7 @@ function mountLeafletMap(el) {
       maxZoom: 19,
       attribution: '© <a href="https://openstreetmap.org/copyright">OSM</a>',
     }).addTo(map);
-    L.marker([lat, lng], { keyboard: false }).addTo(map);
+    L.marker([lat, lng], { keyboard: false, icon: placePinIcon(el.dataset.status) }).addTo(map);
 
     // Tap no mapa abre o Google Maps em nova aba
     const mapsUrl = el.dataset.mapsUrl;
