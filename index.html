@@ -2532,6 +2532,72 @@
   }
   /* Placeholder genérico não se aplica ao toggle (ele tem placeholders próprios) */
   .note-block[data-type="toggle"]:empty::before { content: none; }
+
+  /* TABELA */
+  .note-block[data-type="table"] {
+    padding: 0;
+    margin: 12px 0;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .note-block[data-type="table"]:empty::before { content: none; }
+  .note-block-table {
+    border-collapse: collapse;
+    width: 100%;
+    background: var(--bg-elevated);
+    font-size: 14px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .note-block-table th,
+  .note-block-table td {
+    border: 1px solid var(--line);
+    padding: 8px 12px;
+    text-align: left;
+    vertical-align: top;
+    min-width: 80px;
+    outline: none;
+    transition: background 0.1s;
+  }
+  .note-block-table th {
+    background: var(--bg-card);
+    font-weight: 700;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--ink);
+  }
+  .note-block-table td:focus,
+  .note-block-table th:focus {
+    background: var(--accent-soft);
+  }
+  .note-block-table-controls {
+    display: flex;
+    gap: 6px;
+    margin-top: 4px;
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+  .note-block[data-type="table"]:hover .note-block-table-controls,
+  .note-block[data-type="table"]:focus-within .note-block-table-controls {
+    opacity: 1;
+  }
+  .note-block-table-btn {
+    background: var(--bg-card);
+    border: 1px dashed var(--line);
+    border-radius: 6px;
+    padding: 4px 12px;
+    font-size: 11px;
+    color: var(--ink-soft);
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+  }
+  .note-block-table-btn:hover {
+    border-color: var(--ink);
+    color: var(--ink);
+    border-style: solid;
+  }
   /* Estilos inline preservados */
   .note-blocks strong { font-weight: 700; }
   .note-blocks em { font-style: italic; }
@@ -3780,6 +3846,7 @@
               <button class="format-btn" data-fmt="checklist" title="Checklist">☐</button>
               <button class="format-btn" data-fmt="toggle" title="Toggle expansível">▶</button>
               <button class="format-btn" data-fmt="quote" title="Citação">"</button>
+              <button class="format-btn" data-fmt="table" title="Tabela">⊞</button>
             </div>
 
             <div class="note-body-wrapper" style="position:relative;flex:1;overflow-y:auto">
@@ -7777,6 +7844,18 @@ function parseMdToBlocks(md) {
         i++;
       }
       blocks.push({ type: 'code', text: codeLines.join('\n') });
+    } else if (line.startsWith('|') && lines[i+1] && /^\|[\s:-]+\|/.test(lines[i+1])) {
+      // Pipe table: | a | b | seguido de |---|---|
+      const splitCells = (l) => l.replace(/^\||\|$/g, '').split('|').map(c => c.trim());
+      const headers = splitCells(line);
+      i += 2; // pula header e separator
+      const rows = [];
+      while (i < lines.length && lines[i].startsWith('|')) {
+        rows.push(splitCells(lines[i]));
+        i++;
+      }
+      i--; // o while externo vai incrementar
+      blocks.push({ type: 'table', text: '', headers, rows });
     } else if (line.startsWith('<details>')) {
       // <details><summary>Title</summary>body</details> — toggle block
       let summary = '';
@@ -7815,6 +7894,22 @@ function serializeContainer(container) {
   const out = [];
   container.querySelectorAll(':scope > .note-block').forEach(el => {
     const type = el.dataset.type;
+    // Tabela: serializa como pipe table
+    if (type === 'table') {
+      const table = el.querySelector('table');
+      if (!table) return;
+      const headerCells = Array.from(table.querySelectorAll('thead th'))
+        .map(th => htmlToInlineMd(th.innerHTML).replace(/\|/g, '\\|').trim() || ' ');
+      out.push('| ' + headerCells.join(' | ') + ' |');
+      out.push('| ' + headerCells.map(() => '---').join(' | ') + ' |');
+      const bodyRows = Array.from(table.querySelectorAll('tbody tr'));
+      bodyRows.forEach(tr => {
+        const cells = Array.from(tr.querySelectorAll('td'))
+          .map(td => htmlToInlineMd(td.innerHTML).replace(/\|/g, '\\|').trim() || ' ');
+        out.push('| ' + cells.join(' | ') + ' |');
+      });
+      return;
+    }
     // Para toggle, lê summary e recursão no body
     if (type === 'toggle') {
       const summarySrc = el.querySelector('.toggle-summary');
@@ -7854,6 +7949,80 @@ function createBlockEl(type = 'p', text = '', extra = {}) {
   const el = document.createElement('div');
   el.className = 'note-block';
   el.dataset.type = type;
+  if (type === 'table') {
+    el.contentEditable = 'false';
+    const headers = (extra.headers && extra.headers.length)
+      ? extra.headers
+      : ['Coluna 1', 'Coluna 2', 'Coluna 3'];
+    const rows = (extra.rows && extra.rows.length)
+      ? extra.rows
+      : [['', '', ''], ['', '', '']];
+    const table = document.createElement('table');
+    table.className = 'note-block-table';
+    const thead = document.createElement('thead');
+    const headRow = document.createElement('tr');
+    headers.forEach(h => {
+      const th = document.createElement('th');
+      th.contentEditable = 'true';
+      th.innerHTML = inlineMdToHtml(h);
+      headRow.appendChild(th);
+    });
+    thead.appendChild(headRow);
+    table.appendChild(thead);
+    const tbody = document.createElement('tbody');
+    rows.forEach(row => {
+      const tr = document.createElement('tr');
+      for (let i = 0; i < headers.length; i++) {
+        const td = document.createElement('td');
+        td.contentEditable = 'true';
+        td.innerHTML = inlineMdToHtml(row[i] || '');
+        tr.appendChild(td);
+      }
+      tbody.appendChild(tr);
+    });
+    table.appendChild(tbody);
+    el.appendChild(table);
+    const controls = document.createElement('div');
+    controls.className = 'note-block-table-controls';
+    controls.contentEditable = 'false';
+    const addRowBtn = document.createElement('button');
+    addRowBtn.className = 'note-block-table-btn';
+    addRowBtn.textContent = '+ linha';
+    addRowBtn.onclick = (e) => {
+      e.preventDefault();
+      const colCount = table.querySelector('thead tr').children.length;
+      const newTr = document.createElement('tr');
+      for (let i = 0; i < colCount; i++) {
+        const td = document.createElement('td');
+        td.contentEditable = 'true';
+        newTr.appendChild(td);
+      }
+      tbody.appendChild(newTr);
+      newTr.firstElementChild.focus();
+      scheduleSave();
+    };
+    const addColBtn = document.createElement('button');
+    addColBtn.className = 'note-block-table-btn';
+    addColBtn.textContent = '+ coluna';
+    addColBtn.onclick = (e) => {
+      e.preventDefault();
+      const newTh = document.createElement('th');
+      newTh.contentEditable = 'true';
+      newTh.textContent = 'Nova';
+      thead.querySelector('tr').appendChild(newTh);
+      tbody.querySelectorAll('tr').forEach(tr => {
+        const td = document.createElement('td');
+        td.contentEditable = 'true';
+        tr.appendChild(td);
+      });
+      newTh.focus();
+      scheduleSave();
+    };
+    controls.appendChild(addRowBtn);
+    controls.appendChild(addColBtn);
+    el.appendChild(controls);
+    return el;
+  }
   if (type === 'toggle') {
     // Estrutura: arrow + summary (título) + body (container de sub-blocos)
     el.contentEditable = 'false';
@@ -8021,6 +8190,34 @@ function maybeApplyMarkdownShortcut(block) {
 
 // --- Lida com Enter, Backspace, etc ---
 function onBlockKeyDown(e) {
+  // Se estiver editando uma célula de tabela, não processa atalhos de bloco
+  if (e.target.closest('th, td')) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      // Enter na célula move pra próxima linha mesma coluna (ou cria linha)
+      const cell = e.target;
+      const row = cell.parentElement;
+      const cellIdx = Array.from(row.children).indexOf(cell);
+      let nextRow = row.nextElementSibling;
+      if (!nextRow && row.parentElement.tagName === 'THEAD') {
+        nextRow = row.parentElement.nextElementSibling?.querySelector('tr');
+      }
+      if (nextRow) nextRow.children[cellIdx]?.focus();
+      else {
+        const tbody = cell.closest('table').querySelector('tbody');
+        const newTr = document.createElement('tr');
+        for (let i = 0; i < row.children.length; i++) {
+          const td = document.createElement('td');
+          td.contentEditable = 'true';
+          newTr.appendChild(td);
+        }
+        tbody.appendChild(newTr);
+        newTr.children[cellIdx]?.focus();
+        scheduleSave();
+      }
+    }
+    return;
+  }
   const block = getCurrentBlock();
   if (!block) return;
 
@@ -8128,6 +8325,53 @@ noteBlocksEl.addEventListener('click', (e) => {
     const last = noteBlocksEl.lastElementChild;
     if (last) setCaretAt(last, last.textContent.length);
   }
+});
+
+// Tab/Shift-Tab navega entre células da tabela
+noteBlocksEl.addEventListener('keydown', (e) => {
+  if (e.key !== 'Tab') return;
+  const cell = e.target.closest('th, td');
+  if (!cell) return;
+  e.preventDefault();
+  const row = cell.parentElement;
+  const cellIdx = Array.from(row.children).indexOf(cell);
+  if (e.shiftKey) {
+    // Anterior
+    if (cellIdx > 0) row.children[cellIdx - 1].focus();
+    else {
+      const prevRow = row.previousElementSibling || row.parentElement.previousElementSibling?.querySelector('tr');
+      if (prevRow) prevRow.children[prevRow.children.length - 1].focus();
+    }
+  } else {
+    // Próxima
+    if (cellIdx < row.children.length - 1) row.children[cellIdx + 1].focus();
+    else {
+      let nextRow = row.nextElementSibling;
+      if (!nextRow && row.parentElement.tagName === 'THEAD') {
+        nextRow = row.parentElement.nextElementSibling?.querySelector('tr');
+      }
+      if (nextRow) nextRow.children[0].focus();
+      else {
+        // Adiciona linha nova
+        const tbody = cell.closest('table').querySelector('tbody');
+        const newTr = document.createElement('tr');
+        const colCount = row.children.length;
+        for (let i = 0; i < colCount; i++) {
+          const td = document.createElement('td');
+          td.contentEditable = 'true';
+          newTr.appendChild(td);
+        }
+        tbody.appendChild(newTr);
+        newTr.firstElementChild.focus();
+        scheduleSave();
+      }
+    }
+  }
+});
+
+// Input nas células da tabela dispara save
+noteBlocksEl.addEventListener('input', (e) => {
+  if (e.target.closest('th, td')) scheduleSave();
 });
 
 noteBlocksEl.addEventListener('keydown', onBlockKeyDown);
@@ -8713,6 +8957,18 @@ document.querySelectorAll('.format-btn').forEach(btn => {
       target.replaceWith(newBlock);
       const summary = newBlock.querySelector('.toggle-summary');
       summary?.focus();
+    }
+    else if (fmt === 'table') {
+      // Cria tabela 3x2 nova depois do bloco em foco
+      const newBlock = createBlockEl('table', '', {});
+      if (target.textContent.trim() === '') {
+        target.replaceWith(newBlock);
+      } else {
+        target.after(newBlock);
+      }
+      // foca na primeira célula do header
+      const firstTh = newBlock.querySelector('th');
+      firstTh?.focus();
     }
     scheduleSave();
   };
