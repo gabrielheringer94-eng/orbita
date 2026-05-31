@@ -8643,37 +8643,62 @@ function inlineFormat(text) {
   return out;
 }
 
-// ============== FORMAT BAR LISTENERS ==============
+// ============== FORMAT BAR LISTENERS (block editor) ==============
+// Lembra qual bloco estava em foco antes do mousedown no botão da toolbar
+// (botão rouba o foco do editor, então precisamos guardar antes).
+let lastFocusedBlock = null;
+let lastSelectionRange = null;
+noteBlocksEl.addEventListener('focusin', () => {
+  lastFocusedBlock = getCurrentBlock();
+  const sel = window.getSelection();
+  if (sel.rangeCount) lastSelectionRange = sel.getRangeAt(0).cloneRange();
+});
 document.querySelectorAll('.format-btn').forEach(btn => {
+  // mousedown ANTES do focus mudar — preserva o foco do editor
+  btn.addEventListener('mousedown', (e) => {
+    e.preventDefault();
+    const sel = window.getSelection();
+    if (sel.rangeCount && noteBlocksEl.contains(sel.anchorNode)) {
+      lastSelectionRange = sel.getRangeAt(0).cloneRange();
+      lastFocusedBlock = getCurrentBlock();
+    }
+  });
   btn.onclick = () => {
     const fmt = btn.dataset.fmt;
-    textarea.focus();
-    if (fmt === 'bold') wrapSelection('**', '**');
-    else if (fmt === 'italic') wrapSelection('*', '*');
-    else if (fmt === 'underline') wrapSelection('__', '__');
-    else if (fmt === 'h1') insertAtLineStart('# ');
-    else if (fmt === 'h2') insertAtLineStart('## ');
-    else if (fmt === 'h3') insertAtLineStart('### ');
-    else if (fmt === 'bullet') insertAtLineStart('- ');
-    else if (fmt === 'checklist') insertAtLineStart('- [ ] ');
-    else if (fmt === 'quote') insertAtLineStart('> ');
-    else if (fmt === 'toggle') {
-      // Insere bloco toggle completo
-      const pos = textarea.selectionStart;
-      const text = textarea.value;
-      // Se está no meio de uma linha, quebra antes
-      const needsBreak = pos > 0 && text[pos - 1] !== '\n';
-      const prefix = needsBreak ? '\n' : '';
-      const insertion = prefix + '▶ Título do toggle\n  Conteúdo escondido aqui\n';
-      textarea.value = text.slice(0, pos) + insertion + text.slice(pos);
-      // Selecionar "Título do toggle" pra usuário substituir digitando
-      const titleStart = pos + prefix.length + 2; // após '▶ '
-      const titleEnd = titleStart + 'Título do toggle'.length;
-      textarea.selectionStart = titleStart;
-      textarea.selectionEnd = titleEnd;
-      scheduleSave();
-      scheduleLivePreviewUpdate();
+    // Restaura seleção pra que execCommand atue no editor
+    if (lastSelectionRange) {
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(lastSelectionRange);
     }
+    const block = lastFocusedBlock || getCurrentBlock();
+    if (!block && !['h1','h2','h3','bullet','checklist','quote','toggle'].includes(fmt)) return;
+
+    // Inline formatting (B/I/U) — execCommand na seleção
+    if (fmt === 'bold') { document.execCommand('bold'); scheduleSave(); return; }
+    if (fmt === 'italic') { document.execCommand('italic'); scheduleSave(); return; }
+    if (fmt === 'underline') { document.execCommand('underline'); scheduleSave(); return; }
+
+    // Mudança de tipo de bloco — usa o bloco em foco; se nenhum, cria um novo
+    let target = block;
+    if (!target) {
+      target = createBlockEl('p', '');
+      noteBlocksEl.appendChild(target);
+    }
+    if (fmt === 'h1') changeBlockType(target, 'h1');
+    else if (fmt === 'h2') changeBlockType(target, 'h2');
+    else if (fmt === 'h3') changeBlockType(target, 'h3');
+    else if (fmt === 'bullet') changeBlockType(target, 'bullet');
+    else if (fmt === 'checklist') changeBlockType(target, 'todo');
+    else if (fmt === 'quote') changeBlockType(target, 'quote');
+    else if (fmt === 'toggle') {
+      const currentText = target.textContent;
+      const newBlock = createBlockEl('toggle', currentText || '');
+      target.replaceWith(newBlock);
+      const summary = newBlock.querySelector('.toggle-summary');
+      summary?.focus();
+    }
+    scheduleSave();
   };
 });
 
