@@ -2646,20 +2646,35 @@
     .stat-value { font-size: 22px; }
     .card { padding: 18px; }
 
-    /* Cronograma com scroll horizontal */
+    /* Cronograma com scroll horizontal + fade nas bordas indicando que há mais conteúdo */
+    .schedule-wrap, #page-schedule .card-section {
+      position: relative;
+    }
     .schedule-grid {
       overflow-x: auto;
       grid-template-columns: 40px repeat(7, minmax(80px, 1fr));
       font-size: 10px;
+      -webkit-overflow-scrolling: touch;
+      scroll-padding-left: 40px;
+      mask-image: linear-gradient(to right, transparent 0, #000 12px, #000 calc(100% - 22px), transparent 100%);
+      -webkit-mask-image: linear-gradient(to right, transparent 0, #000 12px, #000 calc(100% - 22px), transparent 100%);
     }
 
-    /* Hábitos com scroll horizontal */
-    .habits-table { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    /* Hábitos com scroll horizontal + fade lateral */
+    .habits-table {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      mask-image: linear-gradient(to right, #000 calc(100% - 22px), transparent 100%);
+      -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 22px), transparent 100%);
+    }
     .habits-header, .habit-row {
       grid-template-columns: 130px repeat(7, 50px) 50px;
       min-width: max-content;
     }
     .habit-name { padding-left: 12px; font-size: 12px; }
+    /* No mobile, esconde o ícone de excluir do nome (interfere com tap nos
+       checkboxes). Long-press no nome do hábito abre o confirm de excluir. */
+    .habit-name [data-habit-delete] { display: none !important; }
 
     /* Toolbars empilhadas */
     .task-toolbar, .places-toolbar {
@@ -3484,7 +3499,7 @@
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
           </button>
           <button class="btn btn-ghost" id="bdays-today">Hoje</button>
-          <button class="btn" id="bdays-new-btn">+ Aniversário</button>
+          <button class="btn" id="bdays-new-btn" style="white-space:nowrap">+ Novo</button>
         </div>
       </div>
 
@@ -3514,11 +3529,9 @@
 
         <main class="notes-editor" id="notes-editor">
           <div class="notes-empty" id="notes-empty">
-            <h2 style="font-weight:700;font-size:24px;margin-bottom:8px">Suas notas</h2>
-            <p style="color:var(--ink-soft);max-width:400px;line-height:1.5">
-              Capture ideias, anotações de reuniões, planejamentos. Use <kbd>/</kbd> dentro de uma nota para inserir blocos como títulos, listas e citações.
-            </p>
-            <button class="btn" id="empty-new-note" style="margin-top:20px">+ Criar primeira nota</button>
+            <!-- Conteúdo é trocado em renderNotesEmptyState(): convite quando não há notas,
+                 ou prompt pra selecionar quando existem mas nenhuma está aberta. -->
+            <div id="notes-empty-content"></div>
           </div>
 
           <div class="note-content" id="note-content" style="display:none">
@@ -5448,6 +5461,28 @@ function renderHabits() {
       renderHabits();
     };
   });
+  // Long-press no nome do hábito (mobile) abre o mesmo confirm de excluir
+  rowsEl.querySelectorAll('.habit-name').forEach(name => {
+    let timer = null;
+    const del = name.querySelector('[data-habit-delete]');
+    if (!del) return;
+    const id = del.dataset.habitDelete;
+    const start = (e) => {
+      timer = setTimeout(() => {
+        timer = null;
+        if (confirm('Excluir este hábito? Histórico será apagado.')) {
+          state.habits = state.habits.filter(h => h.id !== id);
+          saveState();
+          renderHabits();
+        }
+      }, 600);
+    };
+    const cancel = () => { if (timer) { clearTimeout(timer); timer = null; } };
+    name.addEventListener('touchstart', start, { passive: true });
+    name.addEventListener('touchend', cancel);
+    name.addEventListener('touchcancel', cancel);
+    name.addEventListener('touchmove', cancel);
+  });
 
   renderHabitsSummary();
 }
@@ -7161,6 +7196,31 @@ function renderNotes() {
 function showEmptyState() {
   document.getElementById('notes-empty').style.display = 'flex';
   document.getElementById('note-content').style.display = 'none';
+  renderNotesEmptyContent();
+}
+
+function renderNotesEmptyContent() {
+  const el = document.getElementById('notes-empty-content');
+  if (!el) return;
+  const hasNotes = (state.notes || []).length > 0;
+  if (hasNotes) {
+    el.innerHTML = `
+      <div style="font-size:32px;line-height:1;margin-bottom:12px">📝</div>
+      <h2 style="font-weight:700;font-size:22px;margin-bottom:6px">Selecione uma nota</h2>
+      <p style="color:var(--ink-soft);max-width:380px;line-height:1.5;font-size:13px">
+        Toque numa nota da lista pra abrir, ou clique no <strong>+</strong> pra criar uma nova.
+      </p>
+    `;
+  } else {
+    el.innerHTML = `
+      <h2 style="font-weight:700;font-size:24px;margin-bottom:8px">Suas notas</h2>
+      <p style="color:var(--ink-soft);max-width:400px;line-height:1.5">
+        Capture ideias, anotações de reuniões, planejamentos. Use <kbd>/</kbd> dentro de uma nota para inserir blocos como títulos, listas e citações.
+      </p>
+      <button class="btn" id="empty-new-note-btn" style="margin-top:20px">+ Criar primeira nota</button>
+    `;
+    el.querySelector('#empty-new-note-btn').onclick = () => createNote(null);
+  }
 }
 
 function showNoteEditor(note) {
@@ -7410,7 +7470,6 @@ function createSubNote() {
 }
 
 document.getElementById('new-note-btn').onclick = () => createNote(null);
-document.getElementById('empty-new-note').onclick = () => createNote(null);
 document.getElementById('new-subnote-btn').onclick = createSubNote;
 
 document.getElementById('notes-search').addEventListener('input', (e) => {
