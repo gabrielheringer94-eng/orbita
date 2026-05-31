@@ -3819,6 +3819,9 @@
               <button class="note-tool-btn" id="toggle-view-btn" title="Alternar visualizar/editar">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
               </button>
+              <button class="note-tool-btn" id="share-note-btn" title="Compartilhar / exportar">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+              </button>
               <span class="note-meta" id="note-meta"></span>
               <button class="note-tool-btn note-tool-danger" id="delete-note-btn" title="Excluir nota">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 01-2 2H9a2 2 0 01-2-2L5 6"/></svg>
@@ -4131,6 +4134,47 @@
       <button class="btn btn-ghost" id="task-edit-delete">Excluir</button>
       <button class="btn btn-ghost" data-close-modal>Cancelar</button>
       <button class="btn" id="task-edit-save">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- SHARE/EXPORT NOTE MODAL -->
+<div class="modal-bg" id="share-note-modal">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-title">Compartilhar nota</div>
+    <div class="modal-sub" id="share-note-sub">—</div>
+
+    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px">
+      <button class="itinerary-pick-item" id="share-copy-md">
+        <span>📋 Copiar como markdown</span>
+        <span style="font-size:11px">cola onde quiser</span>
+      </button>
+      <button class="itinerary-pick-item" id="share-copy-text">
+        <span>📋 Copiar texto puro</span>
+        <span style="font-size:11px">sem marcadores</span>
+      </button>
+      <button class="itinerary-pick-item" id="share-download-md">
+        <span>📥 Baixar .md</span>
+        <span style="font-size:11px">arquivo markdown</span>
+      </button>
+      <button class="itinerary-pick-item" id="share-download-html">
+        <span>🌐 Baixar .html</span>
+        <span style="font-size:11px">página formatada</span>
+      </button>
+      <button class="itinerary-pick-item" id="share-email">
+        <span>📧 Enviar por email</span>
+        <span style="font-size:11px">abre seu cliente</span>
+      </button>
+      <button class="itinerary-pick-item" id="share-print">
+        <span>🖨️ Imprimir / salvar PDF</span>
+        <span style="font-size:11px">via diálogo de impressão</span>
+      </button>
+    </div>
+
+    <div id="share-feedback" style="font-size:12px;color:var(--ink-faint);min-height:16px;text-align:center;margin-bottom:8px"></div>
+
+    <div class="modal-actions" style="justify-content:flex-end">
+      <button class="btn btn-ghost" data-close-modal>Fechar</button>
     </div>
   </div>
 </div>
@@ -8386,6 +8430,178 @@ document.getElementById('pin-btn').onclick = () => {
   saveState();
   document.getElementById('pin-btn').classList.toggle('active', note.pinned);
   renderNotesList();
+};
+
+// ============== SHARE / EXPORT NOTE ==============
+function getActiveNoteForShare() {
+  if (!activeNoteId) return null;
+  flushSave(); // garante que mudanças recentes estão salvas
+  return state.notes.find(n => n.id === activeNoteId);
+}
+
+// Markdown → HTML standalone (com estilo embutido)
+function renderNoteAsHTML(note) {
+  // Reusa renderMarkdown que já existe pra preview
+  const bodyHtml = typeof renderMarkdown === 'function'
+    ? renderMarkdown(note.body || '')
+    : escapeHTML(note.body || '').replace(/\n/g, '<br>');
+  const title = escapeHTML(note.title || 'Sem título');
+  const tagsLine = (note.tags || []).length
+    ? `<div class="tags">${note.tags.map(t => `<span>#${escapeHTML(t)}</span>`).join(' ')}</div>`
+    : '';
+  return `<!doctype html>
+<html lang="pt-BR"><head>
+<meta charset="utf-8">
+<title>${title}</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif; max-width: 720px; margin: 40px auto; padding: 0 20px; color: #111; line-height: 1.6; }
+  h1 { font-size: 32px; letter-spacing: -0.02em; margin-bottom: 4px; }
+  h2 { font-size: 22px; margin-top: 24px; }
+  h3 { font-size: 17px; margin-top: 18px; }
+  .tags { color: #888; font-size: 12px; margin-bottom: 24px; }
+  .tags span { background: #f5f5f5; padding: 2px 8px; border-radius: 4px; margin-right: 4px; }
+  blockquote { border-left: 3px solid #000; padding-left: 12px; color: #555; font-style: italic; margin: 12px 0; }
+  code { background: #f5f5f5; padding: 1px 5px; border-radius: 3px; font-family: ui-monospace, Menlo, monospace; font-size: 0.92em; }
+  pre code { display: block; padding: 12px; }
+  table { border-collapse: collapse; margin: 12px 0; }
+  th, td { border: 1px solid #ddd; padding: 8px 12px; text-align: left; }
+  th { background: #f5f5f5; }
+  .check-item { display: flex; align-items: center; gap: 6px; }
+  .check-box { width: 14px; height: 14px; border: 1.5px solid #888; border-radius: 3px; display: inline-block; flex-shrink: 0; }
+  .check-box.checked { background: #000; border-color: #000; }
+  .check-item.checked span:last-child { text-decoration: line-through; color: #999; }
+  hr { border: none; border-top: 1px solid #ddd; margin: 16px 0; }
+  details { margin: 8px 0; }
+  summary { font-weight: 600; cursor: pointer; }
+  @media print { body { max-width: 100%; margin: 20px; } }
+</style>
+</head><body>
+<h1>${title}</h1>
+${tagsLine}
+${bodyHtml}
+<hr>
+<div style="font-size:11px;color:#aaa;text-align:right;margin-top:24px">Exportado do Órbita · ${new Date().toLocaleString('pt-BR')}</div>
+</body></html>`;
+}
+
+// Markdown → texto puro (remove marcadores)
+function noteToPlainText(note) {
+  let s = note.body || '';
+  s = s.replace(/^#+ /gm, '');
+  s = s.replace(/\*\*([^*]+)\*\*/g, '$1');
+  s = s.replace(/__([^_]+)__/g, '$1');
+  s = s.replace(/\*([^*]+)\*/g, '$1');
+  s = s.replace(/`([^`]+)`/g, '$1');
+  s = s.replace(/^- \[[ xX]\] /gm, '');
+  s = s.replace(/^[-*] /gm, '');
+  s = s.replace(/^> ?/gm, '');
+  s = s.replace(/^---+$/gm, '');
+  s = s.replace(/<details>|<\/details>|<summary>|<\/summary>/g, '');
+  return s.trim();
+}
+
+// Trigger download de um Blob
+function downloadBlob(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function safeFilename(title) {
+  return (title || 'nota')
+    .normalize('NFD').replace(/[̀-ͯ]/g, '')   // remove acentos
+    .replace(/[^a-zA-Z0-9_-]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .toLowerCase()
+    .slice(0, 60) || 'nota';
+}
+
+document.getElementById('share-note-btn').onclick = () => {
+  const note = getActiveNoteForShare();
+  if (!note) return;
+  document.getElementById('share-note-sub').textContent = (note.title || 'Sem título').toUpperCase();
+  document.getElementById('share-feedback').textContent = '';
+  document.getElementById('share-note-modal').classList.add('active');
+};
+
+function showShareFeedback(text) {
+  const fb = document.getElementById('share-feedback');
+  fb.textContent = text;
+  setTimeout(() => { if (fb.textContent === text) fb.textContent = ''; }, 2500);
+}
+
+document.getElementById('share-copy-md').onclick = async () => {
+  const note = getActiveNoteForShare();
+  if (!note) return;
+  const content = `# ${note.title || ''}\n\n${note.body || ''}`;
+  try {
+    await navigator.clipboard.writeText(content);
+    showShareFeedback('✓ Copiado como markdown');
+  } catch {
+    showShareFeedback('Não consegui copiar — copie manualmente');
+  }
+};
+
+document.getElementById('share-copy-text').onclick = async () => {
+  const note = getActiveNoteForShare();
+  if (!note) return;
+  const content = `${note.title || ''}\n\n${noteToPlainText(note)}`;
+  try {
+    await navigator.clipboard.writeText(content);
+    showShareFeedback('✓ Copiado como texto');
+  } catch {
+    showShareFeedback('Não consegui copiar');
+  }
+};
+
+document.getElementById('share-download-md').onclick = () => {
+  const note = getActiveNoteForShare();
+  if (!note) return;
+  const md = `# ${note.title || ''}\n\n${note.body || ''}\n`;
+  downloadBlob(new Blob([md], { type: 'text/markdown' }), safeFilename(note.title) + '.md');
+  showShareFeedback('✓ Download iniciado');
+};
+
+document.getElementById('share-download-html').onclick = () => {
+  const note = getActiveNoteForShare();
+  if (!note) return;
+  const html = renderNoteAsHTML(note);
+  downloadBlob(new Blob([html], { type: 'text/html' }), safeFilename(note.title) + '.html');
+  showShareFeedback('✓ Download iniciado');
+};
+
+document.getElementById('share-email').onclick = () => {
+  const note = getActiveNoteForShare();
+  if (!note) return;
+  const subject = encodeURIComponent(note.title || 'Nota do Órbita');
+  // Body em texto puro (mailto não suporta HTML). Adiciona separador no fim.
+  const bodyText = noteToPlainText(note);
+  const signature = `\n\n---\nEnviado do Órbita`;
+  const fullBody = bodyText + signature;
+  // Trunca se muito longo (mailto tem limite de URL ~2000 chars na maioria dos clientes)
+  const truncated = fullBody.length > 1800
+    ? fullBody.slice(0, 1800) + '\n\n[...conteúdo truncado. Para a nota completa, baixe o arquivo .md ou .html.]'
+    : fullBody;
+  const url = `mailto:?subject=${subject}&body=${encodeURIComponent(truncated)}`;
+  window.location.href = url;
+  showShareFeedback('✓ Abrindo seu cliente de email…');
+};
+
+document.getElementById('share-print').onclick = () => {
+  const note = getActiveNoteForShare();
+  if (!note) return;
+  // Abre em nova janela com HTML formatado e dispara print
+  const html = renderNoteAsHTML(note);
+  const w = window.open('', '_blank');
+  if (!w) { showShareFeedback('Bloqueado pelo navegador — libere pop-ups'); return; }
+  w.document.write(html);
+  w.document.close();
+  setTimeout(() => { try { w.print(); } catch {} }, 300);
 };
 
 // Delete
