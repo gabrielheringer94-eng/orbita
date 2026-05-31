@@ -2472,6 +2472,66 @@
     pointer-events: none;
   }
   .note-block[data-type="divider"]::before { display: none; }
+
+  /* TOGGLE (expansível tipo Notion) */
+  .note-block[data-type="toggle"] {
+    padding-left: 24px;
+    position: relative;
+  }
+  .note-block[data-type="toggle"] > .toggle-arrow {
+    position: absolute;
+    left: 4px;
+    top: 5px;
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    user-select: none;
+    color: var(--ink-faint);
+    font-size: 11px;
+    line-height: 16px;
+    text-align: center;
+    transition: transform 0.15s;
+    border-radius: 3px;
+  }
+  .note-block[data-type="toggle"] > .toggle-arrow:hover {
+    background: var(--bg-card);
+    color: var(--ink);
+  }
+  .note-block[data-type="toggle"][data-expanded="true"] > .toggle-arrow {
+    transform: rotate(90deg);
+  }
+  .note-block[data-type="toggle"] > .toggle-summary {
+    outline: none;
+    font-weight: 600;
+    min-height: 1.6em;
+  }
+  .note-block[data-type="toggle"] > .toggle-summary:empty::before {
+    content: 'Toggle (clique na seta pra expandir)';
+    color: var(--ink-faint);
+    opacity: 0.7;
+  }
+  .note-block[data-type="toggle"] > .toggle-body {
+    outline: none;
+    margin-top: 4px;
+    padding-left: 4px;
+    border-left: 2px solid var(--line);
+    padding-left: 12px;
+    color: var(--ink-soft);
+    font-size: 14px;
+    line-height: 1.55;
+    min-height: 1.5em;
+    white-space: pre-wrap;
+  }
+  .note-block[data-type="toggle"] > .toggle-body:empty::before {
+    content: 'Conteúdo do toggle…';
+    color: var(--ink-faint);
+    opacity: 0.6;
+  }
+  .note-block[data-type="toggle"][data-expanded="false"] > .toggle-body {
+    display: none;
+  }
+  /* Placeholder genérico não se aplica ao toggle (ele tem placeholders próprios) */
+  .note-block[data-type="toggle"]:empty::before { content: none; }
   /* Estilos inline preservados */
   .note-blocks strong { font-weight: 700; }
   .note-blocks em { font-style: italic; }
@@ -7717,6 +7777,26 @@ function parseMdToBlocks(md) {
         i++;
       }
       blocks.push({ type: 'code', text: codeLines.join('\n') });
+    } else if (line.startsWith('<details>')) {
+      // <details><summary>Title</summary>body</details> — toggle block
+      let summary = '';
+      let body = '';
+      const fullMatch = line.match(/^<details>\s*<summary>(.*?)<\/summary>([\s\S]*?)<\/details>\s*$/);
+      if (fullMatch) {
+        summary = fullMatch[1];
+        body = fullMatch[2].trim();
+      } else {
+        const sm = line.match(/<summary>(.*?)<\/summary>/);
+        summary = sm ? sm[1] : '';
+        i++;
+        const bodyLines = [];
+        while (i < lines.length && !lines[i].includes('</details>')) {
+          bodyLines.push(lines[i]);
+          i++;
+        }
+        body = bodyLines.join('\n').trim();
+      }
+      blocks.push({ type: 'toggle', text: summary, body, expanded: true });
     } else if (line.trim() === '') {
       blocks.push({ type: 'p', text: '' });
     } else {
@@ -7748,20 +7828,46 @@ function serializeBlocks() {
     else if (type === 'quote') out.push('> ' + text);
     else if (type === 'divider') out.push('---');
     else if (type === 'code') out.push('```\n' + text + '\n```');
+    else if (type === 'toggle') {
+      // Lê summary + body diretamente das subdivs (não usa o htmlToInlineMd do bloco inteiro)
+      const summary = htmlToInlineMd(el.querySelector('.toggle-summary')?.innerHTML || '');
+      const body = htmlToInlineMd(el.querySelector('.toggle-body')?.innerHTML || '');
+      out.push(`<details><summary>${summary}</summary>\n${body}\n</details>`);
+    }
     else out.push(text);
   });
   return out.join('\n');
 }
 
 // --- Criar elemento de bloco ---
-function createBlockEl(type = 'p', text = '', checked = false) {
+function createBlockEl(type = 'p', text = '', extra = {}) {
   const el = document.createElement('div');
   el.className = 'note-block';
   el.dataset.type = type;
+  if (type === 'toggle') {
+    // Estrutura: arrow + summary (título) + body (conteúdo recolhível)
+    el.contentEditable = 'false';
+    el.dataset.expanded = extra.expanded === false ? 'false' : 'true';
+    const arrow = document.createElement('span');
+    arrow.className = 'toggle-arrow';
+    arrow.textContent = '▶';
+    arrow.contentEditable = 'false';
+    el.appendChild(arrow);
+    const summary = document.createElement('div');
+    summary.className = 'toggle-summary';
+    summary.contentEditable = 'true';
+    if (text) summary.innerHTML = inlineMdToHtml(text);
+    el.appendChild(summary);
+    const body = document.createElement('div');
+    body.className = 'toggle-body';
+    body.contentEditable = 'true';
+    if (extra.body) body.innerHTML = inlineMdToHtml(extra.body);
+    el.appendChild(body);
+    return el;
+  }
   el.contentEditable = type === 'divider' ? 'false' : 'true';
   if (type === 'todo') {
-    el.dataset.checked = checked ? 'true' : 'false';
-    // Adicionar o checkmark interno (escondido se não checked)
+    el.dataset.checked = extra.checked ? 'true' : 'false';
     const chk = document.createElement('span');
     chk.className = 'note-block-todo-check';
     chk.textContent = '✓';
@@ -7769,7 +7875,6 @@ function createBlockEl(type = 'p', text = '', checked = false) {
     el.appendChild(chk);
   }
   if (text) el.innerHTML = (text === '' ? '' : inlineMdToHtml(text));
-  // Re-adiciona o checkmark se foi sobrescrito pelo innerHTML
   if (type === 'todo' && !el.querySelector('.note-block-todo-check')) {
     const chk = document.createElement('span');
     chk.className = 'note-block-todo-check';
@@ -7785,7 +7890,7 @@ function mountBlocks(markdown) {
   noteBlocksEl.innerHTML = '';
   const blocks = parseMdToBlocks(markdown || '');
   for (const b of blocks) {
-    noteBlocksEl.appendChild(createBlockEl(b.type, b.text, b.checked));
+    noteBlocksEl.appendChild(createBlockEl(b.type, b.text, { checked: b.checked, body: b.body, expanded: b.expanded }));
   }
 }
 
@@ -7808,6 +7913,7 @@ function getCaretOffset(block) {
   range.setEnd(sel.getRangeAt(0).endContainer, sel.getRangeAt(0).endOffset);
   return range.toString().length;
 }
+function setCaretInElement(el, offset = 0) { return setCaretAt(el, offset); }
 function setCaretAt(block, offset = 0) {
   const range = document.createRange();
   const sel = window.getSelection();
@@ -7841,7 +7947,7 @@ function setCaretAt(block, offset = 0) {
 function changeBlockType(block, newType, newText) {
   const currentText = htmlToInlineMd(block.innerHTML);
   const finalText = newText !== undefined ? newText : currentText;
-  const newBlock = createBlockEl(newType, finalText, block.dataset.checked === 'true');
+  const newBlock = createBlockEl(newType, finalText, { checked: block.dataset.checked === 'true' });
   block.replaceWith(newBlock);
   setCaretAt(newBlock, 0);
   return newBlock;
@@ -7865,6 +7971,14 @@ function maybeApplyMarkdownShortcut(block) {
   }
   if ((m = text.match(/^[-*] (.*)$/))) {
     changeBlockType(block, 'bullet', m[1]);
+    return;
+  }
+  // Toggle: "> > " no início (duas setas) ou ">> "
+  if ((m = text.match(/^(?:>> |▸ )(.*)$/))) {
+    const newBlock = changeBlockType(block, 'toggle', m[1]);
+    // foca no summary
+    const summary = newBlock.querySelector('.toggle-summary');
+    if (summary) { summary.focus(); setCaretInElement(summary, summary.textContent.length); }
     return;
   }
   if ((m = text.match(/^> ?(.*)$/))) {
@@ -7893,14 +8007,31 @@ function onBlockKeyDown(e) {
   if (e.key === 'Enter' && !e.shiftKey) {
     e.preventDefault();
     if (slashActive) return; // slash menu trata Enter
-    // No final do bloco? Cria novo. Se bloco vazio de tipo "especial" (h1, bullet…), volta pra paragraph.
-    const isEmpty = block.textContent.trim() === '';
     const t = block.dataset.type;
-    if (isEmpty && t !== 'p' && t !== 'divider') {
+    // Caso especial: cursor dentro de .toggle-summary → Enter cria paragraph DEPOIS do toggle
+    const sel = window.getSelection();
+    if (t === 'toggle' && sel.anchorNode) {
+      const summary = block.querySelector('.toggle-summary');
+      const body = block.querySelector('.toggle-body');
+      const inSummary = summary && summary.contains(sel.anchorNode);
+      const inBody = body && body.contains(sel.anchorNode);
+      if (inSummary) {
+        const newBlock = createBlockEl('p', '');
+        block.after(newBlock);
+        setCaretAt(newBlock, 0);
+        return;
+      }
+      if (inBody) {
+        // Enter dentro do body insere quebra de linha normal
+        document.execCommand('insertLineBreak');
+        return;
+      }
+    }
+    const isEmpty = block.textContent.trim() === '';
+    if (isEmpty && t !== 'p' && t !== 'divider' && t !== 'toggle') {
       changeBlockType(block, 'p', '');
       return;
     }
-    // Novo bloco do mesmo tipo se for lista, senão paragraph
     const newType = (t === 'bullet' || t === 'todo') ? t : 'p';
     const newBlock = createBlockEl(newType, '');
     block.after(newBlock);
@@ -7964,6 +8095,15 @@ noteBlocksEl.addEventListener('click', (e) => {
     block.dataset.checked = block.dataset.checked === 'true' ? 'false' : 'true';
     scheduleSave();
   }
+});
+
+// --- Click na seta do toggle expande/recolhe ---
+noteBlocksEl.addEventListener('click', (e) => {
+  if (!e.target.classList.contains('toggle-arrow')) return;
+  const block = e.target.closest('.note-block[data-type="toggle"]');
+  if (!block) return;
+  e.preventDefault();
+  block.dataset.expanded = block.dataset.expanded === 'true' ? 'false' : 'true';
 });
 
 // Click no editor (área vazia) foca no último bloco
