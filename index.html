@@ -1489,6 +1489,182 @@
     font-weight: 700;
   }
 
+  /* ============== AVALIAÇÃO 1-10 (CRITÉRIOS) ============== */
+  .visit-criteria-block {
+    background: var(--bg-card);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 16px;
+  }
+  .visit-criteria-row {
+    display: grid;
+    grid-template-columns: 130px 1fr;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--line-soft);
+  }
+  .visit-criteria-row:last-of-type { border-bottom: none; }
+  .visit-criteria-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .rating-scale {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    gap: 3px;
+  }
+  .rating-pip {
+    height: 26px;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--ink-faint);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.1s;
+  }
+  .rating-pip:hover { border-color: var(--ink); color: var(--ink); }
+  .rating-pip.is-filled {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: #fff;
+  }
+  /* Cores graduadas pela nota selecionada */
+  .rating-scale.tone-low .rating-pip.is-filled { background: #dc2626; border-color: #dc2626; }
+  .rating-scale.tone-mid .rating-pip.is-filled { background: #ca8a04; border-color: #ca8a04; }
+  .rating-scale.tone-high .rating-pip.is-filled { background: #16a34a; border-color: #16a34a; }
+
+  .visit-criteria-final {
+    display: grid;
+    grid-template-columns: 130px 1fr;
+    align-items: center;
+    gap: 12px;
+    padding-top: 10px;
+    margin-top: 6px;
+    border-top: 1.5px solid var(--ink);
+  }
+  .visit-criteria-final .visit-criteria-label { font-weight: 700; font-size: 13px; }
+  .visit-criteria-final-value {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--ink);
+    text-align: right;
+  }
+  .visit-criteria-final-value small {
+    font-size: 12px;
+    color: var(--ink-faint);
+    font-weight: 500;
+  }
+  /* Display da nota /10 em cards */
+  .place-card-rating-10 {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 2px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    margin: 6px 0;
+  }
+  .place-card-rating-10 .big { font-size: 22px; line-height: 1; }
+  .place-card-rating-10 .denom { font-size: 12px; color: var(--ink-faint); font-weight: 500; }
+  @media (max-width: 900px) {
+    .visit-criteria-row,
+    .visit-criteria-final { grid-template-columns: 1fr; gap: 4px; }
+    .visit-criteria-final-value { text-align: left; }
+    .rating-pip { height: 30px; font-size: 11px; }
+  }
+
+  /* Fotos da visita */
+  .visit-photos {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 6px;
+    margin-bottom: 8px;
+  }
+  .visit-photo-thumb {
+    position: relative;
+    aspect-ratio: 1;
+    background: var(--bg-card);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .visit-photo-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .visit-photo-thumb.is-uploading::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(255,255,255,0.6);
+  }
+  .visit-photo-thumb.is-uploading::before {
+    content: '';
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 20px; height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid var(--line);
+    border-top-color: var(--ink);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    z-index: 1;
+  }
+  .visit-photo-del {
+    position: absolute;
+    top: 2px; right: 2px;
+    background: rgba(0,0,0,0.6);
+    border: none;
+    color: #fff;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .visit-photo-add {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    background: var(--bg-card);
+    border: 1px dashed var(--line);
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 12px;
+    color: var(--ink-soft);
+    transition: all 0.15s;
+  }
+  .visit-photo-add:hover { border-color: var(--ink); color: var(--ink); border-style: solid; }
+  /* Strip de fotos no card de lugar */
+  .place-card-photos {
+    display: flex;
+    gap: 4px;
+    margin: 8px 0;
+    flex-wrap: wrap;
+  }
+  .place-card-photo-thumb {
+    width: 56px;
+    height: 56px;
+    border-radius: 6px;
+    object-fit: cover;
+    border: 1px solid var(--line);
+    cursor: pointer;
+  }
+
   /* ============== ROTEIROS ============== */
   .itinerary-chip {
     border-color: #c4b5fd !important;
@@ -1626,50 +1802,6 @@
     #places-overview-map { height: 280px; }
   }
 
-  .place-card-map {
-    height: 140px;
-    margin: -18px -18px 12px;
-    border-bottom: 1px solid var(--line);
-    background: var(--bg-card);
-    position: relative;
-    overflow: hidden;
-  }
-  .place-card-map.is-placeholder::after {
-    content: 'Sem localização';
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 11px;
-    color: var(--ink-faint);
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-  }
-  .place-card-map.is-loading::after {
-    content: 'Localizando…';
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 11px;
-    color: var(--ink-faint);
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-  }
-  .place-card.is-recommended .place-card-map { margin-top: -17px; }
-  /* Mata o foco azul do Leaflet em cards e a interatividade indesejada */
-  .place-card-map .leaflet-container {
-    height: 100%;
-    width: 100%;
-    background: var(--bg-card);
-    cursor: pointer;
-  }
-  .place-card-map .leaflet-control-attribution {
-    font-size: 9px;
-    padding: 1px 4px;
-  }
   /* divIcon do pin colorido (verde/azul) — sem background nem borda do Leaflet */
   .leaflet-div-icon.place-pin-icon,
   .place-pin-icon {
@@ -3364,16 +3496,9 @@
 
     <!-- Campos específicos para "já fui" -->
     <div id="visited-fields">
-      <div class="form-group">
-        <label class="form-label">Avaliação</label>
-        <div class="star-rating" id="place-rating">
-          <span class="star" data-value="1">★</span>
-          <span class="star" data-value="2">★</span>
-          <span class="star" data-value="3">★</span>
-          <span class="star" data-value="4">★</span>
-          <span class="star" data-value="5">★</span>
-          <span class="rating-label" id="rating-label">Sem avaliação</span>
-        </div>
+      <div class="form-group" style="background:var(--bg-card);border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-size:12px;color:var(--ink-soft)">
+        💡 A nota é calculada das <strong>visitas registradas</strong> (comida, ambiente, atendimento, preço).
+        Use o botão "Registrar visita" no card pra avaliar.
       </div>
     </div>
 
@@ -3631,31 +3756,50 @@
 
 <!-- VISIT MODAL -->
 <div class="modal-bg" id="visit-modal">
-  <div class="modal" style="max-width:420px">
+  <div class="modal" style="max-width:480px">
     <div class="modal-title">Registrar visita</div>
     <div class="modal-sub" id="visit-modal-sub">—</div>
 
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">Data</label>
-        <input type="date" class="form-control" id="visit-date" />
+    <div class="form-group">
+      <label class="form-label">Data</label>
+      <input type="date" class="form-control" id="visit-date" />
+    </div>
+
+    <div class="visit-criteria-block">
+      <div class="visit-criteria-row" data-criterion="food">
+        <div class="visit-criteria-label">🍽️ Comida</div>
+        <div class="rating-scale" data-rating-for="food"></div>
       </div>
-      <div class="form-group">
-        <label class="form-label">Nota</label>
-        <select class="form-control" id="visit-rating">
-          <option value="">Sem nota</option>
-          <option value="1">★</option>
-          <option value="2">★★</option>
-          <option value="3">★★★</option>
-          <option value="4">★★★★</option>
-          <option value="5">★★★★★</option>
-        </select>
+      <div class="visit-criteria-row" data-criterion="ambience">
+        <div class="visit-criteria-label">✨ Ambiente</div>
+        <div class="rating-scale" data-rating-for="ambience"></div>
+      </div>
+      <div class="visit-criteria-row" data-criterion="service">
+        <div class="visit-criteria-label">🛎️ Atendimento</div>
+        <div class="rating-scale" data-rating-for="service"></div>
+      </div>
+      <div class="visit-criteria-row" data-criterion="price">
+        <div class="visit-criteria-label">💰 Preço</div>
+        <div class="rating-scale" data-rating-for="price"></div>
+      </div>
+      <div class="visit-criteria-final">
+        <div class="visit-criteria-label">Nota geral</div>
+        <div class="visit-criteria-final-value" id="visit-final-rating">—</div>
       </div>
     </div>
 
     <div class="form-group">
       <label class="form-label">Comentário (opcional)</label>
-      <textarea class="form-control" id="visit-note" rows="3" placeholder="O que comeu, com quem foi, impressão..."></textarea>
+      <textarea class="form-control" id="visit-note" rows="3" placeholder="O que comeu, com quem foi, impressão geral…"></textarea>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Fotos</label>
+      <div class="visit-photos" id="visit-photos-grid"></div>
+      <label class="visit-photo-add">
+        <input type="file" id="visit-photo-input" accept="image/*" multiple capture="environment" style="display:none" />
+        <span id="visit-photo-add-label">+ Adicionar foto</span>
+      </label>
     </div>
 
     <div class="modal-actions">
@@ -5680,11 +5824,12 @@ function renderPlacesStats() {
   const visited = places.filter(p => p.status === 'visited');
   const wishlist = places.filter(p => p.status === 'wishlist');
   const recommended = places.filter(p => p.status === 'wishlist' && p.priority === 'recommended');
-  const ratedVisited = visited.filter(p => p.rating > 0);
+  // Reusa o helper único pra calcular nota /10 (das visitas ou do legado p.rating)
+  const ratedVisited = visited.filter(p => computePlaceRating(p) != null);
   const avgRating = ratedVisited.length > 0
-    ? (ratedVisited.reduce((sum, p) => sum + p.rating, 0) / ratedVisited.length).toFixed(1)
+    ? (ratedVisited.reduce((sum, p) => sum + computePlaceRating(p), 0) / ratedVisited.length).toFixed(1)
     : '—';
-  const topRated = ratedVisited.filter(p => p.rating >= 4).length;
+  const topRated = ratedVisited.filter(p => computePlaceRating(p) >= 8).length;
 
   document.getElementById('places-stats').innerHTML = `
     <div class="place-stat">
@@ -5700,10 +5845,10 @@ function renderPlacesStats() {
     <div class="place-stat">
       <div class="place-stat-label">Nota média</div>
       <div class="place-stat-value">${avgRating}</div>
-      <div class="place-stat-detail">★ entre os avaliados</div>
+      <div class="place-stat-detail">/ 10 entre avaliados</div>
     </div>
     <div class="place-stat">
-      <div class="place-stat-label">4+ estrelas</div>
+      <div class="place-stat-label">Nota 8+</div>
       <div class="place-stat-value">${topRated}</div>
       <div class="place-stat-detail">recomendaria</div>
     </div>
@@ -5786,9 +5931,16 @@ function renderPlacesGrid() {
   }
 
   el.innerHTML = list.map(p => {
-    const stars = p.status === 'visited' && p.rating
-      ? `<div class="place-card-rating">${'★'.repeat(p.rating)}<span class="empty">${'★'.repeat(5 - p.rating)}</span></div>`
-      : '';
+    // Nota: rating /10 (legado /5 é multiplicado por 2 no display)
+    const ratingDisplay = (() => {
+      if (p.status !== 'visited') return '';
+      const value = computePlaceRating(p);
+      if (value == null) return '';
+      // cor: <=4 vermelho, <=7 amarelo, >7 verde
+      const color = value <= 4 ? '#dc2626' : value <= 7 ? '#ca8a04' : '#16a34a';
+      const formatted = Number.isInteger(value) ? value : value.toFixed(1);
+      return `<div class="place-card-rating-10"><span class="big" style="color:${color}">${formatted}</span><span class="denom">/ 10</span></div>`;
+    })();
     const priority = p.status === 'wishlist'
       ? `<div><span class="place-card-priority">${labelPriority2(p.priority)}</span></div>`
       : '';
@@ -5802,22 +5954,14 @@ function renderPlacesGrid() {
     const mapsQuery = encodeURIComponent([p.name, p.address, p.neighborhood, p.city].filter(Boolean).join(', '));
     const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${mapsQuery}`;
 
-    // Estado do mini-mapa: tem coords → render Leaflet; tem endereço mas sem coords → loading; nada → placeholder
-    const hasCoords = typeof p.lat === 'number' && typeof p.lng === 'number';
-    const hasGeocodable = !hasCoords && (p.address || p.neighborhood || p.city);
-    const mapClass = hasCoords ? '' : (hasGeocodable && !p.geocodeFailed ? 'is-loading' : 'is-placeholder');
-    const mapAttrs = hasCoords
-      ? `data-place-map data-lat="${p.lat}" data-lng="${p.lng}" data-name="${escapeHTML(p.name)}" data-maps-url="${mapsUrl}" data-status="${p.status}"`
-      : '';
     return `
       <div class="place-card ${isRecommended ? 'is-recommended' : ''}" id="place-card-${p.id}">
-        <div class="place-card-map ${mapClass}" ${mapAttrs}></div>
         <div class="place-card-header">
           <div class="place-card-name">${escapeHTML(p.name)}</div>
           <span class="place-card-status status-${p.status}">${p.status === 'visited' ? 'Já fui' : 'Quero ir'}</span>
         </div>
         <div class="place-card-type">${labelType(p.type)}</div>
-        ${stars}
+        ${ratingDisplay}
         ${priority}
         ${location ? `<div class="place-card-location">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
@@ -5827,6 +5971,15 @@ function renderPlacesGrid() {
         ${p.notes ? `<div class="place-card-notes">${escapeHTML(p.notes)}</div>` : ''}
         ${tagsHtml}
         ${(p.visits && p.visits.length) ? `<div style="font-size:11px;color:var(--ink-faint);margin-top:6px">${p.visits.length} visita${p.visits.length === 1 ? '' : 's'} · última ${formatVisitDate(p.visits[p.visits.length - 1].date)}</div>` : ''}
+        ${(()=>{
+          // mostra até 4 fotos da última visita
+          const lastV = p.visits?.[p.visits.length - 1];
+          const photos = lastV?.photos || [];
+          if (!photos.length) return '';
+          return `<div class="place-card-photos">${photos.slice(0, 4).map(path =>
+            `<img class="place-card-photo-thumb" src="${escapeHTML(getPlacePhotoUrl(path))}" alt="" loading="lazy" />`
+          ).join('')}</div>`;
+        })()}
         <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">
           <button class="place-card-itinerary-btn" data-itinerary-add="${p.id}">
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
@@ -5873,8 +6026,7 @@ function renderPlacesGrid() {
     };
   });
 
-  // Inicializa mini-mapas lazy e dispara backfill de geocoding
-  initPlaceMaps();
+  // Geocoding backfill (mantido pro mapa overview saber as coords)
   backfillPlaceCoords();
   // Re-renderiza o mapa de overview com a lista filtrada
   renderPlacesOverviewMap(list);
@@ -6333,29 +6485,6 @@ async function backfillPlaceCoords() {
   }
 }
 
-// Inicializa mapas Leaflet só quando o card entra no viewport (performance)
-let placeMapObserver = null;
-function initPlaceMaps() {
-  if (typeof L === 'undefined') {
-    // Leaflet ainda não terminou de carregar; tenta de novo em 200ms
-    setTimeout(initPlaceMaps, 200);
-    return;
-  }
-  if (!placeMapObserver) {
-    placeMapObserver = new IntersectionObserver((entries) => {
-      for (const entry of entries) {
-        if (!entry.isIntersecting) continue;
-        const el = entry.target;
-        placeMapObserver.unobserve(el);
-        mountLeafletMap(el);
-      }
-    }, { rootMargin: '100px' });
-  }
-  document.querySelectorAll('[data-place-map]:not([data-mounted])').forEach(el => {
-    placeMapObserver.observe(el);
-  });
-}
-
 // SVG de pin colorido. Verde = já fui, azul = quero ir, cinza = fallback.
 function placePinIcon(status) {
   const color = status === 'visited' ? '#16a34a'
@@ -6389,46 +6518,6 @@ function itineraryPinIcon(num) {
     iconSize: [32, 40],
     iconAnchor: [16, 40],
   });
-}
-
-function mountLeafletMap(el) {
-  if (el.dataset.mounted) return;
-  const lat = parseFloat(el.dataset.lat);
-  const lng = parseFloat(el.dataset.lng);
-  if (Number.isNaN(lat) || Number.isNaN(lng)) return;
-  el.dataset.mounted = '1';
-  try {
-    const map = L.map(el, {
-      center: [lat, lng],
-      zoom: 15,
-      zoomControl: false,
-      attributionControl: true,
-      dragging: false,
-      doubleClickZoom: false,
-      scrollWheelZoom: false,
-      boxZoom: false,
-      keyboard: false,
-      touchZoom: false,
-      tap: false,
-    });
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19,
-      attribution: '© <a href="https://openstreetmap.org/copyright">OSM</a>',
-    }).addTo(map);
-    L.marker([lat, lng], { keyboard: false, icon: placePinIcon(el.dataset.status) }).addTo(map);
-
-    // Tap no mapa abre o Google Maps em nova aba
-    const mapsUrl = el.dataset.mapsUrl;
-    if (mapsUrl) {
-      el.addEventListener('click', (e) => {
-        e.stopPropagation();
-        window.open(mapsUrl, '_blank', 'noopener');
-      });
-    }
-  } catch (err) {
-    console.warn('Falha ao montar mapa:', err);
-    el.classList.add('is-placeholder');
-  }
 }
 
 // Filtros
@@ -6720,7 +6809,69 @@ function formatVisitDate(iso) {
   return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' });
 }
 
+// Estado dos pips do modal de visita
+const CRITERIA = ['food', 'ambience', 'service', 'price'];
+const visitRatings = { food: null, ambience: null, service: null, price: null };
+
+function setVisitRatingPipUI(criterion, value) {
+  visitRatings[criterion] = value;
+  const scale = document.querySelector(`.rating-scale[data-rating-for="${criterion}"]`);
+  if (!scale) return;
+  scale.classList.remove('tone-low', 'tone-mid', 'tone-high');
+  if (value != null) {
+    if (value <= 4) scale.classList.add('tone-low');
+    else if (value <= 7) scale.classList.add('tone-mid');
+    else scale.classList.add('tone-high');
+  }
+  scale.querySelectorAll('.rating-pip').forEach((p, i) => {
+    p.classList.toggle('is-filled', value != null && (i + 1) <= value);
+  });
+  updateFinalRatingDisplay();
+}
+
+function computeVisitFinalRating() {
+  const vals = CRITERIA.map(c => visitRatings[c]).filter(v => v != null);
+  if (vals.length === 0) return null;
+  return Math.round((vals.reduce((a, b) => a + b, 0) / vals.length) * 10) / 10;
+}
+
+function updateFinalRatingDisplay() {
+  const el = document.getElementById('visit-final-rating');
+  const r = computeVisitFinalRating();
+  if (r == null) {
+    el.innerHTML = `<small>—</small>`;
+  } else {
+    el.innerHTML = `${r}<small> / 10</small>`;
+  }
+}
+
+// Constrói os pips das 4 escalas (só uma vez na inicialização do modal)
+function buildVisitRatingScales() {
+  document.querySelectorAll('.rating-scale').forEach(scale => {
+    if (scale.dataset.built) return;
+    scale.dataset.built = '1';
+    const criterion = scale.dataset.ratingFor;
+    let html = '';
+    for (let i = 1; i <= 10; i++) {
+      html += `<button class="rating-pip" data-pip-val="${i}" type="button">${i}</button>`;
+    }
+    scale.innerHTML = html;
+    scale.querySelectorAll('.rating-pip').forEach(p => {
+      p.onclick = (e) => {
+        e.preventDefault();
+        const v = parseInt(p.dataset.pipVal, 10);
+        // Click no mesmo valor desmarca
+        setVisitRatingPipUI(criterion, visitRatings[criterion] === v ? null : v);
+      };
+    });
+  });
+}
+
+// Fotos em memória durante edição da visita
+let visitPhotosInMemory = []; // [{path: 'user/place/file.jpg', publicUrl: '...'}]
+
 function openVisitModal(placeId, visitId) {
+  buildVisitRatingScales();
   editingVisitPlaceId = placeId;
   editingVisitId = visitId;
   const p = (state.places || []).find(x => x.id === placeId);
@@ -6728,20 +6879,141 @@ function openVisitModal(placeId, visitId) {
   document.getElementById('visit-modal-sub').textContent = p.name.toUpperCase();
   document.getElementById('visit-modal').classList.add('active');
   const delBtn = document.getElementById('visit-delete');
+
+  // Reset visual
+  CRITERIA.forEach(c => setVisitRatingPipUI(c, null));
+  visitPhotosInMemory = [];
+  renderVisitPhotosGrid();
+
   if (visitId) {
     const v = (p.visits || []).find(x => x.id === visitId);
     if (!v) return;
     document.getElementById('visit-date').value = v.date || '';
-    document.getElementById('visit-rating').value = v.rating || '';
     document.getElementById('visit-note').value = v.note || '';
+    // Suporta tanto formato novo (criterios) quanto legado (só rating 1-5 ou 1-10)
+    if (v.criteria) {
+      CRITERIA.forEach(c => setVisitRatingPipUI(c, v.criteria[c] ?? null));
+    } else if (v.rating != null) {
+      // Migração leve: se nota legada <=5, vira /10 multiplicando por 2
+      const r = v.rating <= 5 ? v.rating * 2 : v.rating;
+      // Sem critérios separados, joga no "food" como aproximação
+      setVisitRatingPipUI('food', r);
+    }
+    visitPhotosInMemory = (v.photos || []).map(path => ({
+      path,
+      publicUrl: getPlacePhotoUrl(path),
+    }));
+    renderVisitPhotosGrid();
     delBtn.style.display = '';
   } else {
     document.getElementById('visit-date').value = isoDate(new Date());
-    document.getElementById('visit-rating').value = '';
     document.getElementById('visit-note').value = '';
     delBtn.style.display = 'none';
   }
 }
+
+// Retorna nota /10 do lugar: das visitas se houver, senão do campo p.rating
+// (convertendo /5 → /10 se necessário pelo ratingScale legado).
+function computePlaceRating(p) {
+  const visitRatings_ = (p.visits || [])
+    .map(v => {
+      if (v.rating == null) return null;
+      if (v.ratingScale === 10) return v.rating;
+      return v.rating <= 5 ? v.rating * 2 : v.rating;
+    })
+    .filter(r => r != null);
+  if (visitRatings_.length) {
+    return Math.round((visitRatings_.reduce((a, b) => a + b, 0) / visitRatings_.length) * 10) / 10;
+  }
+  if (p.rating == null) return null;
+  if (p.ratingScale === 10) return p.rating;
+  return p.rating <= 5 ? p.rating * 2 : p.rating;
+}
+
+function getPlacePhotoUrl(path) {
+  if (!path) return '';
+  const { data } = sb.storage.from('place-photos').getPublicUrl(path);
+  return data?.publicUrl || '';
+}
+
+function renderVisitPhotosGrid() {
+  const grid = document.getElementById('visit-photos-grid');
+  if (!grid) return;
+  grid.innerHTML = visitPhotosInMemory.map((ph, i) => `
+    <div class="visit-photo-thumb ${ph.uploading ? 'is-uploading' : ''}" data-photo-idx="${i}">
+      ${ph.publicUrl ? `<img src="${escapeHTML(ph.publicUrl)}" alt="" />` : ''}
+      <button class="visit-photo-del" data-photo-del="${i}" title="Remover">×</button>
+    </div>
+  `).join('');
+  grid.querySelectorAll('[data-photo-del]').forEach(b => {
+    b.onclick = (e) => {
+      e.preventDefault();
+      const idx = parseInt(b.dataset.photoDel, 10);
+      const removed = visitPhotosInMemory.splice(idx, 1)[0];
+      // Tenta deletar do storage (best-effort)
+      if (removed?.path) {
+        sb.storage.from('place-photos').remove([removed.path]).catch(() => {});
+      }
+      renderVisitPhotosGrid();
+    };
+  });
+}
+
+// Compressão client-side via canvas
+async function compressImage(file, maxDim = 1600, quality = 0.82) {
+  const img = await new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => {
+      const i = new Image();
+      i.onload = () => res(i);
+      i.onerror = rej;
+      i.src = r.result;
+    };
+    r.onerror = rej;
+    r.readAsDataURL(file);
+  });
+  const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
+  const w = Math.round(img.width * scale);
+  const h = Math.round(img.height * scale);
+  const canvas = document.createElement('canvas');
+  canvas.width = w; canvas.height = h;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(img, 0, 0, w, h);
+  return new Promise(res => canvas.toBlob(res, 'image/jpeg', quality));
+}
+
+document.getElementById('visit-photo-input').addEventListener('change', async (e) => {
+  const files = Array.from(e.target.files || []);
+  if (!files.length || !currentUser) return;
+  const placeId = editingVisitPlaceId;
+  const tempVisitId = editingVisitId || 'tmp' + Date.now();
+  for (const file of files) {
+    const placeholder = { path: null, publicUrl: null, uploading: true };
+    visitPhotosInMemory.push(placeholder);
+    renderVisitPhotosGrid();
+    try {
+      const blob = await compressImage(file);
+      const ts = Date.now();
+      const path = `${currentUser.id}/${placeId}/${tempVisitId}-${ts}.jpg`;
+      const { error } = await sb.storage.from('place-photos').upload(path, blob, {
+        contentType: 'image/jpeg',
+        cacheControl: '3600',
+        upsert: false,
+      });
+      if (error) throw error;
+      placeholder.path = path;
+      placeholder.publicUrl = getPlacePhotoUrl(path);
+      placeholder.uploading = false;
+    } catch (err) {
+      console.error('Upload falhou:', err);
+      visitPhotosInMemory = visitPhotosInMemory.filter(x => x !== placeholder);
+      alert('Não consegui subir uma foto: ' + (err.message || err));
+    }
+    renderVisitPhotosGrid();
+  }
+  // Limpa input pra permitir re-seleção do mesmo arquivo
+  e.target.value = '';
+});
 
 document.getElementById('visit-save').onclick = () => {
   if (!editingVisitPlaceId) return;
@@ -6749,21 +7021,45 @@ document.getElementById('visit-save').onclick = () => {
   if (!p) return;
   const date = document.getElementById('visit-date').value;
   if (!date) { alert('Defina a data da visita.'); return; }
-  const rating = parseInt(document.getElementById('visit-rating').value, 10) || null;
   const note = document.getElementById('visit-note').value.trim() || null;
+  const criteria = { ...visitRatings };
+  const final = computeVisitFinalRating();
+
+  const photos = visitPhotosInMemory.filter(ph => ph.path && !ph.uploading).map(ph => ph.path);
+
   if (!Array.isArray(p.visits)) p.visits = [];
   if (editingVisitId) {
     const v = p.visits.find(x => x.id === editingVisitId);
-    if (v) { v.date = date; v.rating = rating; v.note = note; }
+    if (v) {
+      v.date = date;
+      v.note = note;
+      v.criteria = criteria;
+      v.rating = final;
+      v.ratingScale = 10;
+      v.photos = photos;
+    }
   } else {
-    p.visits.push({ id: uid(), date, rating, note, createdAt: new Date().toISOString() });
+    p.visits.push({
+      id: uid(),
+      date,
+      note,
+      criteria,
+      rating: final,
+      ratingScale: 10,
+      photos,
+      createdAt: new Date().toISOString(),
+    });
   }
-  // Mantém ordenado por data asc
   p.visits.sort((a, b) => (a.date || '').localeCompare(b.date || ''));
-  // Se foi adicionada uma visita, marca como "já fui" e atualiza rating médio
+
+  // Place vira "já fui" e o rating médio (1-10) é a média das notas finais das visitas
   p.status = 'visited';
-  const ratings = p.visits.filter(v => v.rating).map(v => v.rating);
-  if (ratings.length) p.rating = Math.round(ratings.reduce((a, b) => a + b, 0) / ratings.length);
+  const visitRatings_ = p.visits.filter(v => v.rating != null).map(v => v.rating);
+  if (visitRatings_.length) {
+    p.rating = Math.round((visitRatings_.reduce((a, b) => a + b, 0) / visitRatings_.length) * 10) / 10;
+    p.ratingScale = 10;
+  }
+
   saveState();
   closeAllModals();
   editingVisitPlaceId = null;
@@ -6771,10 +7067,15 @@ document.getElementById('visit-save').onclick = () => {
   renderPlaces();
 };
 
-document.getElementById('visit-delete').onclick = () => {
+document.getElementById('visit-delete').onclick = async () => {
   if (!editingVisitPlaceId || !editingVisitId) return;
-  if (!confirm('Excluir esta visita?')) return;
+  if (!confirm('Excluir esta visita? Fotos também serão removidas.')) return;
   const p = state.places.find(x => x.id === editingVisitPlaceId);
+  const v = p?.visits?.find(x => x.id === editingVisitId);
+  // Best-effort: apaga fotos do storage
+  if (v?.photos?.length) {
+    try { await sb.storage.from('place-photos').remove(v.photos); } catch (e) { console.warn(e); }
+  }
   if (p) p.visits = (p.visits || []).filter(v => v.id !== editingVisitId);
   saveState();
   closeAllModals();
@@ -6841,27 +7142,9 @@ document.getElementById('place-status').addEventListener('change', (e) => {
   toggleStatusFields(e.target.value);
 });
 
-// Star rating
-function setRating(n) {
-  currentRating = n;
-  document.querySelectorAll('#place-rating .star').forEach((s, i) => {
-    s.classList.toggle('active', i < n);
-  });
-  const labels = ['Sem avaliação', 'Ruim', 'Fraco', 'Ok', 'Bom', 'Excelente'];
-  document.getElementById('rating-label').textContent = labels[n] || 'Sem avaliação';
-}
-document.querySelectorAll('#place-rating .star').forEach(s => {
-  s.addEventListener('click', () => setRating(parseInt(s.dataset.value)));
-  s.addEventListener('mouseenter', () => {
-    const v = parseInt(s.dataset.value);
-    document.querySelectorAll('#place-rating .star').forEach((x, i) => {
-      x.classList.toggle('hover', i < v);
-    });
-  });
-  s.addEventListener('mouseleave', () => {
-    document.querySelectorAll('#place-rating .star').forEach(x => x.classList.remove('hover'));
-  });
-});
+// Nota antiga (estrelas) removida — agora a nota é derivada das visitas.
+// Mantemos a função pra evitar quebrar callers; vira no-op.
+function setRating(_) { currentRating = 0; }
 
 // Salvar
 document.getElementById('place-save').onclick = () => {
@@ -6875,7 +7158,7 @@ document.getElementById('place-save').onclick = () => {
     name,
     type: document.getElementById('place-type').value,
     status,
-    rating: status === 'visited' ? currentRating : null,
+    // rating não vem do modal — é derivado das visitas. Preserva valor existente.
     priority: status === 'wishlist' ? document.getElementById('place-priority').value : null,
     neighborhood: document.getElementById('place-neighborhood').value.trim(),
     city: document.getElementById('place-city').value.trim() || 'São Paulo',
