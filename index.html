@@ -7796,7 +7796,9 @@ function parseMdToBlocks(md) {
         }
         body = bodyLines.join('\n').trim();
       }
-      blocks.push({ type: 'toggle', text: summary, body, expanded: true });
+      // Parse recursivo do body — vira lista de child blocks
+      const children = body ? parseMdToBlocks(body) : [{ type: 'p', text: '' }];
+      blocks.push({ type: 'toggle', text: summary, children, expanded: true });
     } else if (line.trim() === '') {
       blocks.push({ type: 'p', text: '' });
     } else {
@@ -7808,12 +7810,22 @@ function parseMdToBlocks(md) {
   return blocks;
 }
 
-// --- Array de blocos → string markdown (pra salvar) ---
-function serializeBlocks() {
+// --- Serialize de qualquer container de blocos (recursivo p/ toggle body) ---
+function serializeContainer(container) {
   const out = [];
-  noteBlocksEl.querySelectorAll(':scope > .note-block').forEach(el => {
+  container.querySelectorAll(':scope > .note-block').forEach(el => {
     const type = el.dataset.type;
-    // Clona pra não mutar o DOM e remove decorações internas (checkmark do todo)
+    // Para toggle, lê summary e recursão no body
+    if (type === 'toggle') {
+      const summarySrc = el.querySelector('.toggle-summary');
+      const summaryClone = summarySrc ? summarySrc.cloneNode(true) : null;
+      const summary = summaryClone ? htmlToInlineMd(summaryClone.innerHTML) : '';
+      const bodyEl = el.querySelector('.toggle-body');
+      const bodyMd = bodyEl ? serializeContainer(bodyEl) : '';
+      out.push(`<details><summary>${summary}</summary>\n${bodyMd}\n</details>`);
+      return;
+    }
+    // Para outros tipos, htmlToInlineMd do bloco (excluindo decorações)
     const clone = el.cloneNode(true);
     clone.querySelectorAll('.note-block-todo-check').forEach(n => n.remove());
     const text = htmlToInlineMd(clone.innerHTML).replace(/\n+$/, '');
@@ -7828,15 +7840,13 @@ function serializeBlocks() {
     else if (type === 'quote') out.push('> ' + text);
     else if (type === 'divider') out.push('---');
     else if (type === 'code') out.push('```\n' + text + '\n```');
-    else if (type === 'toggle') {
-      // Lê summary + body diretamente das subdivs (não usa o htmlToInlineMd do bloco inteiro)
-      const summary = htmlToInlineMd(el.querySelector('.toggle-summary')?.innerHTML || '');
-      const body = htmlToInlineMd(el.querySelector('.toggle-body')?.innerHTML || '');
-      out.push(`<details><summary>${summary}</summary>\n${body}\n</details>`);
-    }
     else out.push(text);
   });
   return out.join('\n');
+}
+
+function serializeBlocks() {
+  return serializeContainer(noteBlocksEl);
 }
 
 // --- Criar elemento de bloco ---
@@ -7845,7 +7855,7 @@ function createBlockEl(type = 'p', text = '', extra = {}) {
   el.className = 'note-block';
   el.dataset.type = type;
   if (type === 'toggle') {
-    // Estrutura: arrow + summary (título) + body (conteúdo recolhível)
+    // Estrutura: arrow + summary (título) + body (container de sub-blocos)
     el.contentEditable = 'false';
     el.dataset.expanded = extra.expanded === false ? 'false' : 'true';
     const arrow = document.createElement('span');
@@ -7860,8 +7870,18 @@ function createBlockEl(type = 'p', text = '', extra = {}) {
     el.appendChild(summary);
     const body = document.createElement('div');
     body.className = 'toggle-body';
-    body.contentEditable = 'true';
-    if (extra.body) body.innerHTML = inlineMdToHtml(extra.body);
+    body.contentEditable = 'false'; // só os blocos filhos são editáveis
+    if (Array.isArray(extra.children) && extra.children.length) {
+      for (const child of extra.children) {
+        body.appendChild(createBlockEl(child.type, child.text, child));
+      }
+    } else if (extra.body) {
+      // Compat com formato antigo: body como string vira um paragraph
+      body.appendChild(createBlockEl('p', extra.body));
+    } else {
+      // Body vazio começa com um paragraph editável
+      body.appendChild(createBlockEl('p', ''));
+    }
     el.appendChild(body);
     return el;
   }
@@ -7890,7 +7910,7 @@ function mountBlocks(markdown) {
   noteBlocksEl.innerHTML = '';
   const blocks = parseMdToBlocks(markdown || '');
   for (const b of blocks) {
-    noteBlocksEl.appendChild(createBlockEl(b.type, b.text, { checked: b.checked, body: b.body, expanded: b.expanded }));
+    noteBlocksEl.appendChild(createBlockEl(b.type, b.text, b));
   }
 }
 
@@ -8012,20 +8032,16 @@ function onBlockKeyDown(e) {
     const sel = window.getSelection();
     if (t === 'toggle' && sel.anchorNode) {
       const summary = block.querySelector('.toggle-summary');
-      const body = block.querySelector('.toggle-body');
       const inSummary = summary && summary.contains(sel.anchorNode);
-      const inBody = body && body.contains(sel.anchorNode);
       if (inSummary) {
+        // Enter no título cria paragraph DEPOIS do toggle (sai dele)
         const newBlock = createBlockEl('p', '');
         block.after(newBlock);
         setCaretAt(newBlock, 0);
         return;
       }
-      if (inBody) {
-        // Enter dentro do body insere quebra de linha normal
-        document.execCommand('insertLineBreak');
-        return;
-      }
+      // Se está no body, getCurrentBlock vai retornar o bloco filho diretamente
+      // e cai no fluxo normal (cria sibling dentro do body container)
     }
     const isEmpty = block.textContent.trim() === '';
     if (isEmpty && t !== 'p' && t !== 'divider' && t !== 'toggle') {
