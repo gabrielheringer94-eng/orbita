@@ -482,6 +482,149 @@
     text-align: center;
   }
 
+  /* ============== BIRTHDAYS ============== */
+  .bdays-nav {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .bdays-month-label {
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink);
+    min-width: 130px;
+    text-align: center;
+    text-transform: capitalize;
+  }
+  .bdays-layout {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 20px;
+    align-items: start;
+  }
+  .bdays-cal-card { padding: 18px; }
+  .bdays-calendar {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+  }
+  .bdays-cal-dayname {
+    font-family: 'Inter', sans-serif;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--ink-faint);
+    text-align: center;
+    padding: 8px 0 6px;
+  }
+  .bdays-cal-day {
+    aspect-ratio: 1;
+    background: var(--bg-card);
+    border: 1px solid var(--line-soft);
+    border-radius: 8px;
+    padding: 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: 12px;
+    color: var(--ink);
+    overflow: hidden;
+    position: relative;
+  }
+  .bdays-cal-day.is-outside {
+    opacity: 0.35;
+    background: transparent;
+  }
+  .bdays-cal-day.is-today {
+    border-color: var(--ink);
+    border-width: 1.5px;
+  }
+  .bdays-cal-day.has-bday {
+    background: #f0fdf4;
+    border-color: #86efac;
+    cursor: pointer;
+  }
+  .bdays-cal-day.has-bday:hover { background: #dcfce7; }
+  .bdays-cal-day-num {
+    font-weight: 600;
+    font-size: 11px;
+    line-height: 1;
+  }
+  .bdays-cal-day-bd {
+    font-size: 10px;
+    color: #166534;
+    line-height: 1.15;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .bdays-cal-day-more {
+    font-size: 9px;
+    color: var(--ink-faint);
+    margin-top: auto;
+  }
+  .bdays-list-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--line-soft);
+  }
+  .bdays-list-item:last-child { border-bottom: none; }
+  .bdays-list-day {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: #f0fdf4;
+    color: #166534;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+  .bdays-list-day-weekday {
+    font-size: 8px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    line-height: 1;
+  }
+  .bdays-list-day-num { line-height: 1.1; }
+  .bdays-list-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink);
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .bdays-list-meta {
+    font-size: 11px;
+    color: var(--ink-faint);
+    flex-shrink: 0;
+  }
+  .bdays-list-empty {
+    text-align: center;
+    color: var(--ink-faint);
+    font-size: 13px;
+    padding: 24px 0;
+  }
+  @media (max-width: 900px) {
+    .bdays-layout { grid-template-columns: 1fr; }
+    .bdays-cal-card { padding: 12px; }
+    .bdays-calendar { gap: 3px; }
+    .bdays-cal-day { padding: 4px; }
+    .bdays-cal-day-bd { display: none; }
+    .bdays-month-label { min-width: 100px; font-size: 12px; }
+    .bdays-nav .btn-ghost { padding: 6px 10px; font-size: 12px; }
+  }
+
   .schedule-grid {
     display: grid;
     grid-template-columns: 60px 1fr;
@@ -2388,6 +2531,10 @@
         <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
         Lugares
       </div>
+      <div class="nav-item" data-page="birthdays">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-8H4v8"/><path d="M4 16s1.5-2 4-2 4 2 4 2 1.5-2 4-2 4 2 4 2"/><rect x="2" y="13" width="20" height="2"/><path d="M12 6v3"/><path d="M9 3l3-2 3 2"/><path d="M8 6v3"/><path d="M16 6v3"/></svg>
+        Aniversários
+      </div>
       <div class="nav-item" data-page="notes">
         <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
         Notas
@@ -2608,6 +2755,37 @@
       </div>
 
       <div class="places-grid" id="places-grid"></div>
+    </section>
+
+    <!-- BIRTHDAYS -->
+    <section class="page" id="page-birthdays">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Anivers<em>ários</em></h1>
+          <div class="page-meta" id="birthdays-meta">—</div>
+        </div>
+        <div class="bdays-nav">
+          <button class="icon-btn" id="bdays-prev" aria-label="Mês anterior">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+          <span class="bdays-month-label" id="bdays-month-label">—</span>
+          <button class="icon-btn" id="bdays-next" aria-label="Próximo mês">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+          <button class="btn btn-ghost" id="bdays-today">Hoje</button>
+        </div>
+      </div>
+
+      <div class="bdays-layout">
+        <div class="card bdays-cal-card">
+          <div class="bdays-calendar" id="bdays-calendar"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Este mês</div>
+          <div class="card-subtitle" id="bdays-list-sub">—</div>
+          <div id="bdays-list"></div>
+        </div>
+      </div>
     </section>
 
     <!-- NOTES -->
@@ -3397,6 +3575,7 @@ navItems.forEach(item => {
     if (target === 'habits') renderHabits();
     if (target === 'shopping') renderShopping();
     if (target === 'places') renderPlaces();
+    if (target === 'birthdays') renderBirthdays();
     if (target === 'notes') renderNotes();
   });
 });
@@ -4807,6 +4986,148 @@ document.getElementById('place-search-filter').addEventListener('input', (e) => 
   placeSearchText = e.target.value;
   renderPlacesGrid();
 });
+
+// ============== BIRTHDAYS ==============
+let birthdaysMonth = (() => { const d = new Date(); d.setDate(1); return d; })();
+
+function getBirthdaysForMonth(year, month) {
+  // Pega aniversários (eventos recurring) que caem nesse ano+mês.
+  // Como cada ocorrência anual é materializada separadamente, basta filtrar por data.
+  const result = [];
+  const events = state.events || {};
+  for (const iso of Object.keys(events)) {
+    const list = events[iso] || [];
+    for (const ev of list) {
+      if (!ev.recurring) continue;
+      const d = new Date(iso + 'T00:00:00');
+      if (d.getFullYear() !== year || d.getMonth() !== month) continue;
+      result.push({ id: ev.id, title: ev.title, date: iso, day: d.getDate(), weekday: d.getDay() });
+    }
+  }
+  // Deduplica por título+dia (caso o mesmo nome esteja em mais de um evento no mesmo dia)
+  const seen = new Set();
+  const unique = result.filter(b => {
+    const k = `${b.day}|${b.title.toLowerCase()}`;
+    if (seen.has(k)) return false;
+    seen.add(k);
+    return true;
+  });
+  return unique.sort((a, b) => a.day - b.day);
+}
+
+function renderBirthdays() {
+  const year = birthdaysMonth.getFullYear();
+  const month = birthdaysMonth.getMonth();
+  const label = birthdaysMonth.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+  document.getElementById('bdays-month-label').textContent = label;
+
+  const bdays = getBirthdaysForMonth(year, month);
+  const byDay = new Map();
+  for (const b of bdays) {
+    if (!byDay.has(b.day)) byDay.set(b.day, []);
+    byDay.get(b.day).push(b);
+  }
+
+  const total = bdays.length;
+  document.getElementById('birthdays-meta').textContent =
+    `${total} ANIVERSÁRIO${total === 1 ? '' : 'S'} · ${label.toUpperCase()}`;
+  document.getElementById('bdays-list-sub').textContent =
+    total ? `${total} pessoa${total === 1 ? '' : 's'} aniversariam em ${label}` : 'Nenhum aniversário cadastrado neste mês';
+
+  // --- Calendário ---
+  const cal = document.getElementById('bdays-calendar');
+  const today = new Date();
+  const isCurrentMonth = today.getFullYear() === year && today.getMonth() === month;
+  const todayDay = today.getDate();
+
+  const firstOfMonth = new Date(year, month, 1);
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const daysInPrevMonth = new Date(year, month, 0).getDate();
+  // Segunda como início da semana: getDay() retorna 0=Dom, então 0 vira 6 e 1..6 vira 0..5
+  const startWeekday = (firstOfMonth.getDay() + 6) % 7;
+
+  const dayNames = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
+  let html = dayNames.map(n => `<div class="bdays-cal-dayname">${n}</div>`).join('');
+
+  // Dias do mês anterior (preenchimento)
+  for (let i = startWeekday - 1; i >= 0; i--) {
+    const d = daysInPrevMonth - i;
+    html += `<div class="bdays-cal-day is-outside"><div class="bdays-cal-day-num">${d}</div></div>`;
+  }
+  // Dias do mês atual
+  for (let d = 1; d <= daysInMonth; d++) {
+    const bs = byDay.get(d) || [];
+    const classes = ['bdays-cal-day'];
+    if (isCurrentMonth && d === todayDay) classes.push('is-today');
+    if (bs.length) classes.push('has-bday');
+    const firstName = bs[0] ? escapeHTML(bs[0].title.replace(/^anivers[áa]rio\s+(d[oa]\s+|de\s+)?/i, '')) : '';
+    const more = bs.length > 1 ? `<div class="bdays-cal-day-more">+${bs.length - 1}</div>` : '';
+    const dataAttr = bs.length ? `data-bday-day="${d}"` : '';
+    html += `<div class="${classes.join(' ')}" ${dataAttr}>
+      <div class="bdays-cal-day-num">${d}</div>
+      ${firstName ? `<div class="bdays-cal-day-bd">${firstName}</div>` : ''}
+      ${more}
+    </div>`;
+  }
+  // Preenche o resto da última semana com dias do próximo mês
+  const totalCells = startWeekday + daysInMonth;
+  const trailing = (7 - (totalCells % 7)) % 7;
+  for (let d = 1; d <= trailing; d++) {
+    html += `<div class="bdays-cal-day is-outside"><div class="bdays-cal-day-num">${d}</div></div>`;
+  }
+  cal.innerHTML = html;
+
+  // Click num dia com aniversário rola a lista lateral pro item correspondente
+  cal.querySelectorAll('[data-bday-day]').forEach(el => {
+    el.addEventListener('click', () => {
+      const day = parseInt(el.dataset.bdayDay, 10);
+      const target = document.querySelector(`[data-bday-list-day="${day}"]`);
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        target.style.background = 'var(--accent-soft)';
+        setTimeout(() => { target.style.background = ''; }, 800);
+      }
+    });
+  });
+
+  // --- Lista lateral ---
+  const list = document.getElementById('bdays-list');
+  if (!bdays.length) {
+    list.innerHTML = '<div class="bdays-list-empty">Nenhum aniversário neste mês.<br><span style="font-size:11px">Adicione via "Captura inteligente" no Dashboard.</span></div>';
+    return;
+  }
+  const weekdayShort = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'];
+  list.innerHTML = bdays.map(b => {
+    const cleanTitle = b.title.replace(/^anivers[áa]rio\s+(d[oa]\s+|de\s+)?/i, '');
+    const isPast = isCurrentMonth && b.day < todayDay;
+    const isToday = isCurrentMonth && b.day === todayDay;
+    const meta = isToday ? 'HOJE' : isPast ? 'passou' : 'em ' + (b.day - (isCurrentMonth ? todayDay : 0)) + 'd';
+    return `
+      <div class="bdays-list-item" data-bday-list-day="${b.day}" style="transition: background 0.4s">
+        <div class="bdays-list-day">
+          <div class="bdays-list-day-weekday">${weekdayShort[b.weekday]}</div>
+          <div class="bdays-list-day-num">${b.day}</div>
+        </div>
+        <div class="bdays-list-name">${escapeHTML(cleanTitle)}</div>
+        <div class="bdays-list-meta">${isCurrentMonth ? meta : ''}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+document.getElementById('bdays-prev').onclick = () => {
+  birthdaysMonth = new Date(birthdaysMonth.getFullYear(), birthdaysMonth.getMonth() - 1, 1);
+  renderBirthdays();
+};
+document.getElementById('bdays-next').onclick = () => {
+  birthdaysMonth = new Date(birthdaysMonth.getFullYear(), birthdaysMonth.getMonth() + 1, 1);
+  renderBirthdays();
+};
+document.getElementById('bdays-today').onclick = () => {
+  const d = new Date(); d.setDate(1);
+  birthdaysMonth = d;
+  renderBirthdays();
+};
 
 // Abrir modal (novo)
 document.getElementById('new-place-btn').onclick = () => openPlaceModal(null);
