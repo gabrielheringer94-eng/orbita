@@ -6132,7 +6132,7 @@ function renderPlacesGrid() {
         <div class="place-card-type">
           <span class="place-card-type-icon t-${p.type || 'outro'}">${placeTypeIcon(p.type, 14)}</span>
           ${labelType(p.type)}
-          ${p.status === 'visited' ? `<span class="place-card-heart" title="Já fui aqui" aria-label="Já fui aqui">
+          ${isPlaceLoved(p) ? `<span class="place-card-heart" title="Amei (nota ≥ 7)" aria-label="Amei">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="#ec4899" stroke="#ec4899" stroke-width="1.5" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
           </span>` : ''}
         </div>
@@ -6243,10 +6243,12 @@ function renderPlacesOverviewMap(list) {
 
   const markers = [];
   withCoords.forEach((p) => {
-    const marker = L.marker([p.lat, p.lng], { icon: placePinIcon(p.status, p.type) });
+    const marker = L.marker([p.lat, p.lng], { icon: placePinIcon(p.status, p.type, isPlaceLoved(p)) });
     const cleanName = escapeHTML(p.name);
     const cleanLoc = escapeHTML([p.neighborhood, p.city].filter(Boolean).join(', '));
-    const statusLabel = p.status === 'visited' ? '❤️ Já fui' : 'Quero ir';
+    const statusLabel = p.status === 'visited'
+      ? (isPlaceLoved(p) ? '❤️ Já fui · amei' : 'Já fui')
+      : 'Quero ir';
     marker.bindTooltip(cleanName, { direction: 'top', offset: [0, -32] });
     marker.bindPopup(`
       <div style="font-family:'Inter',sans-serif;min-width:160px">
@@ -6385,7 +6387,8 @@ async function backfillPlaceCoords() {
 }
 
 // SVG de pin colorido + ícone do tipo dentro. Verde=já fui, azul=quero ir, cinza=fallback.
-function placePinIcon(status, type) {
+// loved=true adiciona um mini-coração rosa no canto.
+function placePinIcon(status, type, loved = false) {
   const color = status === 'visited' ? '#16a34a'
               : status === 'wishlist' ? '#2563eb'
               : '#737373';
@@ -6406,8 +6409,8 @@ function placePinIcon(status, type) {
         return ''; // sem ícone = só o círculo branco
     }
   })();
-  // Mini-coração rosa no canto superior direito quando "já fui"
-  const heartBadge = status === 'visited' ? `
+  // Mini-coração rosa no canto superior direito quando "amei" (já fui + nota ≥ 7)
+  const heartBadge = loved ? `
     <g transform="translate(20 -2)">
       <circle cx="6" cy="8" r="7.5" fill="#fff" stroke="#ec4899" stroke-width="1.2"/>
       <path d="M6 11.4l-.06-.05c-1.6-1.43-2.7-2.42-2.7-3.62A1.5 1.5 0 014.74 6.2c.5 0 1 .24 1.31.63.32-.39.81-.63 1.32-.63A1.5 1.5 0 018.87 7.7c0 1.2-1.09 2.19-2.7 3.62L6 11.4z" fill="#ec4899"/>
@@ -6835,6 +6838,13 @@ function computePlaceRating(p) {
   if (p.rating == null) return null;
   if (p.ratingScale === 10) return p.rating;
   return p.rating <= 5 ? p.rating * 2 : p.rating;
+}
+
+// "Amei": já fui E nota /10 >= 7. Usado pra exibir o coraçãozinho.
+function isPlaceLoved(p) {
+  if (!p || p.status !== 'visited') return false;
+  const r = computePlaceRating(p);
+  return r != null && r >= 7;
 }
 
 function getPlacePhotoUrl(path) {
