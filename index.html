@@ -8371,6 +8371,36 @@ noteBlocksEl.addEventListener('click', (e) => {
   }
 });
 
+// Cmd/Ctrl+A — primeiro press seleciona dentro do bloco/célula atual,
+// segundo press (ou se já está com tudo do bloco selecionado) seleciona
+// todos os blocos do editor.
+let lastSelectAllAt = 0;
+noteBlocksEl.addEventListener('keydown', (e) => {
+  if (!((e.metaKey || e.ctrlKey) && e.key === 'a' && !e.shiftKey)) return;
+  const now = Date.now();
+  const sel = window.getSelection();
+  const blocks = noteBlocksEl.querySelectorAll(':scope > .note-block');
+  if (!blocks.length) return;
+
+  // Heurística "seleção cobre todo o bloco/célula atual" → próxima passagem expande
+  const inEditable = e.target.closest('[contenteditable="true"]');
+  const isFullEditableSelected = inEditable && sel.toString().length >= (inEditable.textContent || '').trim().length - 1;
+  const recentlyPressed = now - lastSelectAllAt < 600;
+  lastSelectAllAt = now;
+
+  if (isFullEditableSelected || recentlyPressed) {
+    // Segunda passagem: seleciona tudo
+    e.preventDefault();
+    const range = document.createRange();
+    range.setStartBefore(blocks[0]);
+    range.setEndAfter(blocks[blocks.length - 1]);
+    sel.removeAllRanges();
+    sel.addRange(range);
+    lastSelectAllAt = 0;
+  }
+  // Senão deixa o default rolar (Cmd+A nativo seleciona dentro do contenteditable atual)
+});
+
 // Tab/Shift-Tab navega entre células da tabela
 noteBlocksEl.addEventListener('keydown', (e) => {
   if (e.key !== 'Tab') return;
