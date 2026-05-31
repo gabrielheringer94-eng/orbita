@@ -895,6 +895,123 @@
   .task-item:hover .task-delete { opacity: 1; }
   .task-delete:hover { color: var(--red); background: var(--red-soft); }
 
+  /* ============== SUBTAREFAS ============== */
+  .subtask-block {
+    padding: 4px 20px 10px 58px;
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--line-soft);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .task-item + .subtask-block { border-top: none; margin-top: -1px; }
+  .subtask-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 0;
+    position: relative;
+  }
+  .subtask-item.done .subtask-text {
+    text-decoration: line-through;
+    color: var(--ink-faint);
+  }
+  .checkbox-mini {
+    width: 14px;
+    height: 14px;
+    border: 1.5px solid var(--ink-faint);
+    border-radius: 4px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.15s;
+  }
+  .checkbox-mini.checked {
+    background: var(--ink);
+    border-color: var(--ink);
+  }
+  .checkbox-mini.checked::after {
+    content: '✓';
+    color: #fff;
+    font-size: 9px;
+    font-weight: 700;
+  }
+  .subtask-text {
+    font-size: 13px;
+    color: var(--ink);
+    flex: 1;
+    min-width: 0;
+    word-break: break-word;
+  }
+  .subtask-del {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--ink-faint);
+    font-size: 16px;
+    line-height: 1;
+    padding: 2px 6px;
+    border-radius: 4px;
+    opacity: 0;
+    transition: all 0.15s;
+  }
+  .subtask-item:hover .subtask-del { opacity: 1; }
+  .subtask-del:hover { color: var(--red); background: var(--red-soft); }
+  .subtask-add {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 0;
+    margin-top: 2px;
+  }
+  .subtask-add-btn {
+    background: none;
+    border: none;
+    color: var(--ink-faint);
+    font-size: 12px;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    padding: 4px 0;
+  }
+  .subtask-add-btn:hover { color: var(--ink); }
+  .subtask-input {
+    flex: 1;
+    background: var(--bg-elevated);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 13px;
+    font-family: 'Inter', sans-serif;
+    color: var(--ink);
+    outline: none;
+  }
+  .subtask-input:focus { border-color: var(--ink); }
+  .subtask-progress {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 10px;
+    color: var(--ink-faint);
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    margin-left: 6px;
+    background: var(--bg-card);
+    padding: 2px 7px;
+    border-radius: 4px;
+    border: 1px solid var(--line);
+  }
+  .subtask-progress.complete {
+    color: #166534;
+    background: #f0fdf4;
+    border-color: #86efac;
+  }
+  @media (max-width: 900px) {
+    .subtask-block { padding-left: 40px; padding-right: 14px; }
+    .subtask-del { opacity: 1; }
+  }
+
   .empty-state {
     text-align: center;
     padding: 60px 20px;
@@ -2827,6 +2944,7 @@
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
           </button>
           <button class="btn btn-ghost" id="bdays-today">Hoje</button>
+          <button class="btn" id="bdays-new-btn">+ Aniversário</button>
         </div>
       </div>
 
@@ -3183,6 +3301,41 @@
       <button class="btn btn-ghost" id="task-edit-delete">Excluir</button>
       <button class="btn btn-ghost" data-close-modal>Cancelar</button>
       <button class="btn" id="task-edit-save">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- BIRTHDAY MODAL -->
+<div class="modal-bg" id="bday-modal">
+  <div class="modal">
+    <div class="modal-title">Novo aniversário</div>
+    <div class="modal-sub">Lembrete anual recorrente</div>
+
+    <div class="form-group">
+      <label class="form-label">Nome</label>
+      <input type="text" class="form-control" id="bday-name" placeholder="Ex: Pedro, Mãe, Ana Silva" />
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Dia</label>
+        <select class="form-control" id="bday-day"></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Mês</label>
+        <select class="form-control" id="bday-month"></select>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Ano de nascimento (opcional)</label>
+      <input type="number" class="form-control" id="bday-year" placeholder="Ex: 1990" min="1900" max="2099" />
+      <div style="font-size:11px;color:var(--ink-faint);margin-top:4px">Usado pra mostrar a idade que a pessoa fará</div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn btn-ghost" data-close-modal>Cancelar</button>
+      <button class="btn" id="bday-save">Salvar</button>
     </div>
   </div>
 </div>
@@ -4045,27 +4198,59 @@ function renderTasks() {
     return;
   }
 
-  el.innerHTML = list.map(t => `
-    <div class="task-item ${t.done ? 'done' : ''}">
-      <div class="checkbox ${t.done ? 'checked' : ''}" data-toggle="${t.id}"></div>
-      <div class="task-clickable" data-edit="${t.id}" style="cursor:pointer">
-        <div class="task-text">${escapeHTML(t.text)}</div>
-        ${t.date ? `<div style="font-size:11px;color:var(--ink-faint);margin-top:3px;font-family:'Inter',sans-serif">
-          ${t.date < today && !t.done ? '⚠ ATRASADA · ' : ''}${formatTaskDate(t.date)}
-        </div>` : ''}
+  el.innerHTML = list.map(t => {
+    const subs = Array.isArray(t.subtasks) ? t.subtasks : [];
+    const doneCount = subs.filter(s => s.done).length;
+    const progress = subs.length > 0
+      ? `<span class="subtask-progress ${doneCount === subs.length ? 'complete' : ''}">${doneCount}/${subs.length}</span>`
+      : '';
+    const isAdding = subtaskAddingFor.has(t.id);
+    const subBlock = (subs.length > 0 || isAdding) ? `
+      <div class="subtask-block" data-subtasks-for="${t.id}">
+        ${subs.map(s => `
+          <div class="subtask-item ${s.done ? 'done' : ''}" data-subtask-id="${s.id}">
+            <div class="checkbox-mini ${s.done ? 'checked' : ''}" data-sub-toggle="${t.id}|${s.id}"></div>
+            <div class="subtask-text">${escapeHTML(s.text)}</div>
+            <button class="subtask-del" data-sub-del="${t.id}|${s.id}" aria-label="Excluir subtarefa">×</button>
+          </div>
+        `).join('')}
+        <div class="subtask-add">
+          ${isAdding
+            ? `<input class="subtask-input" data-sub-input="${t.id}" placeholder="Nova subtarefa · Enter pra adicionar, Esc pra cancelar" autofocus />`
+            : `<button class="subtask-add-btn" data-sub-add="${t.id}">+ subtarefa</button>`}
+        </div>
       </div>
-      <span class="task-tag tag-priority-${t.priority}">${labelPriority(t.priority)}</span>
-      ${t.project ? `<span class="task-tag tag-project">${escapeHTML(t.project)}</span>` : '<span></span>'}
-      <div style="display:flex;gap:4px">
-        <button class="task-action" data-edit="${t.id}" aria-label="Editar" title="Editar">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-        </button>
-        <button class="task-action task-delete" data-delete="${t.id}" aria-label="Excluir" title="Excluir">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 01-2 2H9a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>
-        </button>
+    ` : `
+      <div class="subtask-block" data-subtasks-for="${t.id}" style="padding-top:2px;padding-bottom:8px">
+        <div class="subtask-add">
+          <button class="subtask-add-btn" data-sub-add="${t.id}">+ subtarefa</button>
+        </div>
       </div>
-    </div>
-  `).join('');
+    `;
+
+    return `
+      <div class="task-item ${t.done ? 'done' : ''}">
+        <div class="checkbox ${t.done ? 'checked' : ''}" data-toggle="${t.id}"></div>
+        <div class="task-clickable" data-edit="${t.id}" style="cursor:pointer">
+          <div class="task-text">${escapeHTML(t.text)}${progress}</div>
+          ${t.date ? `<div style="font-size:11px;color:var(--ink-faint);margin-top:3px;font-family:'Inter',sans-serif">
+            ${t.date < today && !t.done ? '⚠ ATRASADA · ' : ''}${formatTaskDate(t.date)}
+          </div>` : ''}
+        </div>
+        <span class="task-tag tag-priority-${t.priority}">${labelPriority(t.priority)}</span>
+        ${t.project ? `<span class="task-tag tag-project">${escapeHTML(t.project)}</span>` : '<span></span>'}
+        <div style="display:flex;gap:4px">
+          <button class="task-action" data-edit="${t.id}" aria-label="Editar" title="Editar">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </button>
+          <button class="task-action task-delete" data-delete="${t.id}" aria-label="Excluir" title="Excluir">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 01-2 2H9a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+          </button>
+        </div>
+      </div>
+      ${subBlock}
+    `;
+  }).join('');
 
   el.querySelectorAll('[data-toggle]').forEach(c => {
     c.onclick = (e) => { e.stopPropagation(); toggleTask(c.dataset.toggle); renderTasks(); };
@@ -4082,6 +4267,82 @@ function renderTasks() {
       renderTasks();
     };
   });
+
+  // Subtarefas — wiring
+  el.querySelectorAll('[data-sub-toggle]').forEach(c => {
+    c.onclick = (e) => {
+      e.stopPropagation();
+      const [taskId, subId] = c.dataset.subToggle.split('|');
+      toggleSubtask(taskId, subId);
+      saveState();
+      renderTasks();
+    };
+  });
+  el.querySelectorAll('[data-sub-del]').forEach(b => {
+    b.onclick = (e) => {
+      e.stopPropagation();
+      const [taskId, subId] = b.dataset.subDel.split('|');
+      const t = state.tasks.find(x => x.id === taskId);
+      if (!t) return;
+      t.subtasks = (t.subtasks || []).filter(s => s.id !== subId);
+      saveState();
+      renderTasks();
+    };
+  });
+  el.querySelectorAll('[data-sub-add]').forEach(b => {
+    b.onclick = (e) => {
+      e.stopPropagation();
+      subtaskAddingFor.add(b.dataset.subAdd);
+      renderTasks();
+    };
+  });
+  el.querySelectorAll('[data-sub-input]').forEach(inp => {
+    const commit = () => {
+      const taskId = inp.dataset.subInput;
+      const text = inp.value.trim();
+      if (text) {
+        const t = state.tasks.find(x => x.id === taskId);
+        if (t) {
+          if (!Array.isArray(t.subtasks)) t.subtasks = [];
+          t.subtasks.push({ id: uid(), text, done: false });
+          saveState();
+        }
+      }
+      // Mantém em modo "adicionar" pra permitir várias seguidas se quiser
+      inp.value = '';
+      if (!text) {
+        subtaskAddingFor.delete(inp.dataset.subInput);
+      }
+      renderTasks();
+    };
+    inp.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); commit(); }
+      else if (e.key === 'Escape') {
+        subtaskAddingFor.delete(inp.dataset.subInput);
+        renderTasks();
+      }
+    });
+    inp.addEventListener('blur', () => {
+      // Se vazio ao perder foco, sai do modo adicionar
+      if (!inp.value.trim()) {
+        subtaskAddingFor.delete(inp.dataset.subInput);
+        renderTasks();
+      }
+    });
+    // Foca automaticamente
+    inp.focus();
+  });
+}
+
+// Estado em memória: quais tasks têm input de subtarefa aberto
+const subtaskAddingFor = new Set();
+
+function toggleSubtask(taskId, subId) {
+  const t = state.tasks.find(x => x.id === taskId);
+  if (!t || !Array.isArray(t.subtasks)) return;
+  const s = t.subtasks.find(s => s.id === subId);
+  if (!s) return;
+  s.done = !s.done;
 }
 
 function formatTaskDate(d) {
@@ -5151,7 +5412,7 @@ function getBirthdaysForMonth(year, month) {
       if (!ev.recurring) continue;
       const d = new Date(iso + 'T00:00:00');
       if (d.getFullYear() !== year || d.getMonth() !== month) continue;
-      result.push({ id: ev.id, title: ev.title, date: iso, day: d.getDate(), weekday: d.getDay() });
+      result.push({ id: ev.id, title: ev.title, date: iso, day: d.getDate(), weekday: d.getDay(), birthYear: ev.birthYear });
     }
   }
   // Deduplica por título+dia (caso o mesmo nome esteja em mais de um evento no mesmo dia)
@@ -5252,13 +5513,15 @@ function renderBirthdays() {
     const isPast = isCurrentMonth && b.day < todayDay;
     const isToday = isCurrentMonth && b.day === todayDay;
     const meta = isToday ? 'HOJE' : isPast ? 'passou' : 'em ' + (b.day - (isCurrentMonth ? todayDay : 0)) + 'd';
+    const age = b.birthYear ? (year - b.birthYear) : null;
+    const ageLabel = age != null && age > 0 ? ` · faz ${age}` : '';
     return `
       <div class="bdays-list-item" data-bday-list-day="${b.day}" style="transition: background 0.4s">
         <div class="bdays-list-day">
           <div class="bdays-list-day-weekday">${weekdayShort[b.weekday]}</div>
           <div class="bdays-list-day-num">${b.day}</div>
         </div>
-        <div class="bdays-list-name">${escapeHTML(cleanTitle)}</div>
+        <div class="bdays-list-name">${escapeHTML(cleanTitle)}${ageLabel}</div>
         <div class="bdays-list-meta">${isCurrentMonth ? meta : ''}</div>
       </div>
     `;
@@ -5276,6 +5539,72 @@ document.getElementById('bdays-next').onclick = () => {
 document.getElementById('bdays-today').onclick = () => {
   const d = new Date(); d.setDate(1);
   birthdaysMonth = d;
+  renderBirthdays();
+};
+
+// Modal de novo aniversário
+const MESES_PT = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+(function setupBdayModal() {
+  const daySel = document.getElementById('bday-day');
+  const monthSel = document.getElementById('bday-month');
+  // Preenche selects uma vez
+  daySel.innerHTML = Array.from({length: 31}, (_, i) => `<option value="${i+1}">${i+1}</option>`).join('');
+  monthSel.innerHTML = MESES_PT.map((m, i) => `<option value="${i+1}">${m.charAt(0).toUpperCase() + m.slice(1)}</option>`).join('');
+})();
+
+document.getElementById('bdays-new-btn').onclick = () => {
+  document.getElementById('bday-name').value = '';
+  document.getElementById('bday-year').value = '';
+  // Default: hoje (pra adicionar "hoje" rapidinho) — ou o mês que está sendo visualizado
+  const m = birthdaysMonth.getMonth() + 1;
+  document.getElementById('bday-month').value = String(m);
+  document.getElementById('bday-day').value = '1';
+  document.getElementById('bday-modal').classList.add('active');
+  setTimeout(() => document.getElementById('bday-name').focus(), 80);
+};
+
+document.getElementById('bday-save').onclick = () => {
+  const name = document.getElementById('bday-name').value.trim();
+  if (!name) {
+    alert('Coloca o nome da pessoa.');
+    return;
+  }
+  const day = parseInt(document.getElementById('bday-day').value, 10);
+  const month = parseInt(document.getElementById('bday-month').value, 10);
+  const yearInput = document.getElementById('bday-year').value.trim();
+  const birthYear = yearInput ? parseInt(yearInput, 10) : null;
+
+  // Valida dia/mês (corrige se passou do último dia, ex: 31 de fev)
+  const startYear = new Date().getFullYear();
+  const dayCapped = Math.min(day, new Date(startYear, month, 0).getDate());
+
+  if (!state.events) state.events = {};
+
+  // Cria as ocorrências dos próximos 6 anos (ano atual + 5)
+  const title = `Aniversário ${name.includes(' ') ? 'de' : 'do'} ${name}`;
+  for (let i = 0; i <= 5; i++) {
+    const year = startYear + i;
+    const cappedForYear = Math.min(day, new Date(year, month, 0).getDate());
+    const iso = `${year}-${String(month).padStart(2,'0')}-${String(cappedForYear).padStart(2,'0')}`;
+    if (!state.events[iso]) state.events[iso] = [];
+    state.events[iso].push({
+      id: uid(),
+      title,
+      startDate: iso,
+      endDate: iso,
+      start: '09:00',
+      end: '09:30',
+      color: 'blue',
+      customColor: null,
+      recurring: true,
+      birthYear: birthYear || undefined,
+    });
+  }
+
+  saveState();
+  closeAllModals();
+  // Pula pro mês do aniversário pra dar feedback visual
+  birthdaysMonth = new Date(startYear, month - 1, 1);
   renderBirthdays();
 };
 
