@@ -1489,6 +1489,49 @@
     font-weight: 700;
   }
 
+  /* ============== USER LOCATION ============== */
+  .user-location-dot {
+    width: 16px;
+    height: 16px;
+    background: #1d4ed8;
+    border: 3px solid #fff;
+    border-radius: 50%;
+    box-shadow: 0 0 0 1px #1d4ed8, 0 0 12px rgba(29, 78, 216, 0.5);
+    position: relative;
+  }
+  .user-location-dot::before {
+    content: '';
+    position: absolute;
+    top: -3px; left: -3px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: rgba(29, 78, 216, 0.3);
+    animation: userPulse 2s infinite;
+  }
+  @keyframes userPulse {
+    0% { transform: scale(1); opacity: 0.6; }
+    100% { transform: scale(3.5); opacity: 0; }
+  }
+  .place-card-distance {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #1d4ed8;
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    padding: 2px 7px;
+    border-radius: 999px;
+    margin-left: 6px;
+  }
+  #user-location-btn.is-active {
+    background: #eff6ff !important;
+    border-color: #1d4ed8 !important;
+    color: #1d4ed8 !important;
+  }
+
   /* ============== AVALIAÇÃO 1-10 (CRITÉRIOS) ============== */
   .visit-criteria-block {
     background: var(--bg-card);
@@ -3391,6 +3434,20 @@
         <button class="btn btn-ghost" data-place-filter="wishlist">Quero ir</button>
         <button class="btn btn-ghost" data-place-filter="recommended">★ Muita indicação</button>
         <button class="btn btn-ghost" data-place-filter="top-rated">Melhor avaliados</button>
+        <button class="btn btn-ghost" data-place-filter="near" id="filter-near" style="display:none">📍 Perto · 3km</button>
+      </div>
+
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px">
+        <button class="btn btn-ghost" id="user-location-btn" style="display:inline-flex;align-items:center;gap:6px">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3"/><path d="M12 19v3"/><path d="M2 12h3"/><path d="M19 12h3"/></svg>
+          <span id="user-location-label">Usar minha localização</span>
+        </button>
+        <select class="select" id="near-radius" style="display:none;padding:6px 10px;font-size:12px">
+          <option value="1">1 km</option>
+          <option value="3" selected>3 km</option>
+          <option value="5">5 km</option>
+          <option value="10">10 km</option>
+        </select>
       </div>
 
       <div class="filter-row" id="itinerary-row"></div>
@@ -5925,6 +5982,17 @@ function filterPlaces(places) {
   else if (placeFilter === 'wishlist') list = list.filter(p => p.status === 'wishlist');
   else if (placeFilter === 'recommended') list = list.filter(p => p.status === 'wishlist' && p.priority === 'recommended');
   else if (placeFilter === 'top-rated') list = list.filter(p => p.status === 'visited' && (p.rating || 0) >= 4);
+  else if (placeFilter === 'near') {
+    if (userLocation) {
+      list = list.filter(p => {
+        if (typeof p.lat !== 'number' || typeof p.lng !== 'number') return false;
+        const d = haversine(userLocation.lat, userLocation.lng, p.lat, p.lng);
+        return d <= nearRadiusKm;
+      });
+    } else {
+      list = [];
+    }
+  }
   // Filtro de tipo
   if (placeTypeFilter !== 'all') list = list.filter(p => p.type === placeTypeFilter);
   // Busca textual
@@ -6021,6 +6089,12 @@ function renderPlacesGrid() {
   if (itin) {
     const placeById = new Map((state.places || []).map(p => [p.id, p]));
     list = itin.placeIds.map(id => placeById.get(id)).filter(Boolean);
+  } else if (placeFilter === 'near' && userLocation) {
+    // No filtro "perto", ordena puramente por distância crescente
+    list.sort((a, b) =>
+      haversine(userLocation.lat, userLocation.lng, a.lat, a.lng) -
+      haversine(userLocation.lat, userLocation.lng, b.lat, b.lng)
+    );
   } else {
     // Ordenação inteligente: recomendados > já fui (top) > já fui (resto) > quero ir
     list.sort((a, b) => {
@@ -6081,10 +6155,15 @@ function renderPlacesGrid() {
     const mapsQuery = encodeURIComponent([p.name, p.address, p.neighborhood, p.city].filter(Boolean).join(', '));
     const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${mapsQuery}`;
 
+    // Badge de distância (só quando temos localização do usuário e coords do lugar)
+    const distanceBadge = (userLocation && typeof p.lat === 'number' && typeof p.lng === 'number')
+      ? `<span class="place-card-distance" title="Distância em linha reta">📍 ${formatDistance(haversine(userLocation.lat, userLocation.lng, p.lat, p.lng))}</span>`
+      : '';
+
     return `
       <div class="place-card ${isRecommended ? 'is-recommended' : ''}" id="place-card-${p.id}">
         <div class="place-card-header">
-          <div class="place-card-name">${escapeHTML(p.name)}</div>
+          <div class="place-card-name">${escapeHTML(p.name)}${distanceBadge}</div>
           <span class="place-card-status status-${p.status}">${p.status === 'visited' ? 'Já fui' : 'Quero ir'}</span>
         </div>
         <div class="place-card-type">
@@ -6258,12 +6337,18 @@ function renderPlacesOverviewMap(list) {
     };
   });
 
-  // Auto-fit bounds nos pinos visíveis (com padding)
-  if (markers.length === 1) {
-    placesOverviewMap.setView(markers[0].getLatLng(), 15);
-  } else {
-    const group = L.featureGroup(markers);
-    placesOverviewMap.fitBounds(group.getBounds(), { padding: [30, 30], maxZoom: 16 });
+  // Re-aplica o pin da localização do usuário (sobrevive ao clearLayers
+  // porque vai direto no map, não na layer, mas garante consistência)
+  if (userLocation) drawUserLocationOnMap();
+
+  // Auto-fit bounds — inclui também o user location se disponível, pra
+  // o usuário se ver no mesmo enquadramento dos lugares
+  const allPoints = markers.map(m => m.getLatLng());
+  if (userLocation) allPoints.push(L.latLng(userLocation.lat, userLocation.lng));
+  if (allPoints.length === 1) {
+    placesOverviewMap.setView(allPoints[0], 15);
+  } else if (allPoints.length > 1) {
+    placesOverviewMap.fitBounds(L.latLngBounds(allPoints), { padding: [40, 40], maxZoom: 16 });
   }
 
   // Leaflet às vezes precisa de invalidateSize quando o container muda
@@ -6409,6 +6494,104 @@ function haversine(lat1, lng1, lat2, lng2) {
             Math.sin(dLng/2) ** 2;
   return 2 * R * Math.asin(Math.sqrt(a));
 }
+
+// ============== LOCALIZAÇÃO DO USUÁRIO ==============
+let userLocation = null; // { lat, lng, accuracy }
+let userLocationMarker = null;
+let userLocationCircle = null;
+let nearRadiusKm = 3;
+
+function formatDistance(km) {
+  if (km < 1) return Math.round(km * 1000) + 'm';
+  if (km < 10) return km.toFixed(1) + 'km';
+  return Math.round(km) + 'km';
+}
+
+function userLocationIcon() {
+  return L.divIcon({
+    html: '<div class="user-location-dot"></div>',
+    className: '',
+    iconSize: [16, 16],
+    iconAnchor: [8, 8],
+  });
+}
+
+async function requestUserLocation({ recenter = true } = {}) {
+  if (!('geolocation' in navigator)) {
+    alert('Seu navegador não suporta geolocalização.');
+    return null;
+  }
+  const btn = document.getElementById('user-location-btn');
+  const label = document.getElementById('user-location-label');
+  label.textContent = 'Pegando localização…';
+  btn.disabled = true;
+
+  try {
+    const pos = await new Promise((resolve, reject) => {
+      navigator.geolocation.getCurrentPosition(resolve, reject, {
+        enableHighAccuracy: true,
+        timeout: 12000,
+        maximumAge: 60000,
+      });
+    });
+    userLocation = {
+      lat: pos.coords.latitude,
+      lng: pos.coords.longitude,
+      accuracy: pos.coords.accuracy,
+    };
+    btn.classList.add('is-active');
+    label.textContent = 'Localização ativa · atualizar';
+    document.getElementById('near-radius').style.display = '';
+    document.getElementById('filter-near').style.display = '';
+
+    if (recenter && placesOverviewMap) {
+      placesOverviewMap.setView([userLocation.lat, userLocation.lng], 14);
+    }
+    drawUserLocationOnMap();
+    renderPlaces();
+    return userLocation;
+  } catch (err) {
+    console.error(err);
+    label.textContent = 'Usar minha localização';
+    let msg = 'Não consegui pegar sua localização.';
+    if (err?.code === 1) msg = 'Permissão negada. Ative no navegador e tente de novo.';
+    else if (err?.code === 3) msg = 'Tempo esgotado tentando localizar. Tente de novo.';
+    alert(msg);
+    return null;
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function drawUserLocationOnMap() {
+  if (!placesOverviewMap || !userLocation) return;
+  if (userLocationMarker) placesOverviewMap.removeLayer(userLocationMarker);
+  if (userLocationCircle) placesOverviewMap.removeLayer(userLocationCircle);
+  userLocationCircle = L.circle([userLocation.lat, userLocation.lng], {
+    radius: Math.min(userLocation.accuracy || 100, 500),
+    color: '#1d4ed8',
+    weight: 1,
+    fillColor: '#1d4ed8',
+    fillOpacity: 0.08,
+    interactive: false,
+  }).addTo(placesOverviewMap);
+  userLocationMarker = L.marker([userLocation.lat, userLocation.lng], {
+    icon: userLocationIcon(),
+    keyboard: false,
+    interactive: false,
+    zIndexOffset: 1000,
+  }).addTo(placesOverviewMap);
+}
+
+document.getElementById('user-location-btn').addEventListener('click', () => {
+  requestUserLocation();
+});
+
+document.getElementById('near-radius').addEventListener('change', (e) => {
+  nearRadiusKm = parseFloat(e.target.value);
+  document.getElementById('filter-near').textContent = `📍 Perto · ${nearRadiusKm}km`;
+  if (placeFilter === 'near') renderPlaces();
+});
 
 document.getElementById('itinerary-optimize').onclick = () => {
   if (!editingItineraryId) return;
