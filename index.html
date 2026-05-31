@@ -895,6 +895,17 @@
   .task-item:hover .task-delete { opacity: 1; }
   .task-delete:hover { color: var(--red); background: var(--red-soft); }
 
+  /* Chevron indicador de expansão de subtarefas */
+  .task-chev {
+    display: inline-block;
+    width: 12px;
+    color: var(--ink-faint);
+    font-size: 11px;
+    transition: transform 0.15s;
+    margin-right: 4px;
+  }
+  .task-chev.is-open { transform: rotate(90deg); color: var(--ink); }
+
   /* ============== SUBTAREFAS ============== */
   .subtask-block {
     padding: 4px 20px 10px 58px;
@@ -3297,6 +3308,25 @@
       <input type="text" class="form-control" id="task-edit-project" placeholder="Ex: Gupy, Circa, Saúde" />
     </div>
 
+    <div class="form-group" style="border-top:1px solid var(--line);padding-top:14px">
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;font-weight:600;color:var(--ink)">
+        <input type="checkbox" id="task-edit-schedule" style="width:16px;height:16px;cursor:pointer" />
+        Agendar no cronograma
+      </label>
+      <div style="font-size:11px;color:var(--ink-faint);margin-top:4px">A tarefa aparecerá no Cronograma no dia/horário escolhido, com cor pela prioridade.</div>
+    </div>
+
+    <div class="form-row" id="task-edit-time-row" style="display:none">
+      <div class="form-group">
+        <label class="form-label">Início</label>
+        <input type="time" class="form-control" id="task-edit-start" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Fim</label>
+        <input type="time" class="form-control" id="task-edit-end" />
+      </div>
+    </div>
+
     <div class="modal-actions">
       <button class="btn btn-ghost" id="task-edit-delete">Excluir</button>
       <button class="btn btn-ghost" data-close-modal>Cancelar</button>
@@ -3932,7 +3962,39 @@ function renderSchedule() {
         endCol: Math.min(6, endCol),
         isFirstVisible: startDate >= weekStartKey,
         isLastVisible: endDate <= weekEndKey,
+        isTask: false,
       });
+    });
+  });
+
+  // Tarefas agendadas (têm date + start + end) também aparecem no cronograma,
+  // coloridas pela prioridade (high=red, med=yellow, low=grey).
+  (state.tasks || []).forEach(t => {
+    if (!t.date || !t.start || !t.end) return;
+    if (t.date < weekStartKey || t.date > weekEndKey) return;
+    const col = Math.round((new Date(t.date + 'T00:00:00') - base) / 86400000);
+    const sH = parseInt(t.start.split(':')[0]);
+    if (sH < 6 || sH > 23) return;
+    // Adapta pro mesmo shape de "evento" pra reutilizar o renderer
+    const synthEvent = {
+      id: t.id,
+      title: t.text,
+      start: t.start,
+      end: t.end,
+      startDate: t.date,
+      endDate: t.date,
+      // marcador especial pra o renderer pegar cor da prioridade
+      _taskPriority: t.priority,
+      _done: t.done,
+    };
+    spansByHour[sH].push({
+      event: synthEvent,
+      eventDate: t.date,
+      startCol: col,
+      endCol: col,
+      isFirstVisible: true,
+      isLastVisible: true,
+      isTask: true,
     });
   });
 
@@ -3975,7 +4037,17 @@ function renderSchedule() {
         const widthPct = (widthCols / 7) * 100;
         const top = 3 + laneIdx * 22; // empilhamento vertical em pixels
         let bgColor, borderColor, textColor;
-        if (e.color === 'custom' && e.customColor) {
+        if (s.isTask) {
+          // Cor por prioridade: high=red, med=yellow, low=grey
+          if (e._taskPriority === 'high') {
+            bgColor = '#fef2f2'; borderColor = '#dc2626'; textColor = '#7f1d1d';
+          } else if (e._taskPriority === 'med') {
+            bgColor = '#fefce8'; borderColor = '#ca8a04'; textColor = '#713f12';
+          } else {
+            bgColor = '#f5f5f5'; borderColor = '#737373'; textColor = '#404040';
+          }
+          if (e._done) { textColor = '#a3a3a3'; }
+        } else if (e.color === 'custom' && e.customColor) {
           bgColor = e.customColor + '1f'; // 12% alpha
           borderColor = e.customColor;
           textColor = '#000';
@@ -3991,10 +4063,13 @@ function renderSchedule() {
         const isMulti = (e.startDate || s.eventDate) !== (e.endDate || s.eventDate);
         const arrowLeft = continuesLeft ? '◂ ' : '';
         const arrowRight = continuesRight ? ' ▸' : '';
+        const dataAttrs = s.isTask
+          ? `data-task-id="${e.id}"`
+          : `data-event-id="${e.id}" data-event-date="${s.eventDate}"`;
+        const doneStyle = s.isTask && e._done ? 'text-decoration: line-through;' : '';
         html += `<div class="multi-event"
-          data-event-id="${e.id}"
-          data-event-date="${s.eventDate}"
-          style="
+          ${dataAttrs}
+          style="${doneStyle}
             position:absolute;
             left: calc(${leftPct}% + 3px);
             width: calc(${widthPct}% - 6px);
@@ -4032,11 +4107,15 @@ function renderSchedule() {
       openEventModal(c.dataset.date, c.dataset.hour);
     });
   });
-  // click eventos (editar)
+  // click eventos / tarefas (editar)
   grid.querySelectorAll('.multi-event').forEach(ev => {
     ev.addEventListener('click', (e) => {
       e.stopPropagation();
-      openEventModal(ev.dataset.eventDate, null, ev.dataset.eventId);
+      if (ev.dataset.taskId) {
+        openTaskModal(ev.dataset.taskId);
+      } else {
+        openEventModal(ev.dataset.eventDate, null, ev.dataset.eventId);
+      }
     });
   });
 }
@@ -4201,11 +4280,20 @@ function renderTasks() {
   el.innerHTML = list.map(t => {
     const subs = Array.isArray(t.subtasks) ? t.subtasks : [];
     const doneCount = subs.filter(s => s.done).length;
+    const expanded = expandedTasks.has(t.id);
+    const isAdding = subtaskAddingFor.has(t.id);
+    const showBlock = expanded || isAdding;
+
     const progress = subs.length > 0
       ? `<span class="subtask-progress ${doneCount === subs.length ? 'complete' : ''}">${doneCount}/${subs.length}</span>`
       : '';
-    const isAdding = subtaskAddingFor.has(t.id);
-    const subBlock = (subs.length > 0 || isAdding) ? `
+    // Chevron mostra estado expandido/colapsado
+    const chev = `<span class="task-chev ${showBlock ? 'is-open' : ''}" aria-hidden="true">▸</span>`;
+    const scheduledIcon = (t.start && t.end && t.date)
+      ? `<span title="Agendado no cronograma" style="font-size:10px;color:var(--ink-faint);margin-left:6px">📅 ${t.start}–${t.end}</span>`
+      : '';
+
+    const subBlock = showBlock ? `
       <div class="subtask-block" data-subtasks-for="${t.id}">
         ${subs.map(s => `
           <div class="subtask-item ${s.done ? 'done' : ''}" data-subtask-id="${s.id}">
@@ -4220,19 +4308,13 @@ function renderTasks() {
             : `<button class="subtask-add-btn" data-sub-add="${t.id}">+ subtarefa</button>`}
         </div>
       </div>
-    ` : `
-      <div class="subtask-block" data-subtasks-for="${t.id}" style="padding-top:2px;padding-bottom:8px">
-        <div class="subtask-add">
-          <button class="subtask-add-btn" data-sub-add="${t.id}">+ subtarefa</button>
-        </div>
-      </div>
-    `;
+    ` : '';
 
     return `
       <div class="task-item ${t.done ? 'done' : ''}">
         <div class="checkbox ${t.done ? 'checked' : ''}" data-toggle="${t.id}"></div>
-        <div class="task-clickable" data-edit="${t.id}" style="cursor:pointer">
-          <div class="task-text">${escapeHTML(t.text)}${progress}</div>
+        <div class="task-clickable" data-toggle-expand="${t.id}" style="cursor:pointer">
+          <div class="task-text">${chev}${escapeHTML(t.text)}${progress}${scheduledIcon}</div>
           ${t.date ? `<div style="font-size:11px;color:var(--ink-faint);margin-top:3px;font-family:'Inter',sans-serif">
             ${t.date < today && !t.done ? '⚠ ATRASADA · ' : ''}${formatTaskDate(t.date)}
           </div>` : ''}
@@ -4254,6 +4336,15 @@ function renderTasks() {
 
   el.querySelectorAll('[data-toggle]').forEach(c => {
     c.onclick = (e) => { e.stopPropagation(); toggleTask(c.dataset.toggle); renderTasks(); };
+  });
+  el.querySelectorAll('[data-toggle-expand]').forEach(c => {
+    c.onclick = (e) => {
+      e.stopPropagation();
+      const id = c.dataset.toggleExpand;
+      if (expandedTasks.has(id)) expandedTasks.delete(id);
+      else expandedTasks.add(id);
+      renderTasks();
+    };
   });
   el.querySelectorAll('[data-edit]').forEach(b => {
     b.onclick = (e) => { e.stopPropagation(); openTaskModal(b.dataset.edit); };
@@ -4334,6 +4425,8 @@ function renderTasks() {
   });
 }
 
+// Estado em memória: quais tasks estão expandidas (subtarefas visíveis)
+const expandedTasks = new Set();
 // Estado em memória: quais tasks têm input de subtarefa aberto
 const subtaskAddingFor = new Set();
 
@@ -4419,8 +4512,30 @@ function openTaskModal(taskId) {
   document.getElementById('task-edit-priority').value = t.priority || 'med';
   document.getElementById('task-edit-date').value = t.date || '';
   document.getElementById('task-edit-project').value = t.project || '';
+
+  // Schedule toggle: marca se a task tem start/end definido
+  const isScheduled = !!(t.start && t.end);
+  const scheduleCb = document.getElementById('task-edit-schedule');
+  scheduleCb.checked = isScheduled;
+  document.getElementById('task-edit-start').value = t.start || '';
+  document.getElementById('task-edit-end').value = t.end || '';
+  document.getElementById('task-edit-time-row').style.display = isScheduled ? 'grid' : 'none';
+
   setTimeout(() => document.getElementById('task-edit-text').focus(), 50);
 }
+
+// Toggle schedule mostra/esconde campos de hora
+document.getElementById('task-edit-schedule').addEventListener('change', (e) => {
+  const row = document.getElementById('task-edit-time-row');
+  row.style.display = e.target.checked ? 'grid' : 'none';
+  if (e.target.checked) {
+    // Defaults sensatos
+    const s = document.getElementById('task-edit-start');
+    const f = document.getElementById('task-edit-end');
+    if (!s.value) s.value = '09:00';
+    if (!f.value) f.value = '10:00';
+  }
+});
 
 document.getElementById('task-edit-save').onclick = () => {
   if (!editingTaskId) return;
@@ -4435,11 +4550,37 @@ document.getElementById('task-edit-save').onclick = () => {
   t.priority = document.getElementById('task-edit-priority').value;
   t.date = document.getElementById('task-edit-date').value || null;
   t.project = document.getElementById('task-edit-project').value.trim() || null;
+
+  // Schedule
+  const scheduled = document.getElementById('task-edit-schedule').checked;
+  if (scheduled) {
+    if (!t.date) {
+      alert('Pra agendar no cronograma, defina uma data primeiro.');
+      return;
+    }
+    const start = document.getElementById('task-edit-start').value;
+    const end = document.getElementById('task-edit-end').value;
+    if (!start || !end) {
+      alert('Defina horário de início e fim.');
+      return;
+    }
+    if (end <= start) {
+      alert('O horário de fim precisa ser depois do início.');
+      return;
+    }
+    t.start = start;
+    t.end = end;
+  } else {
+    delete t.start;
+    delete t.end;
+  }
+
   saveState();
   closeAllModals();
   editingTaskId = null;
   renderTasks();
   renderDashboard();
+  if (typeof renderSchedule === 'function') renderSchedule();
 };
 
 document.getElementById('task-edit-delete').onclick = () => {
