@@ -794,6 +794,18 @@
     flex-wrap: wrap;
   }
   .filter-row .btn-ghost { padding: 6px 14px; font-size: 12px; }
+  .filter-row-label {
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink-faint);
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    padding-right: 4px;
+    flex-shrink: 0;
+  }
 
   .task-list {
     background: var(--bg-elevated);
@@ -2846,6 +2858,11 @@
         <button class="btn btn-ghost" data-filter="done">Concluídas</button>
       </div>
 
+      <div class="filter-row" id="task-project-row">
+        <span class="filter-row-label">Projeto:</span>
+        <button class="btn btn-ghost active" data-project-filter="all">Todos</button>
+      </div>
+
       <div class="task-list" id="task-list"></div>
     </section>
 
@@ -4248,8 +4265,13 @@ document.getElementById('event-delete').onclick = () => {
 
 // ============== TASKS ==============
 let taskFilter = 'all';
+let taskProjectFilter = 'all';
 function renderTasks() {
   const today = isoDate(new Date());
+
+  // Renderiza chips de projeto baseados nos projetos existentes
+  renderTaskProjectFilter();
+
   let list = [...state.tasks];
 
   if (taskFilter === 'today') list = list.filter(t => !t.done && t.date === today);
@@ -4257,6 +4279,15 @@ function renderTasks() {
   else if (taskFilter === 'upcoming') list = list.filter(t => !t.done && t.date && t.date > today);
   else if (taskFilter === 'done') list = list.filter(t => t.done);
   else list = list.filter(t => !t.done);
+
+  // Filtro por projeto (após filtro de status pra contadores baterem)
+  if (taskProjectFilter !== 'all') {
+    if (taskProjectFilter === '__none__') {
+      list = list.filter(t => !t.project);
+    } else {
+      list = list.filter(t => (t.project || '').toLowerCase() === taskProjectFilter.toLowerCase());
+    }
+  }
 
   list.sort((a,b) => {
     const pri = { high:0, med:1, low:2 };
@@ -4268,8 +4299,9 @@ function renderTasks() {
     return pri[a.priority] - pri[b.priority];
   });
 
+  const projSuffix = taskProjectFilter === 'all' ? '' : ` · projeto: ${taskProjectFilter === '__none__' ? 'sem projeto' : taskProjectFilter}`;
   document.getElementById('tasks-meta').textContent =
-    `${list.length} ${list.length === 1 ? 'tarefa' : 'tarefas'} · filtro: ${taskFilter}`.toUpperCase();
+    `${list.length} ${list.length === 1 ? 'tarefa' : 'tarefas'} · filtro: ${taskFilter}${projSuffix}`.toUpperCase();
 
   const el = document.getElementById('task-list');
   if (list.length === 0) {
@@ -4497,6 +4529,53 @@ document.querySelectorAll('[data-filter]').forEach(b => {
     renderTasks();
   };
 });
+
+// Constrói chips de projeto dinâmicos a partir das tasks existentes
+function renderTaskProjectFilter() {
+  const row = document.getElementById('task-project-row');
+  if (!row) return;
+  // Conta tarefas por projeto (só não-concluídas pra ficar com filtros ativos relevantes)
+  const counts = new Map();
+  let noProject = 0;
+  for (const t of state.tasks || []) {
+    if (t.done) continue;
+    if (t.project) counts.set(t.project, (counts.get(t.project) || 0) + 1);
+    else noProject++;
+  }
+  // Ordena alfabético, com contagem desc como desempate
+  const projects = [...counts.entries()].sort((a, b) =>
+    b[1] - a[1] || a[0].localeCompare(b[0])
+  );
+
+  const totalActive = (state.tasks || []).filter(t => !t.done).length;
+  // Se o projeto selecionado deixou de existir (ex: usuário apagou todas as tasks dele),
+  // volta pra "Todos"
+  if (taskProjectFilter !== 'all' && taskProjectFilter !== '__none__' && !counts.has(taskProjectFilter)) {
+    taskProjectFilter = 'all';
+  }
+  if (taskProjectFilter === '__none__' && noProject === 0) {
+    taskProjectFilter = 'all';
+  }
+
+  let html = `<span class="filter-row-label">Projeto:</span>`;
+  html += `<button class="btn btn-ghost ${taskProjectFilter === 'all' ? 'active' : ''}" data-project-filter="all">Todos · ${totalActive}</button>`;
+  for (const [name, count] of projects) {
+    const isActive = taskProjectFilter === name;
+    html += `<button class="btn btn-ghost ${isActive ? 'active' : ''}" data-project-filter="${escapeHTML(name)}">${escapeHTML(name)} · ${count}</button>`;
+  }
+  if (noProject > 0) {
+    const isActive = taskProjectFilter === '__none__';
+    html += `<button class="btn btn-ghost ${isActive ? 'active' : ''}" data-project-filter="__none__">Sem projeto · ${noProject}</button>`;
+  }
+  row.innerHTML = html;
+
+  row.querySelectorAll('[data-project-filter]').forEach(b => {
+    b.onclick = () => {
+      taskProjectFilter = b.dataset.projectFilter;
+      renderTasks();
+    };
+  });
+}
 
 // ============== TASK EDIT MODAL ==============
 let editingTaskId = null;
