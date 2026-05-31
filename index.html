@@ -1191,6 +1191,52 @@
     font-weight: 700;
   }
 
+  .places-overview-wrap {
+    position: relative;
+    margin-bottom: 20px;
+    border-radius: 14px;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    box-shadow: var(--shadow-sm);
+    background: var(--bg-card);
+  }
+  #places-overview-map {
+    height: 380px;
+    width: 100%;
+  }
+  .places-overview-wrap .leaflet-container {
+    background: var(--bg-card);
+  }
+  .places-overview-empty {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: var(--ink-faint);
+    font-size: 13px;
+    background: var(--bg-card);
+    z-index: 500;
+    pointer-events: none;
+  }
+  .places-overview-empty[hidden] { display: none; }
+  .places-overview-empty .hint {
+    font-size: 11px;
+    color: var(--ink-faint);
+    opacity: 0.7;
+  }
+  /* Destaque temporário no card ao clicar num pin do mapa */
+  .place-card.is-highlight {
+    box-shadow: 0 0 0 3px var(--accent-soft), var(--shadow-md);
+    border-color: var(--ink);
+    transform: translateY(-2px);
+  }
+  @media (max-width: 900px) {
+    #places-overview-map { height: 280px; }
+  }
+
   .place-card-map {
     height: 140px;
     margin: -18px -18px 12px;
@@ -2752,6 +2798,14 @@
         <button class="btn btn-ghost" data-place-filter="wishlist">Quero ir</button>
         <button class="btn btn-ghost" data-place-filter="recommended">★ Muita indicação</button>
         <button class="btn btn-ghost" data-place-filter="top-rated">Melhor avaliados</button>
+      </div>
+
+      <div class="places-overview-wrap">
+        <div id="places-overview-map"></div>
+        <div class="places-overview-empty" id="places-overview-empty" hidden>
+          Nenhum lugar com localização ainda.<br>
+          <span class="hint">Adicione endereços ou aguarde o geocoding terminar.</span>
+        </div>
       </div>
 
       <div class="places-grid" id="places-grid"></div>
@@ -4760,7 +4814,7 @@ function renderPlacesGrid() {
       ? `data-place-map data-lat="${p.lat}" data-lng="${p.lng}" data-name="${escapeHTML(p.name)}" data-maps-url="${mapsUrl}" data-status="${p.status}"`
       : '';
     return `
-      <div class="place-card ${isRecommended ? 'is-recommended' : ''}">
+      <div class="place-card ${isRecommended ? 'is-recommended' : ''}" id="place-card-${p.id}">
         <div class="place-card-map ${mapClass}" ${mapAttrs}></div>
         <div class="place-card-header">
           <div class="place-card-name">${escapeHTML(p.name)}</div>
@@ -4800,6 +4854,102 @@ function renderPlacesGrid() {
   // Inicializa mini-mapas lazy e dispara backfill de geocoding
   initPlaceMaps();
   backfillPlaceCoords();
+  // Re-renderiza o mapa de overview com a lista filtrada
+  renderPlacesOverviewMap(list);
+}
+
+// ============== OVERVIEW MAP (todos os lugares com pin) ==============
+let placesOverviewMap = null;
+let placesOverviewLayer = null;
+
+function renderPlacesOverviewMap(list) {
+  if (typeof L === 'undefined') {
+    setTimeout(() => renderPlacesOverviewMap(list), 200);
+    return;
+  }
+  const container = document.getElementById('places-overview-map');
+  const empty = document.getElementById('places-overview-empty');
+  if (!container) return;
+
+  const withCoords = (list || []).filter(p =>
+    typeof p.lat === 'number' && typeof p.lng === 'number'
+  );
+
+  if (!placesOverviewMap) {
+    placesOverviewMap = L.map(container, {
+      zoomControl: true,
+      scrollWheelZoom: false, // evita capturar scroll da página
+      attributionControl: true,
+    }).setView([-23.561, -46.656], 12); // default: SP
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '© <a href="https://openstreetmap.org/copyright">OSM</a>',
+    }).addTo(placesOverviewMap);
+    placesOverviewLayer = L.layerGroup().addTo(placesOverviewMap);
+    // Habilita scroll-zoom ao clicar no mapa, desabilita ao tirar foco
+    placesOverviewMap.on('focus', () => placesOverviewMap.scrollWheelZoom.enable());
+    placesOverviewMap.on('blur', () => placesOverviewMap.scrollWheelZoom.disable());
+  }
+
+  // Limpa marcadores anteriores
+  placesOverviewLayer.clearLayers();
+
+  if (withCoords.length === 0) {
+    empty.hidden = false;
+    return;
+  }
+  empty.hidden = true;
+
+  const markers = [];
+  for (const p of withCoords) {
+    const marker = L.marker([p.lat, p.lng], { icon: placePinIcon(p.status) });
+    const cleanName = escapeHTML(p.name);
+    const cleanLoc = escapeHTML([p.neighborhood, p.city].filter(Boolean).join(', '));
+    const statusLabel = p.status === 'visited' ? 'Já fui' : 'Quero ir';
+    marker.bindTooltip(cleanName, { direction: 'top', offset: [0, -32] });
+    marker.bindPopup(`
+      <div style="font-family:'Inter',sans-serif;min-width:160px">
+        <div style="font-weight:700;font-size:14px;margin-bottom:2px">${cleanName}</div>
+        <div style="font-size:11px;color:#666;margin-bottom:6px">${statusLabel}${cleanLoc ? ' · ' + cleanLoc : ''}</div>
+        <button data-overview-card="${p.id}" style="background:#000;color:#fff;border:none;border-radius:6px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif">Ver card</button>
+      </div>
+    `);
+    placesOverviewLayer.addLayer(marker);
+    markers.push(marker);
+  }
+
+  // Wire up botão "Ver card" no popup: precisa delegar pois o popup só
+  // existe no DOM enquanto aberto
+  placesOverviewMap.off('popupopen');
+  placesOverviewMap.on('popupopen', (e) => {
+    const btn = e.popup.getElement()?.querySelector('[data-overview-card]');
+    if (!btn) return;
+    btn.onclick = () => {
+      const id = btn.dataset.overviewCard;
+      placesOverviewMap.closePopup();
+      scrollToPlaceCard(id);
+    };
+  });
+
+  // Auto-fit bounds nos pinos visíveis (com padding)
+  if (markers.length === 1) {
+    placesOverviewMap.setView(markers[0].getLatLng(), 15);
+  } else {
+    const group = L.featureGroup(markers);
+    placesOverviewMap.fitBounds(group.getBounds(), { padding: [30, 30], maxZoom: 16 });
+  }
+
+  // Leaflet às vezes precisa de invalidateSize quando o container muda
+  // (ex: ao trocar de aba). Agenda um refresh.
+  setTimeout(() => placesOverviewMap.invalidateSize(), 50);
+}
+
+function scrollToPlaceCard(placeId) {
+  const card = document.getElementById('place-card-' + placeId);
+  if (!card) return;
+  card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  card.classList.add('is-highlight');
+  setTimeout(() => card.classList.remove('is-highlight'), 1500);
 }
 
 // ============== GEOCODING + MINI-MAPS ==============
