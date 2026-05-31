@@ -3173,7 +3173,10 @@
           <h1 class="page-title">Lu<em>gares</em></h1>
           <div class="page-meta" id="places-meta">Bares, restaurantes e cafés que valem registro</div>
         </div>
-        <button class="btn" id="new-place-btn">+ Adicionar lugar</button>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-ghost" id="smart-place-btn">✨ Captura</button>
+          <button class="btn" id="new-place-btn">+ Adicionar lugar</button>
+        </div>
       </div>
 
       <div class="places-stats" id="places-stats"></div>
@@ -3607,6 +3610,62 @@
 </div>
 
 <!-- BIRTHDAY MODAL -->
+<!-- SMART PLACE CAPTURE MODAL -->
+<div class="modal-bg" id="smart-place-modal">
+  <div class="modal">
+    <div class="modal-title">✨ Captura inteligente</div>
+    <div class="modal-sub">Cole link do Google Maps ou descreva o lugar em uma frase</div>
+
+    <div class="form-group">
+      <textarea class="form-control" id="smart-place-input" rows="3" placeholder='Ex: "Bar dos Arcos, no centro, drinks autorais" · "Coffee Lab Pinheiros, já fui, ótimo café" · ou cola URL do Google Maps'></textarea>
+    </div>
+
+    <div id="smart-place-status" style="font-size:12px;color:var(--ink-faint);min-height:18px;margin-bottom:8px"></div>
+
+    <div class="modal-actions">
+      <button class="btn btn-ghost" data-close-modal>Cancelar</button>
+      <button class="btn" id="smart-place-interpret">Interpretar</button>
+    </div>
+  </div>
+</div>
+
+<!-- VISIT MODAL -->
+<div class="modal-bg" id="visit-modal">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-title">Registrar visita</div>
+    <div class="modal-sub" id="visit-modal-sub">—</div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Data</label>
+        <input type="date" class="form-control" id="visit-date" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Nota</label>
+        <select class="form-control" id="visit-rating">
+          <option value="">Sem nota</option>
+          <option value="1">★</option>
+          <option value="2">★★</option>
+          <option value="3">★★★</option>
+          <option value="4">★★★★</option>
+          <option value="5">★★★★★</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Comentário (opcional)</label>
+      <textarea class="form-control" id="visit-note" rows="3" placeholder="O que comeu, com quem foi, impressão..."></textarea>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="visit-delete" style="display:none">Excluir</button>
+      <button class="btn btn-ghost" data-close-modal>Cancelar</button>
+      <button class="btn" id="visit-save">Salvar</button>
+    </div>
+  </div>
+</div>
+
 <!-- ITINERARY MODAL -->
 <div class="modal-bg" id="itinerary-modal">
   <div class="modal">
@@ -3619,7 +3678,10 @@
     </div>
 
     <div class="form-group" id="itinerary-places-group" style="display:none">
-      <label class="form-label">Lugares no roteiro · arraste pra reordenar</label>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+        <label class="form-label" style="margin-bottom:0">Lugares · reordenar com ↑↓</label>
+        <button class="btn btn-ghost" id="itinerary-optimize" style="padding:6px 10px;font-size:11px" title="Reordena pelo caminho mais curto (vizinho mais próximo)">⚡ Otimizar rota</button>
+      </div>
       <div id="itinerary-places-list" style="border:1px solid var(--line);border-radius:8px;background:var(--bg-card);max-height:240px;overflow-y:auto;padding:6px"></div>
     </div>
 
@@ -5764,10 +5826,17 @@ function renderPlacesGrid() {
         ${p.address ? `<div class="place-card-location" style="font-size:11px;color:var(--ink-faint);margin-top:-4px;padding-left:18px">${escapeHTML(p.address)}</div>` : ''}
         ${p.notes ? `<div class="place-card-notes">${escapeHTML(p.notes)}</div>` : ''}
         ${tagsHtml}
-        <button class="place-card-itinerary-btn" data-itinerary-add="${p.id}">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
-          Roteiro
-        </button>
+        ${(p.visits && p.visits.length) ? `<div style="font-size:11px;color:var(--ink-faint);margin-top:6px">${p.visits.length} visita${p.visits.length === 1 ? '' : 's'} · última ${formatVisitDate(p.visits[p.visits.length - 1].date)}</div>` : ''}
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">
+          <button class="place-card-itinerary-btn" data-itinerary-add="${p.id}">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+            Roteiro
+          </button>
+          <button class="place-card-itinerary-btn" data-visit-add="${p.id}" style="border-color:#86efac;color:#166534">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+            Registrar visita
+          </button>
+        </div>
         <div class="place-card-actions">
           <button class="place-card-action" data-place-edit="${p.id}">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
@@ -5787,6 +5856,13 @@ function renderPlacesGrid() {
     b.onclick = (e) => {
       e.stopPropagation();
       openItineraryPickModal(b.dataset.itineraryAdd);
+    };
+  });
+  // wire botão "Registrar visita"
+  el.querySelectorAll('[data-visit-add]').forEach(b => {
+    b.onclick = (e) => {
+      e.stopPropagation();
+      openVisitModal(b.dataset.visitAdd, null);
     };
   });
 
@@ -6036,6 +6112,54 @@ function wireItineraryRowActions() {
     };
   });
 }
+
+// Otimizar ordem por vizinho mais próximo (TSP heurístico)
+function haversine(lat1, lng1, lat2, lng2) {
+  const R = 6371; // km
+  const toRad = (x) => x * Math.PI / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLng = toRad(lng2 - lng1);
+  const a = Math.sin(dLat/2) ** 2 +
+            Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+            Math.sin(dLng/2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(a));
+}
+
+document.getElementById('itinerary-optimize').onclick = () => {
+  if (!editingItineraryId) return;
+  const it = state.itineraries.find(i => i.id === editingItineraryId);
+  if (!it) return;
+  const placeById = new Map((state.places || []).map(p => [p.id, p]));
+  const withCoords = it.placeIds
+    .map(id => placeById.get(id))
+    .filter(p => p && typeof p.lat === 'number' && typeof p.lng === 'number');
+  const noCoords = it.placeIds.filter(id => {
+    const p = placeById.get(id);
+    return !p || typeof p.lat !== 'number' || typeof p.lng !== 'number';
+  });
+  if (withCoords.length < 2) {
+    alert('Precisa de pelo menos 2 lugares com localização pra otimizar.');
+    return;
+  }
+  // Vizinho mais próximo: começa do primeiro lugar do roteiro
+  const ordered = [withCoords[0]];
+  const remaining = withCoords.slice(1);
+  while (remaining.length) {
+    const last = ordered[ordered.length - 1];
+    let bestIdx = 0;
+    let bestDist = Infinity;
+    for (let i = 0; i < remaining.length; i++) {
+      const d = haversine(last.lat, last.lng, remaining[i].lat, remaining[i].lng);
+      if (d < bestDist) { bestDist = d; bestIdx = i; }
+    }
+    ordered.push(remaining.splice(bestIdx, 1)[0]);
+  }
+  // Lugares sem coordenadas ficam no fim mantendo a ordem original
+  it.placeIds = [...ordered.map(p => p.id), ...noCoords];
+  saveState();
+  openItineraryModal(editingItineraryId);
+  renderPlaces();
+};
 
 document.getElementById('itinerary-save').onclick = () => {
   const name = document.getElementById('itinerary-name').value.trim();
@@ -6539,6 +6663,133 @@ document.getElementById('bday-save').onclick = () => {
 
 // Abrir modal (novo)
 document.getElementById('new-place-btn').onclick = () => openPlaceModal(null);
+
+// ============== SMART PLACE CAPTURE ==============
+document.getElementById('smart-place-btn').onclick = () => {
+  document.getElementById('smart-place-input').value = '';
+  document.getElementById('smart-place-status').textContent = '';
+  document.getElementById('smart-place-modal').classList.add('active');
+  setTimeout(() => document.getElementById('smart-place-input').focus(), 80);
+};
+
+document.getElementById('smart-place-interpret').onclick = async () => {
+  const inputEl = document.getElementById('smart-place-input');
+  const statusEl = document.getElementById('smart-place-status');
+  const btn = document.getElementById('smart-place-interpret');
+  const text = inputEl.value.trim();
+  if (!text) {
+    statusEl.textContent = 'Cole um link ou descreva o lugar.';
+    return;
+  }
+  btn.disabled = true;
+  statusEl.textContent = 'Interpretando…';
+  try {
+    const { data, error } = await sb.functions.invoke('smart-capture-place', {
+      body: { text }
+    });
+    if (error) throw new Error(error.message || 'Falha na função');
+    if (data?.error) throw new Error(data.error);
+
+    // Fecha modal de captura e abre o de edição já preenchido
+    closeAllModals();
+    openPlaceModal(null);
+    document.getElementById('place-name').value = data.name || '';
+    document.getElementById('place-type').value = ['bar','restaurante','cafe','outro'].includes(data.type) ? data.type : 'outro';
+    document.getElementById('place-status').value = data.status === 'visited' ? 'visited' : 'wishlist';
+    toggleStatusFields(document.getElementById('place-status').value);
+    document.getElementById('place-neighborhood').value = data.neighborhood || '';
+    document.getElementById('place-city').value = data.city || 'São Paulo';
+    document.getElementById('place-address').value = data.address || '';
+    document.getElementById('place-tags').value = Array.isArray(data.tags) ? data.tags.join(', ') : '';
+    document.getElementById('place-notes').value = data.notes || '';
+  } catch (err) {
+    console.error(err);
+    statusEl.innerHTML = `<span style="color:#dc2626">Erro: ${escapeHTML(err.message || 'desconhecido')}</span>`;
+  } finally {
+    btn.disabled = false;
+  }
+};
+
+// ============== HISTÓRICO DE VISITAS ==============
+let editingVisitPlaceId = null;
+let editingVisitId = null;
+
+function formatVisitDate(iso) {
+  if (!iso) return '';
+  const d = new Date(iso + 'T00:00:00');
+  return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' });
+}
+
+function openVisitModal(placeId, visitId) {
+  editingVisitPlaceId = placeId;
+  editingVisitId = visitId;
+  const p = (state.places || []).find(x => x.id === placeId);
+  if (!p) return;
+  document.getElementById('visit-modal-sub').textContent = p.name.toUpperCase();
+  document.getElementById('visit-modal').classList.add('active');
+  const delBtn = document.getElementById('visit-delete');
+  if (visitId) {
+    const v = (p.visits || []).find(x => x.id === visitId);
+    if (!v) return;
+    document.getElementById('visit-date').value = v.date || '';
+    document.getElementById('visit-rating').value = v.rating || '';
+    document.getElementById('visit-note').value = v.note || '';
+    delBtn.style.display = '';
+  } else {
+    document.getElementById('visit-date').value = isoDate(new Date());
+    document.getElementById('visit-rating').value = '';
+    document.getElementById('visit-note').value = '';
+    delBtn.style.display = 'none';
+  }
+}
+
+document.getElementById('visit-save').onclick = () => {
+  if (!editingVisitPlaceId) return;
+  const p = state.places.find(x => x.id === editingVisitPlaceId);
+  if (!p) return;
+  const date = document.getElementById('visit-date').value;
+  if (!date) { alert('Defina a data da visita.'); return; }
+  const rating = parseInt(document.getElementById('visit-rating').value, 10) || null;
+  const note = document.getElementById('visit-note').value.trim() || null;
+  if (!Array.isArray(p.visits)) p.visits = [];
+  if (editingVisitId) {
+    const v = p.visits.find(x => x.id === editingVisitId);
+    if (v) { v.date = date; v.rating = rating; v.note = note; }
+  } else {
+    p.visits.push({ id: uid(), date, rating, note, createdAt: new Date().toISOString() });
+  }
+  // Mantém ordenado por data asc
+  p.visits.sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+  // Se foi adicionada uma visita, marca como "já fui" e atualiza rating médio
+  p.status = 'visited';
+  const ratings = p.visits.filter(v => v.rating).map(v => v.rating);
+  if (ratings.length) p.rating = Math.round(ratings.reduce((a, b) => a + b, 0) / ratings.length);
+  saveState();
+  closeAllModals();
+  editingVisitPlaceId = null;
+  editingVisitId = null;
+  renderPlaces();
+};
+
+document.getElementById('visit-delete').onclick = () => {
+  if (!editingVisitPlaceId || !editingVisitId) return;
+  if (!confirm('Excluir esta visita?')) return;
+  const p = state.places.find(x => x.id === editingVisitPlaceId);
+  if (p) p.visits = (p.visits || []).filter(v => v.id !== editingVisitId);
+  saveState();
+  closeAllModals();
+  editingVisitPlaceId = null;
+  editingVisitId = null;
+  renderPlaces();
+};
+
+// Enter no textarea de captura = interpretar
+document.getElementById('smart-place-input').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+    e.preventDefault();
+    document.getElementById('smart-place-interpret').click();
+  }
+});
 
 window.openPlaceModal = function(placeId) {
   editingPlaceId = placeId;
