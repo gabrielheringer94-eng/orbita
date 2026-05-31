@@ -1489,6 +1489,97 @@
     font-weight: 700;
   }
 
+  /* ============== ROTEIROS ============== */
+  .itinerary-chip {
+    border-color: #c4b5fd !important;
+    color: #6b21a8 !important;
+  }
+  .itinerary-chip.active {
+    background: #7c3aed !important;
+    color: #fff !important;
+    border-color: #7c3aed !important;
+  }
+  .itinerary-chip-edit {
+    margin-left: 4px;
+    opacity: 0.6;
+    font-size: 11px;
+    cursor: pointer;
+  }
+  .itinerary-chip-edit:hover { opacity: 1; }
+  /* Pin do mini-mapa/overview quando em modo roteiro fica roxo via SVG */
+  .place-pin-icon-num {
+    background: transparent;
+    border: none;
+  }
+  .place-pin-icon-num svg { display: block; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3)); }
+  /* Botão pequeno pra adicionar lugar a roteiro */
+  .place-card-itinerary-btn {
+    background: var(--bg-card);
+    border: 1px dashed var(--line);
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 11px;
+    font-family: 'Inter', sans-serif;
+    color: var(--ink-soft);
+    cursor: pointer;
+    transition: all 0.15s;
+    margin-top: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .place-card-itinerary-btn:hover {
+    border-color: #7c3aed;
+    color: #7c3aed;
+    border-style: solid;
+  }
+  .itinerary-pick-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 12px;
+    background: var(--bg-card);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-size: 13px;
+  }
+  .itinerary-pick-item:hover {
+    border-color: #7c3aed;
+    background: #faf5ff;
+  }
+  .itinerary-pick-item.is-in { border-color: #7c3aed; background: #faf5ff; color: #6b21a8; font-weight: 600; }
+  .itinerary-place-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    border-bottom: 1px solid var(--line-soft);
+    font-size: 13px;
+  }
+  .itinerary-place-row:last-child { border-bottom: none; }
+  .itinerary-place-num {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #7c3aed;
+    color: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .itinerary-place-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .itinerary-place-actions { display: flex; gap: 4px; }
+  .itinerary-place-actions button {
+    background: none; border: 1px solid var(--line); border-radius: 4px;
+    padding: 2px 6px; cursor: pointer; font-size: 11px;
+  }
+  .itinerary-place-actions button:hover { border-color: var(--ink); }
+
   .places-overview-wrap {
     position: relative;
     margin-bottom: 20px;
@@ -2186,14 +2277,15 @@
   .m-overlay { display: none; }
 
   @media (max-width: 900px) {
-    /* Header mobile fixo no topo */
+    /* Header mobile fixo no topo. z-index alto pra ficar acima de Leaflet
+       maps (que usa até ~700 internamente) */
     .m-header {
       display: flex;
       position: fixed;
       top: 0;
       left: 0;
       right: 0;
-      z-index: 50;
+      z-index: 1900;
       background: var(--bg);
       border-bottom: 1px solid var(--line);
       padding: 12px 16px;
@@ -2240,7 +2332,7 @@
       position: fixed;
       inset: 0;
       background: rgba(0,0,0,0.4);
-      z-index: 99;
+      z-index: 1990;
       opacity: 0;
       visibility: hidden;
       pointer-events: none;
@@ -2271,7 +2363,7 @@
       border-right: none;
       border-left: 1px solid var(--line);
       padding: 24px 18px;
-      z-index: 100;
+      z-index: 2000;
       box-shadow: -8px 0 24px rgba(0,0,0,0.1);
       overflow-y: auto;
       background: var(--bg);
@@ -3105,6 +3197,8 @@
         <button class="btn btn-ghost" data-place-filter="top-rated">Melhor avaliados</button>
       </div>
 
+      <div class="filter-row" id="itinerary-row"></div>
+
       <div class="places-overview-wrap">
         <div id="places-overview-map"></div>
         <div class="places-overview-empty" id="places-overview-empty" hidden>
@@ -3513,6 +3607,43 @@
 </div>
 
 <!-- BIRTHDAY MODAL -->
+<!-- ITINERARY MODAL -->
+<div class="modal-bg" id="itinerary-modal">
+  <div class="modal">
+    <div class="modal-title" id="itinerary-modal-title">Novo roteiro</div>
+    <div class="modal-sub">Agrupe lugares por viagem ou ocasião</div>
+
+    <div class="form-group">
+      <label class="form-label">Nome do roteiro</label>
+      <input type="text" class="form-control" id="itinerary-name" placeholder="Ex: Paris · março 2027" />
+    </div>
+
+    <div class="form-group" id="itinerary-places-group" style="display:none">
+      <label class="form-label">Lugares no roteiro · arraste pra reordenar</label>
+      <div id="itinerary-places-list" style="border:1px solid var(--line);border-radius:8px;background:var(--bg-card);max-height:240px;overflow-y:auto;padding:6px"></div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="itinerary-delete" style="display:none">Excluir</button>
+      <button class="btn btn-ghost" data-close-modal>Cancelar</button>
+      <button class="btn" id="itinerary-save">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD-TO-ITINERARY MENU (inline picker) -->
+<div class="modal-bg" id="itinerary-pick-modal">
+  <div class="modal" style="max-width:360px">
+    <div class="modal-title">Adicionar a roteiro</div>
+    <div class="modal-sub" id="itinerary-pick-sub">—</div>
+    <div id="itinerary-pick-list" style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px"></div>
+    <button class="btn btn-ghost" id="itinerary-pick-new" style="width:100%">+ Novo roteiro</button>
+    <div class="modal-actions" style="justify-content:flex-end;margin-top:14px">
+      <button class="btn btn-ghost" data-close-modal>Fechar</button>
+    </div>
+  </div>
+</div>
+
 <!-- HABIT MOOD MODAL -->
 <div class="modal-bg" id="habit-mood-modal">
   <div class="modal" style="max-width:380px;text-align:center">
@@ -4506,8 +4637,6 @@ function renderTasks() {
     const progress = subs.length > 0
       ? `<span class="subtask-progress ${doneCount === subs.length ? 'complete' : ''}">${doneCount}/${subs.length}</span>`
       : '';
-    // Chevron mostra estado expandido/colapsado
-    const chev = `<span class="task-chev ${showBlock ? 'is-open' : ''}" aria-hidden="true">▸</span>`;
     const scheduledIcon = (t.start && t.end && t.date)
       ? `<span title="Agendado no cronograma" style="font-size:10px;color:var(--ink-faint);margin-left:6px">📅 ${t.start}–${t.end}</span>`
       : '';
@@ -4533,7 +4662,7 @@ function renderTasks() {
       <div class="task-item ${t.done ? 'done' : ''}">
         <div class="checkbox ${t.done ? 'checked' : ''}" data-toggle="${t.id}"></div>
         <div class="task-clickable" data-toggle-expand="${t.id}" style="cursor:pointer">
-          <div class="task-text">${chev}${escapeHTML(t.text)}${progress}${scheduledIcon}</div>
+          <div class="task-text">${escapeHTML(t.text)}${progress}${scheduledIcon}</div>
           ${t.date ? `<div style="font-size:11px;color:var(--ink-faint);margin-top:3px;font-family:'Inter',sans-serif">
             ${t.date < today && !t.done ? '⚠ ATRASADA · ' : ''}${formatTaskDate(t.date)}
           </div>` : ''}
@@ -5475,9 +5604,12 @@ let placeTypeFilter = 'all';
 let placeSearchText = '';
 let editingPlaceId = null;
 let currentRating = 0;
+let activeItineraryId = null;       // id do roteiro ativo, ou null
+let editingItineraryId = null;       // id do roteiro sendo editado no modal
 
 function renderPlaces() {
   renderPlacesStats();
+  renderItineraryFilter();
   renderPlacesGrid();
 }
 
@@ -5548,21 +5680,29 @@ function labelPriority2(p) {
 }
 
 function renderPlacesGrid() {
-  const list = filterPlaces(state.places || []);
-  // Ordenação inteligente: recomendados > já fui (top) > já fui (resto) > quero ir
-  list.sort((a, b) => {
-    // 1. Recomendados primeiro
-    const aRec = a.status === 'wishlist' && a.priority === 'recommended';
-    const bRec = b.status === 'wishlist' && b.priority === 'recommended';
-    if (aRec !== bRec) return aRec ? -1 : 1;
-    // 2. Por status (já fui primeiro)
-    if (a.status !== b.status) return a.status === 'visited' ? -1 : 1;
-    // 3. Já fui: por avaliação desc
-    if (a.status === 'visited') return (b.rating || 0) - (a.rating || 0);
-    // 4. Quero ir: por prioridade
-    const priOrder = { recommended: 0, curiosity: 1, general: 2 };
-    return (priOrder[a.priority] ?? 3) - (priOrder[b.priority] ?? 3);
-  });
+  let list = filterPlaces(state.places || []);
+
+  // Filtro de roteiro: substitui a lista pelos lugares na ordem do roteiro
+  const itin = activeItineraryId ? (state.itineraries || []).find(i => i.id === activeItineraryId) : null;
+  if (itin) {
+    const placeById = new Map((state.places || []).map(p => [p.id, p]));
+    list = itin.placeIds.map(id => placeById.get(id)).filter(Boolean);
+  } else {
+    // Ordenação inteligente: recomendados > já fui (top) > já fui (resto) > quero ir
+    list.sort((a, b) => {
+      // 1. Recomendados primeiro
+      const aRec = a.status === 'wishlist' && a.priority === 'recommended';
+      const bRec = b.status === 'wishlist' && b.priority === 'recommended';
+      if (aRec !== bRec) return aRec ? -1 : 1;
+      // 2. Por status (já fui primeiro)
+      if (a.status !== b.status) return a.status === 'visited' ? -1 : 1;
+      // 3. Já fui: por avaliação desc
+      if (a.status === 'visited') return (b.rating || 0) - (a.rating || 0);
+      // 4. Quero ir: por prioridade
+      const priOrder = { recommended: 0, curiosity: 1, general: 2 };
+      return (priOrder[a.priority] ?? 3) - (priOrder[b.priority] ?? 3);
+    });
+  }
 
   document.getElementById('places-meta').textContent =
     `${list.length} ${list.length === 1 ? 'lugar' : 'lugares'}`.toUpperCase();
@@ -5624,6 +5764,10 @@ function renderPlacesGrid() {
         ${p.address ? `<div class="place-card-location" style="font-size:11px;color:var(--ink-faint);margin-top:-4px;padding-left:18px">${escapeHTML(p.address)}</div>` : ''}
         ${p.notes ? `<div class="place-card-notes">${escapeHTML(p.notes)}</div>` : ''}
         ${tagsHtml}
+        <button class="place-card-itinerary-btn" data-itinerary-add="${p.id}">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+          Roteiro
+        </button>
         <div class="place-card-actions">
           <button class="place-card-action" data-place-edit="${p.id}">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
@@ -5637,6 +5781,14 @@ function renderPlacesGrid() {
       </div>
     `;
   }).join('');
+
+  // wire botão de roteiro
+  el.querySelectorAll('[data-itinerary-add]').forEach(b => {
+    b.onclick = (e) => {
+      e.stopPropagation();
+      openItineraryPickModal(b.dataset.itineraryAdd);
+    };
+  });
 
   el.querySelectorAll('[data-place-edit]').forEach(b => {
     b.onclick = (e) => {
@@ -5694,15 +5846,23 @@ function renderPlacesOverviewMap(list) {
   }
   empty.hidden = true;
 
+  // Modo roteiro: pin roxo numerado + linha conectando na ordem
+  const inItinerary = !!activeItineraryId;
+
   const markers = [];
-  for (const p of withCoords) {
-    const marker = L.marker([p.lat, p.lng], { icon: placePinIcon(p.status) });
+  withCoords.forEach((p, i) => {
+    const icon = inItinerary ? itineraryPinIcon(i + 1) : placePinIcon(p.status);
+    const marker = L.marker([p.lat, p.lng], { icon });
     const cleanName = escapeHTML(p.name);
     const cleanLoc = escapeHTML([p.neighborhood, p.city].filter(Boolean).join(', '));
     const statusLabel = p.status === 'visited' ? 'Já fui' : 'Quero ir';
+    const orderBadge = inItinerary
+      ? `<div style="display:inline-block;background:#7c3aed;color:#fff;border-radius:4px;padding:1px 6px;font-size:10px;font-weight:700;margin-bottom:4px">${i + 1}º</div><br>`
+      : '';
     marker.bindTooltip(cleanName, { direction: 'top', offset: [0, -32] });
     marker.bindPopup(`
       <div style="font-family:'Inter',sans-serif;min-width:160px">
+        ${orderBadge}
         <div style="font-weight:700;font-size:14px;margin-bottom:2px">${cleanName}</div>
         <div style="font-size:11px;color:#666;margin-bottom:6px">${statusLabel}${cleanLoc ? ' · ' + cleanLoc : ''}</div>
         <button data-overview-card="${p.id}" style="background:#000;color:#fff;border:none;border-radius:6px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif">Ver card</button>
@@ -5710,6 +5870,18 @@ function renderPlacesOverviewMap(list) {
     `);
     placesOverviewLayer.addLayer(marker);
     markers.push(marker);
+  });
+
+  // Linha conectando pinos do roteiro (na ordem)
+  if (inItinerary && withCoords.length > 1) {
+    const latlngs = withCoords.map(p => [p.lat, p.lng]);
+    const polyline = L.polyline(latlngs, {
+      color: '#7c3aed',
+      weight: 3,
+      opacity: 0.7,
+      dashArray: '6,8',
+    });
+    placesOverviewLayer.addLayer(polyline);
   }
 
   // Wire up botão "Ver card" no popup: precisa delegar pois o popup só
@@ -5745,6 +5917,213 @@ function scrollToPlaceCard(placeId) {
   card.classList.add('is-highlight');
   setTimeout(() => card.classList.remove('is-highlight'), 1500);
 }
+
+// ============== ROTEIROS ==============
+function renderItineraryFilter() {
+  const row = document.getElementById('itinerary-row');
+  if (!row) return;
+  const its = state.itineraries || [];
+  // Auto-reset se o roteiro ativo foi excluído
+  if (activeItineraryId && !its.find(i => i.id === activeItineraryId)) {
+    activeItineraryId = null;
+  }
+  let html = `<span class="filter-row-label">Roteiro:</span>`;
+  html += `<button class="btn btn-ghost ${!activeItineraryId ? 'active' : ''}" data-itinerary="all">Sem roteiro</button>`;
+  for (const it of its) {
+    const count = it.placeIds.length;
+    const active = activeItineraryId === it.id;
+    html += `<button class="btn btn-ghost itinerary-chip ${active ? 'active' : ''}" data-itinerary="${it.id}" title="${escapeHTML(it.name)}">
+      ${escapeHTML(it.name)} · ${count}
+      <span class="itinerary-chip-edit" data-itinerary-edit="${it.id}" title="Editar roteiro">✎</span>
+    </button>`;
+  }
+  html += `<button class="btn btn-ghost" id="itinerary-new-chip">+ Novo roteiro</button>`;
+  row.innerHTML = html;
+
+  row.querySelectorAll('[data-itinerary]').forEach(b => {
+    b.onclick = (e) => {
+      // Click no lápis NÃO troca o roteiro ativo
+      if (e.target.closest('[data-itinerary-edit]')) return;
+      const id = b.dataset.itinerary;
+      activeItineraryId = id === 'all' ? null : id;
+      renderPlaces();
+    };
+  });
+  row.querySelectorAll('[data-itinerary-edit]').forEach(b => {
+    b.onclick = (e) => {
+      e.stopPropagation();
+      openItineraryModal(b.dataset.itineraryEdit);
+    };
+  });
+  document.getElementById('itinerary-new-chip').onclick = () => openItineraryModal(null);
+}
+
+function openItineraryModal(itineraryId) {
+  editingItineraryId = itineraryId;
+  const modal = document.getElementById('itinerary-modal');
+  const title = document.getElementById('itinerary-modal-title');
+  const nameInp = document.getElementById('itinerary-name');
+  const delBtn = document.getElementById('itinerary-delete');
+  const placesGroup = document.getElementById('itinerary-places-group');
+  const placesList = document.getElementById('itinerary-places-list');
+
+  if (itineraryId) {
+    const it = (state.itineraries || []).find(i => i.id === itineraryId);
+    if (!it) return;
+    title.textContent = 'Editar roteiro';
+    nameInp.value = it.name;
+    delBtn.style.display = '';
+    placesGroup.style.display = it.placeIds.length ? '' : 'none';
+    const placeById = new Map((state.places || []).map(p => [p.id, p]));
+    placesList.innerHTML = it.placeIds.map((pid, idx) => {
+      const p = placeById.get(pid);
+      const name = p ? p.name : '(lugar removido)';
+      return `
+        <div class="itinerary-place-row" data-place-row="${pid}">
+          <div class="itinerary-place-num">${idx + 1}</div>
+          <div class="itinerary-place-name">${escapeHTML(name)}</div>
+          <div class="itinerary-place-actions">
+            <button data-row-up="${pid}" title="Subir">↑</button>
+            <button data-row-down="${pid}" title="Descer">↓</button>
+            <button data-row-del="${pid}" title="Remover">×</button>
+          </div>
+        </div>
+      `;
+    }).join('');
+    wireItineraryRowActions();
+  } else {
+    title.textContent = 'Novo roteiro';
+    nameInp.value = '';
+    delBtn.style.display = 'none';
+    placesGroup.style.display = 'none';
+  }
+  modal.classList.add('active');
+  setTimeout(() => nameInp.focus(), 80);
+}
+
+function wireItineraryRowActions() {
+  const list = document.getElementById('itinerary-places-list');
+  if (!list || !editingItineraryId) return;
+  const it = (state.itineraries || []).find(i => i.id === editingItineraryId);
+  if (!it) return;
+  const refresh = () => {
+    saveState();
+    openItineraryModal(editingItineraryId); // re-renderiza
+    renderPlaces();
+  };
+  list.querySelectorAll('[data-row-up]').forEach(b => {
+    b.onclick = () => {
+      const idx = it.placeIds.indexOf(b.dataset.rowUp);
+      if (idx > 0) {
+        [it.placeIds[idx - 1], it.placeIds[idx]] = [it.placeIds[idx], it.placeIds[idx - 1]];
+        refresh();
+      }
+    };
+  });
+  list.querySelectorAll('[data-row-down]').forEach(b => {
+    b.onclick = () => {
+      const idx = it.placeIds.indexOf(b.dataset.rowDown);
+      if (idx >= 0 && idx < it.placeIds.length - 1) {
+        [it.placeIds[idx], it.placeIds[idx + 1]] = [it.placeIds[idx + 1], it.placeIds[idx]];
+        refresh();
+      }
+    };
+  });
+  list.querySelectorAll('[data-row-del]').forEach(b => {
+    b.onclick = () => {
+      it.placeIds = it.placeIds.filter(id => id !== b.dataset.rowDel);
+      refresh();
+    };
+  });
+}
+
+document.getElementById('itinerary-save').onclick = () => {
+  const name = document.getElementById('itinerary-name').value.trim();
+  if (!name) {
+    alert('Coloca um nome pro roteiro.');
+    return;
+  }
+  if (!state.itineraries) state.itineraries = [];
+  if (editingItineraryId) {
+    const it = state.itineraries.find(i => i.id === editingItineraryId);
+    if (it) it.name = name;
+  } else {
+    const id = uid();
+    state.itineraries.push({ id, name, placeIds: [], createdAt: new Date().toISOString() });
+    editingItineraryId = id;
+  }
+  saveState();
+  closeAllModals();
+  renderPlaces();
+};
+
+document.getElementById('itinerary-delete').onclick = () => {
+  if (!editingItineraryId) return;
+  if (!confirm('Excluir este roteiro? Os lugares não serão afetados.')) return;
+  state.itineraries = (state.itineraries || []).filter(i => i.id !== editingItineraryId);
+  if (activeItineraryId === editingItineraryId) activeItineraryId = null;
+  editingItineraryId = null;
+  saveState();
+  closeAllModals();
+  renderPlaces();
+};
+
+// Modal de "Adicionar a roteiro" — picker
+let pickingPlaceId = null;
+function openItineraryPickModal(placeId) {
+  pickingPlaceId = placeId;
+  const p = (state.places || []).find(x => x.id === placeId);
+  if (!p) return;
+  document.getElementById('itinerary-pick-sub').textContent = p.name.toUpperCase();
+  const list = document.getElementById('itinerary-pick-list');
+  const its = state.itineraries || [];
+  if (its.length === 0) {
+    list.innerHTML = '<div style="color:var(--ink-faint);font-size:12px;text-align:center;padding:8px">Nenhum roteiro ainda. Crie um abaixo.</div>';
+  } else {
+    list.innerHTML = its.map(it => {
+      const inIt = it.placeIds.includes(placeId);
+      return `<div class="itinerary-pick-item ${inIt ? 'is-in' : ''}" data-pick-itinerary="${it.id}">
+        <span>${escapeHTML(it.name)} · ${it.placeIds.length}</span>
+        <span style="font-size:11px">${inIt ? '✓ adicionado · clique pra remover' : '+ adicionar'}</span>
+      </div>`;
+    }).join('');
+  }
+  list.querySelectorAll('[data-pick-itinerary]').forEach(it => {
+    it.onclick = () => {
+      const id = it.dataset.pickItinerary;
+      const itin = (state.itineraries || []).find(i => i.id === id);
+      if (!itin) return;
+      const idx = itin.placeIds.indexOf(pickingPlaceId);
+      if (idx >= 0) itin.placeIds.splice(idx, 1);
+      else itin.placeIds.push(pickingPlaceId);
+      saveState();
+      closeAllModals();
+      renderPlaces();
+    };
+  });
+  document.getElementById('itinerary-pick-modal').classList.add('active');
+}
+
+document.getElementById('itinerary-pick-new').onclick = () => {
+  const placeId = pickingPlaceId;
+  closeAllModals();
+  openItineraryModal(null);
+  // Após salvar o novo roteiro, adiciona o lugar
+  const origSave = document.getElementById('itinerary-save').onclick;
+  document.getElementById('itinerary-save').onclick = () => {
+    const name = document.getElementById('itinerary-name').value.trim();
+    if (!name) { alert('Coloca um nome pro roteiro.'); return; }
+    if (!state.itineraries) state.itineraries = [];
+    const id = uid();
+    state.itineraries.push({ id, name, placeIds: [placeId], createdAt: new Date().toISOString() });
+    editingItineraryId = null;
+    saveState();
+    closeAllModals();
+    renderPlaces();
+    // restaura handler original
+    document.getElementById('itinerary-save').onclick = origSave;
+  };
+};
 
 // ============== GEOCODING + MINI-MAPS ==============
 const NOMINATIM_URL = 'https://nominatim.openstreetmap.org/search';
@@ -5868,6 +6247,23 @@ function placePinIcon(status) {
     className: 'place-pin-icon',
     iconSize: [28, 36],
     iconAnchor: [14, 36],
+  });
+}
+
+// Pin roxo numerado pra modo roteiro
+function itineraryPinIcon(num) {
+  const color = '#7c3aed';
+  const svg = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="40" viewBox="0 0 32 40">
+      <path d="M16 0C7.2 0 0 7 0 15.5c0 11 14.3 24.4 14.9 25 .3.2.8.2 1.1 0 .6-.6 16-14 16-25C32 7 24.8 0 16 0z" fill="${color}" stroke="#fff" stroke-width="1.5"/>
+      <circle cx="16" cy="15.5" r="9" fill="#fff"/>
+      <text x="16" y="20" text-anchor="middle" font-family="Inter, sans-serif" font-size="13" font-weight="700" fill="${color}">${num}</text>
+    </svg>`;
+  return L.divIcon({
+    html: svg,
+    className: 'place-pin-icon-num',
+    iconSize: [32, 40],
+    iconAnchor: [16, 40],
   });
 }
 
