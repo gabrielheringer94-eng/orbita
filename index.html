@@ -1849,7 +1849,29 @@
     color: var(--ink-faint);
     margin-bottom: 10px;
     font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
   }
+  .place-card-type-icon {
+    display: inline-flex;
+    width: 20px;
+    height: 20px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 5px;
+    background: var(--bg-card);
+    border: 1px solid var(--line);
+    color: var(--ink);
+    flex-shrink: 0;
+  }
+  /* Tints por tipo: deixa o ícone com leve cor temática */
+  .place-card-type-icon.t-cafe       { background: #fef3c7; border-color: #fcd34d; color: #92400e; }
+  .place-card-type-icon.t-restaurante { background: #fee2e2; border-color: #fca5a5; color: #991b1b; }
+  .place-card-type-icon.t-bar        { background: #f3e8ff; border-color: #d8b4fe; color: #6b21a8; }
+  .place-card-type-icon.t-boteco     { background: #ffedd5; border-color: #fdba74; color: #9a3412; }
+  .place-card-type-icon.t-doceria    { background: #fce7f3; border-color: #f9a8d4; color: #9d174d; }
+  .place-card-type-icon.t-outro      { background: var(--bg-card); border-color: var(--line); color: var(--ink-soft); }
 
   .place-card-rating {
     color: var(--ink);
@@ -3318,8 +3340,10 @@
         <select class="select" id="place-type-filter">
           <option value="all">Todos os tipos</option>
           <option value="bar">Bares</option>
+          <option value="boteco">Botecos</option>
           <option value="restaurante">Restaurantes</option>
-          <option value="cafe">Cafés</option>
+          <option value="cafe">Cafés / Padarias</option>
+          <option value="doceria">Docerias / Sorveterias</option>
           <option value="outro">Outros</option>
         </select>
       </div>
@@ -3480,8 +3504,10 @@
         <label class="form-label">Tipo</label>
         <select class="form-control" id="place-type">
           <option value="bar">Bar</option>
+          <option value="boteco">Boteco</option>
           <option value="restaurante">Restaurante</option>
-          <option value="cafe">Café</option>
+          <option value="cafe">Café / Padaria</option>
+          <option value="doceria">Doceria / Sorveteria</option>
           <option value="outro">Outro</option>
         </select>
       </div>
@@ -5880,7 +5906,71 @@ function filterPlaces(places) {
 }
 
 function labelType(t) {
-  return { bar: 'Bar', restaurante: 'Restaurante', cafe: 'Café', outro: 'Outro' }[t] || t;
+  return ({
+    bar: 'Bar',
+    boteco: 'Boteco',
+    restaurante: 'Restaurante',
+    cafe: 'Café / Padaria',
+    doceria: 'Doceria / Sorveteria',
+    outro: 'Outro',
+  })[t] || t;
+}
+
+// Ícone SVG inline por tipo. width/height/color customizáveis via params.
+// Desenhos próprios (não-emojis) pra escalar bem em qualquer tamanho.
+function placeTypeIcon(type, size = 16, color = 'currentColor') {
+  const stroke = `stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"`;
+  const fill = `fill="none"`;
+  const wrap = (paths) =>
+    `<svg width="${size}" height="${size}" viewBox="0 0 24 24" ${fill} ${stroke} xmlns="http://www.w3.org/2000/svg">${paths}</svg>`;
+  switch (type) {
+    case 'cafe':
+      // Xícara com vapor
+      return wrap(`
+        <path d="M5 9h12v6a4 4 0 01-4 4H9a4 4 0 01-4-4V9z"/>
+        <path d="M17 11h2a2 2 0 010 4h-2"/>
+        <path d="M8 3v2"/>
+        <path d="M11 3v2"/>
+        <path d="M14 3v2"/>
+      `);
+    case 'restaurante':
+      // Garfo e faca
+      return wrap(`
+        <path d="M7 3v9"/>
+        <path d="M7 3v9a2 2 0 002 2v7"/>
+        <path d="M5 3v6a2 2 0 002 2"/>
+        <path d="M9 3v6a2 2 0 01-2 2"/>
+        <path d="M17 3c-1.5 0-3 2-3 5s1 4 2 4l-1 9"/>
+      `);
+    case 'bar':
+      // Taça de vinho
+      return wrap(`
+        <path d="M8 4h8l-1 6a4 4 0 11-6 0L8 4z"/>
+        <path d="M12 14v6"/>
+        <path d="M9 20h6"/>
+      `);
+    case 'boteco':
+      // Caneca de chope
+      return wrap(`
+        <path d="M5 6h10v13a2 2 0 01-2 2H7a2 2 0 01-2-2V6z"/>
+        <path d="M15 9h2a2 2 0 012 2v4a2 2 0 01-2 2h-2"/>
+        <path d="M8 6V4a1 1 0 011-1h2a1 1 0 011 1v2"/>
+      `);
+    case 'doceria':
+      // Cupcake / sorvete
+      return wrap(`
+        <path d="M7 11h10l-1.5 9a1 1 0 01-1 1H9.5a1 1 0 01-1-1L7 11z"/>
+        <path d="M7 11a3 3 0 015-2.2A3 3 0 0117 11"/>
+        <circle cx="12" cy="6" r="1.5"/>
+      `);
+    case 'outro':
+    default:
+      // Pin genérico
+      return wrap(`
+        <path d="M12 2C7.6 2 4 5.6 4 10c0 6 8 12 8 12s8-6 8-12c0-4.4-3.6-8-8-8z"/>
+        <circle cx="12" cy="10" r="3"/>
+      `);
+  }
 }
 function labelPriority2(p) {
   return { recommended: 'Muita indicação', curiosity: 'Curiosidade', general: 'Lista geral' }[p] || 'Lista geral';
@@ -5960,7 +6050,10 @@ function renderPlacesGrid() {
           <div class="place-card-name">${escapeHTML(p.name)}</div>
           <span class="place-card-status status-${p.status}">${p.status === 'visited' ? 'Já fui' : 'Quero ir'}</span>
         </div>
-        <div class="place-card-type">${labelType(p.type)}</div>
+        <div class="place-card-type">
+          <span class="place-card-type-icon t-${p.type || 'outro'}">${placeTypeIcon(p.type, 14)}</span>
+          ${labelType(p.type)}
+        </div>
         ${ratingDisplay}
         ${priority}
         ${location ? `<div class="place-card-location">
@@ -6079,7 +6172,7 @@ function renderPlacesOverviewMap(list) {
 
   const markers = [];
   withCoords.forEach((p, i) => {
-    const icon = inItinerary ? itineraryPinIcon(i + 1) : placePinIcon(p.status);
+    const icon = inItinerary ? itineraryPinIcon(i + 1) : placePinIcon(p.status, p.type);
     const marker = L.marker([p.lat, p.lng], { icon });
     const cleanName = escapeHTML(p.name);
     const cleanLoc = escapeHTML([p.neighborhood, p.city].filter(Boolean).join(', '));
@@ -6485,21 +6578,39 @@ async function backfillPlaceCoords() {
   }
 }
 
-// SVG de pin colorido. Verde = já fui, azul = quero ir, cinza = fallback.
-function placePinIcon(status) {
+// SVG de pin colorido + ícone do tipo dentro. Verde=já fui, azul=quero ir, cinza=fallback.
+function placePinIcon(status, type) {
   const color = status === 'visited' ? '#16a34a'
               : status === 'wishlist' ? '#2563eb'
               : '#737373';
+  // SVG do ícone do tipo, escalado e centralizado dentro do círculo branco do pin
+  const typeIconPath = (() => {
+    switch (type) {
+      case 'cafe':
+        return `<path d="M5 9h12v6a4 4 0 01-4 4H9a4 4 0 01-4-4V9z M17 11h2a2 2 0 010 4h-2 M8 3v2 M11 3v2 M14 3v2"/>`;
+      case 'restaurante':
+        return `<path d="M7 3v9 M7 3v9a2 2 0 002 2v7 M5 3v6a2 2 0 002 2 M9 3v6a2 2 0 01-2 2 M17 3c-1.5 0-3 2-3 5s1 4 2 4l-1 9"/>`;
+      case 'bar':
+        return `<path d="M8 4h8l-1 6a4 4 0 11-6 0L8 4z M12 14v6 M9 20h6"/>`;
+      case 'boteco':
+        return `<path d="M5 6h10v13a2 2 0 01-2 2H7a2 2 0 01-2-2V6z M15 9h2a2 2 0 012 2v4a2 2 0 01-2 2h-2 M8 6V4a1 1 0 011-1h2a1 1 0 011 1v2"/>`;
+      case 'doceria':
+        return `<path d="M7 11h10l-1.5 9a1 1 0 01-1 1H9.5a1 1 0 01-1-1L7 11z M7 11a3 3 0 015-2.2A3 3 0 0117 11"/><circle cx="12" cy="6" r="1.5"/>`;
+      default:
+        return ''; // sem ícone = só o círculo branco
+    }
+  })();
   const svg = `
-    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="36" viewBox="0 0 28 36">
-      <path d="M14 0C6.3 0 0 6.1 0 13.6c0 9.6 12.5 21.4 13 21.9.3.2.7.2 1 0 .5-.5 13-12.3 13-21.9C27 6.1 21.7 0 14 0z" fill="${color}" stroke="#fff" stroke-width="1.5"/>
-      <circle cx="14" cy="13.5" r="5" fill="#fff"/>
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="40" viewBox="0 0 32 40">
+      <path d="M16 0C7.2 0 0 7 0 15.5c0 11 14.3 24.4 14.9 25 .3.2.8.2 1.1 0 .6-.6 16-14 16-25C32 7 24.8 0 16 0z" fill="${color}" stroke="#fff" stroke-width="1.5"/>
+      <circle cx="16" cy="15.5" r="9" fill="#fff"/>
+      ${typeIconPath ? `<g transform="translate(7 6.5) scale(0.75)" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${typeIconPath}</g>` : ''}
     </svg>`;
   return L.divIcon({
     html: svg,
     className: 'place-pin-icon',
-    iconSize: [28, 36],
-    iconAnchor: [14, 36],
+    iconSize: [32, 40],
+    iconAnchor: [16, 40],
   });
 }
 
@@ -6783,7 +6894,7 @@ document.getElementById('smart-place-interpret').onclick = async () => {
     closeAllModals();
     openPlaceModal(null);
     document.getElementById('place-name').value = data.name || '';
-    document.getElementById('place-type').value = ['bar','restaurante','cafe','outro'].includes(data.type) ? data.type : 'outro';
+    document.getElementById('place-type').value = ['bar','boteco','restaurante','cafe','doceria','outro'].includes(data.type) ? data.type : 'outro';
     document.getElementById('place-status').value = data.status === 'visited' ? 'visited' : 'wishlist';
     toggleStatusFields(document.getElementById('place-status').value);
     document.getElementById('place-neighborhood').value = data.neighborhood || '';

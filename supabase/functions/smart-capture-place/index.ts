@@ -24,7 +24,7 @@ Receberá uma frase, descrição ou URL e deve retornar APENAS um objeto JSON (s
 
 {
   "name": "Nome do estabelecimento",
-  "type": "bar" | "restaurante" | "cafe" | "outro",
+  "type": "bar" | "boteco" | "restaurante" | "cafe" | "doceria" | "outro",
   "neighborhood": "Nome do bairro ou null",
   "city": "Nome da cidade (default São Paulo se não especificada)",
   "address": "Rua e número se mencionados, ou null",
@@ -35,7 +35,13 @@ Receberá uma frase, descrição ou URL e deve retornar APENAS um objeto JSON (s
 }
 
 Regras:
-- "type": classifica baseado em pistas no texto (palavras-chave: "bar", "boteco", "drinks"=bar; "restaurante", "cantina", "comida", "jantar"=restaurante; "café", "cafeteria", "padaria", "brunch"=cafe; outros=outro).
+- "type": classifica baseado em pistas no texto:
+    * "bar"  → bares mais formais, coqueteleria, drinks autorais, rooftop, lounge.
+    * "boteco" → bar de bairro, mesa na calçada, chopp, petisco, classudo no informal.
+    * "restaurante" → comida, jantar, almoço, cantina, cozinha (italiana, japonesa…), brasserie.
+    * "cafe" → café, cafeteria, padaria, brunch, café da manhã, cafeteria de especialidade.
+    * "doceria" → sorveteria, gelateria, doceria, confeitaria, brigaderia, açaí, frozen.
+    * "outro" → tudo que não couber acima.
 - "tags": extrai descritores curtos do texto (ex: "drinks autorais", "italiano", "brunch", "vista", "rooftop", "vegano", "japonês"). Máximo 5.
 - "notes": só se houver comentários pessoais ou descrição extra. Não repita o nome ou tipo.
 - "status": default "wishlist". Se a frase mencionar "fui", "comi", "já estive", marca "visited".
