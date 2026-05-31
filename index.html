@@ -1952,6 +1952,13 @@
   .place-card-type-icon.t-boteco     { background: #ffedd5; border-color: #fdba74; color: #9a3412; }
   .place-card-type-icon.t-doceria    { background: #fce7f3; border-color: #f9a8d4; color: #9d174d; }
   .place-card-type-icon.t-outro      { background: var(--bg-card); border-color: var(--line); color: var(--ink-soft); }
+  .place-card-heart {
+    display: inline-flex;
+    align-items: center;
+    margin-left: 4px;
+    line-height: 0;
+    filter: drop-shadow(0 1px 1px rgba(236, 72, 153, 0.25));
+  }
 
   .place-card-rating {
     color: var(--ink);
@@ -3450,8 +3457,6 @@
         </select>
       </div>
 
-      <div class="filter-row" id="itinerary-row"></div>
-
       <div class="places-overview-wrap">
         <div id="places-overview-map"></div>
         <div class="places-overview-empty" id="places-overview-empty" hidden>
@@ -3926,46 +3931,6 @@
       <button class="btn btn-ghost" id="visit-delete" style="display:none">Excluir</button>
       <button class="btn btn-ghost" data-close-modal>Cancelar</button>
       <button class="btn" id="visit-save">Salvar</button>
-    </div>
-  </div>
-</div>
-
-<!-- ITINERARY MODAL -->
-<div class="modal-bg" id="itinerary-modal">
-  <div class="modal">
-    <div class="modal-title" id="itinerary-modal-title">Novo roteiro</div>
-    <div class="modal-sub">Agrupe lugares por viagem ou ocasião</div>
-
-    <div class="form-group">
-      <label class="form-label">Nome do roteiro</label>
-      <input type="text" class="form-control" id="itinerary-name" placeholder="Ex: Paris · março 2027" />
-    </div>
-
-    <div class="form-group" id="itinerary-places-group" style="display:none">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-        <label class="form-label" style="margin-bottom:0">Lugares · reordenar com ↑↓</label>
-        <button class="btn btn-ghost" id="itinerary-optimize" style="padding:6px 10px;font-size:11px" title="Reordena pelo caminho mais curto (vizinho mais próximo)">⚡ Otimizar rota</button>
-      </div>
-      <div id="itinerary-places-list" style="border:1px solid var(--line);border-radius:8px;background:var(--bg-card);max-height:240px;overflow-y:auto;padding:6px"></div>
-    </div>
-
-    <div class="modal-actions">
-      <button class="btn btn-ghost" id="itinerary-delete" style="display:none">Excluir</button>
-      <button class="btn btn-ghost" data-close-modal>Cancelar</button>
-      <button class="btn" id="itinerary-save">Salvar</button>
-    </div>
-  </div>
-</div>
-
-<!-- ADD-TO-ITINERARY MENU (inline picker) -->
-<div class="modal-bg" id="itinerary-pick-modal">
-  <div class="modal" style="max-width:360px">
-    <div class="modal-title">Adicionar a roteiro</div>
-    <div class="modal-sub" id="itinerary-pick-sub">—</div>
-    <div id="itinerary-pick-list" style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px"></div>
-    <button class="btn btn-ghost" id="itinerary-pick-new" style="width:100%">+ Novo roteiro</button>
-    <div class="modal-actions" style="justify-content:flex-end;margin-top:14px">
-      <button class="btn btn-ghost" data-close-modal>Fechar</button>
     </div>
   </div>
 </div>
@@ -5930,12 +5895,14 @@ let placeTypeFilter = 'all';
 let placeSearchText = '';
 let editingPlaceId = null;
 let currentRating = 0;
-let activeItineraryId = null;       // id do roteiro ativo, ou null
-let editingItineraryId = null;       // id do roteiro sendo editado no modal
+// Estado da geolocalização (definidas antes dos primeiros usos em render*)
+let userLocation = null;       // {lat, lng, accuracy} ou null
+let userLocationMarker = null;
+let userLocationCircle = null;
+let nearRadiusKm = 3;
 
 function renderPlaces() {
   renderPlacesStats();
-  renderItineraryFilter();
   renderPlacesGrid();
 }
 
@@ -6085,11 +6052,7 @@ function renderPlacesGrid() {
   let list = filterPlaces(state.places || []);
 
   // Filtro de roteiro: substitui a lista pelos lugares na ordem do roteiro
-  const itin = activeItineraryId ? (state.itineraries || []).find(i => i.id === activeItineraryId) : null;
-  if (itin) {
-    const placeById = new Map((state.places || []).map(p => [p.id, p]));
-    list = itin.placeIds.map(id => placeById.get(id)).filter(Boolean);
-  } else if (placeFilter === 'near' && userLocation) {
+  if (placeFilter === 'near' && userLocation) {
     // No filtro "perto", ordena puramente por distância crescente
     list.sort((a, b) =>
       haversine(userLocation.lat, userLocation.lng, a.lat, a.lng) -
@@ -6169,6 +6132,9 @@ function renderPlacesGrid() {
         <div class="place-card-type">
           <span class="place-card-type-icon t-${p.type || 'outro'}">${placeTypeIcon(p.type, 14)}</span>
           ${labelType(p.type)}
+          ${p.status === 'visited' ? `<span class="place-card-heart" title="Já fui aqui" aria-label="Já fui aqui">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="#ec4899" stroke="#ec4899" stroke-width="1.5" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+          </span>` : ''}
         </div>
         ${ratingDisplay}
         ${priority}
@@ -6190,10 +6156,6 @@ function renderPlacesGrid() {
           ).join('')}</div>`;
         })()}
         <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">
-          <button class="place-card-itinerary-btn" data-itinerary-add="${p.id}">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
-            Roteiro
-          </button>
           <button class="place-card-itinerary-btn" data-visit-add="${p.id}" style="border-color:#86efac;color:#166534">
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
             Registrar visita
@@ -6213,13 +6175,6 @@ function renderPlacesGrid() {
     `;
   }).join('');
 
-  // wire botão de roteiro
-  el.querySelectorAll('[data-itinerary-add]').forEach(b => {
-    b.onclick = (e) => {
-      e.stopPropagation();
-      openItineraryPickModal(b.dataset.itineraryAdd);
-    };
-  });
   // wire botão "Registrar visita"
   el.querySelectorAll('[data-visit-add]').forEach(b => {
     b.onclick = (e) => {
@@ -6286,23 +6241,15 @@ function renderPlacesOverviewMap(list) {
   }
   empty.hidden = true;
 
-  // Modo roteiro: pin roxo numerado + linha conectando na ordem
-  const inItinerary = !!activeItineraryId;
-
   const markers = [];
-  withCoords.forEach((p, i) => {
-    const icon = inItinerary ? itineraryPinIcon(i + 1) : placePinIcon(p.status, p.type);
-    const marker = L.marker([p.lat, p.lng], { icon });
+  withCoords.forEach((p) => {
+    const marker = L.marker([p.lat, p.lng], { icon: placePinIcon(p.status, p.type) });
     const cleanName = escapeHTML(p.name);
     const cleanLoc = escapeHTML([p.neighborhood, p.city].filter(Boolean).join(', '));
-    const statusLabel = p.status === 'visited' ? 'Já fui' : 'Quero ir';
-    const orderBadge = inItinerary
-      ? `<div style="display:inline-block;background:#7c3aed;color:#fff;border-radius:4px;padding:1px 6px;font-size:10px;font-weight:700;margin-bottom:4px">${i + 1}º</div><br>`
-      : '';
+    const statusLabel = p.status === 'visited' ? '❤️ Já fui' : 'Quero ir';
     marker.bindTooltip(cleanName, { direction: 'top', offset: [0, -32] });
     marker.bindPopup(`
       <div style="font-family:'Inter',sans-serif;min-width:160px">
-        ${orderBadge}
         <div style="font-weight:700;font-size:14px;margin-bottom:2px">${cleanName}</div>
         <div style="font-size:11px;color:#666;margin-bottom:6px">${statusLabel}${cleanLoc ? ' · ' + cleanLoc : ''}</div>
         <button data-overview-card="${p.id}" style="background:#000;color:#fff;border:none;border-radius:6px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif">Ver card</button>
@@ -6311,18 +6258,6 @@ function renderPlacesOverviewMap(list) {
     placesOverviewLayer.addLayer(marker);
     markers.push(marker);
   });
-
-  // Linha conectando pinos do roteiro (na ordem)
-  if (inItinerary && withCoords.length > 1) {
-    const latlngs = withCoords.map(p => [p.lat, p.lng]);
-    const polyline = L.polyline(latlngs, {
-      color: '#7c3aed',
-      weight: 3,
-      opacity: 0.7,
-      dashArray: '6,8',
-    });
-    placesOverviewLayer.addLayer(polyline);
-  }
 
   // Wire up botão "Ver card" no popup: precisa delegar pois o popup só
   // existe no DOM enquanto aberto
@@ -6364,358 +6299,6 @@ function scrollToPlaceCard(placeId) {
   setTimeout(() => card.classList.remove('is-highlight'), 1500);
 }
 
-// ============== ROTEIROS ==============
-function renderItineraryFilter() {
-  const row = document.getElementById('itinerary-row');
-  if (!row) return;
-  const its = state.itineraries || [];
-  // Auto-reset se o roteiro ativo foi excluído
-  if (activeItineraryId && !its.find(i => i.id === activeItineraryId)) {
-    activeItineraryId = null;
-  }
-  let html = `<span class="filter-row-label">Roteiro:</span>`;
-  html += `<button class="btn btn-ghost ${!activeItineraryId ? 'active' : ''}" data-itinerary="all">Sem roteiro</button>`;
-  for (const it of its) {
-    const count = it.placeIds.length;
-    const active = activeItineraryId === it.id;
-    html += `<button class="btn btn-ghost itinerary-chip ${active ? 'active' : ''}" data-itinerary="${it.id}" title="${escapeHTML(it.name)}">
-      ${escapeHTML(it.name)} · ${count}
-      <span class="itinerary-chip-edit" data-itinerary-edit="${it.id}" title="Editar roteiro">✎</span>
-    </button>`;
-  }
-  html += `<button class="btn btn-ghost" id="itinerary-new-chip">+ Novo roteiro</button>`;
-  row.innerHTML = html;
-
-  row.querySelectorAll('[data-itinerary]').forEach(b => {
-    b.onclick = (e) => {
-      // Click no lápis NÃO troca o roteiro ativo
-      if (e.target.closest('[data-itinerary-edit]')) return;
-      const id = b.dataset.itinerary;
-      activeItineraryId = id === 'all' ? null : id;
-      renderPlaces();
-    };
-  });
-  row.querySelectorAll('[data-itinerary-edit]').forEach(b => {
-    b.onclick = (e) => {
-      e.stopPropagation();
-      openItineraryModal(b.dataset.itineraryEdit);
-    };
-  });
-  document.getElementById('itinerary-new-chip').onclick = () => openItineraryModal(null);
-}
-
-function openItineraryModal(itineraryId) {
-  editingItineraryId = itineraryId;
-  const modal = document.getElementById('itinerary-modal');
-  const title = document.getElementById('itinerary-modal-title');
-  const nameInp = document.getElementById('itinerary-name');
-  const delBtn = document.getElementById('itinerary-delete');
-  const placesGroup = document.getElementById('itinerary-places-group');
-  const placesList = document.getElementById('itinerary-places-list');
-
-  if (itineraryId) {
-    const it = (state.itineraries || []).find(i => i.id === itineraryId);
-    if (!it) return;
-    title.textContent = 'Editar roteiro';
-    nameInp.value = it.name;
-    delBtn.style.display = '';
-    placesGroup.style.display = it.placeIds.length ? '' : 'none';
-    const placeById = new Map((state.places || []).map(p => [p.id, p]));
-    placesList.innerHTML = it.placeIds.map((pid, idx) => {
-      const p = placeById.get(pid);
-      const name = p ? p.name : '(lugar removido)';
-      return `
-        <div class="itinerary-place-row" data-place-row="${pid}">
-          <div class="itinerary-place-num">${idx + 1}</div>
-          <div class="itinerary-place-name">${escapeHTML(name)}</div>
-          <div class="itinerary-place-actions">
-            <button data-row-up="${pid}" title="Subir">↑</button>
-            <button data-row-down="${pid}" title="Descer">↓</button>
-            <button data-row-del="${pid}" title="Remover">×</button>
-          </div>
-        </div>
-      `;
-    }).join('');
-    wireItineraryRowActions();
-  } else {
-    title.textContent = 'Novo roteiro';
-    nameInp.value = '';
-    delBtn.style.display = 'none';
-    placesGroup.style.display = 'none';
-  }
-  modal.classList.add('active');
-  setTimeout(() => nameInp.focus(), 80);
-}
-
-function wireItineraryRowActions() {
-  const list = document.getElementById('itinerary-places-list');
-  if (!list || !editingItineraryId) return;
-  const it = (state.itineraries || []).find(i => i.id === editingItineraryId);
-  if (!it) return;
-  const refresh = () => {
-    saveState();
-    openItineraryModal(editingItineraryId); // re-renderiza
-    renderPlaces();
-  };
-  list.querySelectorAll('[data-row-up]').forEach(b => {
-    b.onclick = () => {
-      const idx = it.placeIds.indexOf(b.dataset.rowUp);
-      if (idx > 0) {
-        [it.placeIds[idx - 1], it.placeIds[idx]] = [it.placeIds[idx], it.placeIds[idx - 1]];
-        refresh();
-      }
-    };
-  });
-  list.querySelectorAll('[data-row-down]').forEach(b => {
-    b.onclick = () => {
-      const idx = it.placeIds.indexOf(b.dataset.rowDown);
-      if (idx >= 0 && idx < it.placeIds.length - 1) {
-        [it.placeIds[idx], it.placeIds[idx + 1]] = [it.placeIds[idx + 1], it.placeIds[idx]];
-        refresh();
-      }
-    };
-  });
-  list.querySelectorAll('[data-row-del]').forEach(b => {
-    b.onclick = () => {
-      it.placeIds = it.placeIds.filter(id => id !== b.dataset.rowDel);
-      refresh();
-    };
-  });
-}
-
-// Otimizar ordem por vizinho mais próximo (TSP heurístico)
-function haversine(lat1, lng1, lat2, lng2) {
-  const R = 6371; // km
-  const toRad = (x) => x * Math.PI / 180;
-  const dLat = toRad(lat2 - lat1);
-  const dLng = toRad(lng2 - lng1);
-  const a = Math.sin(dLat/2) ** 2 +
-            Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
-            Math.sin(dLng/2) ** 2;
-  return 2 * R * Math.asin(Math.sqrt(a));
-}
-
-// ============== LOCALIZAÇÃO DO USUÁRIO ==============
-let userLocation = null; // { lat, lng, accuracy }
-let userLocationMarker = null;
-let userLocationCircle = null;
-let nearRadiusKm = 3;
-
-function formatDistance(km) {
-  if (km < 1) return Math.round(km * 1000) + 'm';
-  if (km < 10) return km.toFixed(1) + 'km';
-  return Math.round(km) + 'km';
-}
-
-function userLocationIcon() {
-  return L.divIcon({
-    html: '<div class="user-location-dot"></div>',
-    className: '',
-    iconSize: [16, 16],
-    iconAnchor: [8, 8],
-  });
-}
-
-async function requestUserLocation({ recenter = true } = {}) {
-  if (!('geolocation' in navigator)) {
-    alert('Seu navegador não suporta geolocalização.');
-    return null;
-  }
-  const btn = document.getElementById('user-location-btn');
-  const label = document.getElementById('user-location-label');
-  label.textContent = 'Pegando localização…';
-  btn.disabled = true;
-
-  try {
-    const pos = await new Promise((resolve, reject) => {
-      navigator.geolocation.getCurrentPosition(resolve, reject, {
-        enableHighAccuracy: true,
-        timeout: 12000,
-        maximumAge: 60000,
-      });
-    });
-    userLocation = {
-      lat: pos.coords.latitude,
-      lng: pos.coords.longitude,
-      accuracy: pos.coords.accuracy,
-    };
-    btn.classList.add('is-active');
-    label.textContent = 'Localização ativa · atualizar';
-    document.getElementById('near-radius').style.display = '';
-    document.getElementById('filter-near').style.display = '';
-
-    if (recenter && placesOverviewMap) {
-      placesOverviewMap.setView([userLocation.lat, userLocation.lng], 14);
-    }
-    drawUserLocationOnMap();
-    renderPlaces();
-    return userLocation;
-  } catch (err) {
-    console.error(err);
-    label.textContent = 'Usar minha localização';
-    let msg = 'Não consegui pegar sua localização.';
-    if (err?.code === 1) msg = 'Permissão negada. Ative no navegador e tente de novo.';
-    else if (err?.code === 3) msg = 'Tempo esgotado tentando localizar. Tente de novo.';
-    alert(msg);
-    return null;
-  } finally {
-    btn.disabled = false;
-  }
-}
-
-function drawUserLocationOnMap() {
-  if (!placesOverviewMap || !userLocation) return;
-  if (userLocationMarker) placesOverviewMap.removeLayer(userLocationMarker);
-  if (userLocationCircle) placesOverviewMap.removeLayer(userLocationCircle);
-  userLocationCircle = L.circle([userLocation.lat, userLocation.lng], {
-    radius: Math.min(userLocation.accuracy || 100, 500),
-    color: '#1d4ed8',
-    weight: 1,
-    fillColor: '#1d4ed8',
-    fillOpacity: 0.08,
-    interactive: false,
-  }).addTo(placesOverviewMap);
-  userLocationMarker = L.marker([userLocation.lat, userLocation.lng], {
-    icon: userLocationIcon(),
-    keyboard: false,
-    interactive: false,
-    zIndexOffset: 1000,
-  }).addTo(placesOverviewMap);
-}
-
-document.getElementById('user-location-btn').addEventListener('click', () => {
-  requestUserLocation();
-});
-
-document.getElementById('near-radius').addEventListener('change', (e) => {
-  nearRadiusKm = parseFloat(e.target.value);
-  document.getElementById('filter-near').textContent = `📍 Perto · ${nearRadiusKm}km`;
-  if (placeFilter === 'near') renderPlaces();
-});
-
-document.getElementById('itinerary-optimize').onclick = () => {
-  if (!editingItineraryId) return;
-  const it = state.itineraries.find(i => i.id === editingItineraryId);
-  if (!it) return;
-  const placeById = new Map((state.places || []).map(p => [p.id, p]));
-  const withCoords = it.placeIds
-    .map(id => placeById.get(id))
-    .filter(p => p && typeof p.lat === 'number' && typeof p.lng === 'number');
-  const noCoords = it.placeIds.filter(id => {
-    const p = placeById.get(id);
-    return !p || typeof p.lat !== 'number' || typeof p.lng !== 'number';
-  });
-  if (withCoords.length < 2) {
-    alert('Precisa de pelo menos 2 lugares com localização pra otimizar.');
-    return;
-  }
-  // Vizinho mais próximo: começa do primeiro lugar do roteiro
-  const ordered = [withCoords[0]];
-  const remaining = withCoords.slice(1);
-  while (remaining.length) {
-    const last = ordered[ordered.length - 1];
-    let bestIdx = 0;
-    let bestDist = Infinity;
-    for (let i = 0; i < remaining.length; i++) {
-      const d = haversine(last.lat, last.lng, remaining[i].lat, remaining[i].lng);
-      if (d < bestDist) { bestDist = d; bestIdx = i; }
-    }
-    ordered.push(remaining.splice(bestIdx, 1)[0]);
-  }
-  // Lugares sem coordenadas ficam no fim mantendo a ordem original
-  it.placeIds = [...ordered.map(p => p.id), ...noCoords];
-  saveState();
-  openItineraryModal(editingItineraryId);
-  renderPlaces();
-};
-
-document.getElementById('itinerary-save').onclick = () => {
-  const name = document.getElementById('itinerary-name').value.trim();
-  if (!name) {
-    alert('Coloca um nome pro roteiro.');
-    return;
-  }
-  if (!state.itineraries) state.itineraries = [];
-  if (editingItineraryId) {
-    const it = state.itineraries.find(i => i.id === editingItineraryId);
-    if (it) it.name = name;
-  } else {
-    const id = uid();
-    state.itineraries.push({ id, name, placeIds: [], createdAt: new Date().toISOString() });
-    editingItineraryId = id;
-  }
-  saveState();
-  closeAllModals();
-  renderPlaces();
-};
-
-document.getElementById('itinerary-delete').onclick = () => {
-  if (!editingItineraryId) return;
-  if (!confirm('Excluir este roteiro? Os lugares não serão afetados.')) return;
-  state.itineraries = (state.itineraries || []).filter(i => i.id !== editingItineraryId);
-  if (activeItineraryId === editingItineraryId) activeItineraryId = null;
-  editingItineraryId = null;
-  saveState();
-  closeAllModals();
-  renderPlaces();
-};
-
-// Modal de "Adicionar a roteiro" — picker
-let pickingPlaceId = null;
-function openItineraryPickModal(placeId) {
-  pickingPlaceId = placeId;
-  const p = (state.places || []).find(x => x.id === placeId);
-  if (!p) return;
-  document.getElementById('itinerary-pick-sub').textContent = p.name.toUpperCase();
-  const list = document.getElementById('itinerary-pick-list');
-  const its = state.itineraries || [];
-  if (its.length === 0) {
-    list.innerHTML = '<div style="color:var(--ink-faint);font-size:12px;text-align:center;padding:8px">Nenhum roteiro ainda. Crie um abaixo.</div>';
-  } else {
-    list.innerHTML = its.map(it => {
-      const inIt = it.placeIds.includes(placeId);
-      return `<div class="itinerary-pick-item ${inIt ? 'is-in' : ''}" data-pick-itinerary="${it.id}">
-        <span>${escapeHTML(it.name)} · ${it.placeIds.length}</span>
-        <span style="font-size:11px">${inIt ? '✓ adicionado · clique pra remover' : '+ adicionar'}</span>
-      </div>`;
-    }).join('');
-  }
-  list.querySelectorAll('[data-pick-itinerary]').forEach(it => {
-    it.onclick = () => {
-      const id = it.dataset.pickItinerary;
-      const itin = (state.itineraries || []).find(i => i.id === id);
-      if (!itin) return;
-      const idx = itin.placeIds.indexOf(pickingPlaceId);
-      if (idx >= 0) itin.placeIds.splice(idx, 1);
-      else itin.placeIds.push(pickingPlaceId);
-      saveState();
-      closeAllModals();
-      renderPlaces();
-    };
-  });
-  document.getElementById('itinerary-pick-modal').classList.add('active');
-}
-
-document.getElementById('itinerary-pick-new').onclick = () => {
-  const placeId = pickingPlaceId;
-  closeAllModals();
-  openItineraryModal(null);
-  // Após salvar o novo roteiro, adiciona o lugar
-  const origSave = document.getElementById('itinerary-save').onclick;
-  document.getElementById('itinerary-save').onclick = () => {
-    const name = document.getElementById('itinerary-name').value.trim();
-    if (!name) { alert('Coloca um nome pro roteiro.'); return; }
-    if (!state.itineraries) state.itineraries = [];
-    const id = uid();
-    state.itineraries.push({ id, name, placeIds: [placeId], createdAt: new Date().toISOString() });
-    editingItineraryId = null;
-    saveState();
-    closeAllModals();
-    renderPlaces();
-    // restaura handler original
-    document.getElementById('itinerary-save').onclick = origSave;
-  };
-};
 
 // ============== GEOCODING + MINI-MAPS ==============
 const NOMINATIM_URL = 'https://nominatim.openstreetmap.org/search';
@@ -6823,34 +6406,24 @@ function placePinIcon(status, type) {
         return ''; // sem ícone = só o círculo branco
     }
   })();
+  // Mini-coração rosa no canto superior direito quando "já fui"
+  const heartBadge = status === 'visited' ? `
+    <g transform="translate(20 -2)">
+      <circle cx="6" cy="8" r="7.5" fill="#fff" stroke="#ec4899" stroke-width="1.2"/>
+      <path d="M6 11.4l-.06-.05c-1.6-1.43-2.7-2.42-2.7-3.62A1.5 1.5 0 014.74 6.2c.5 0 1 .24 1.31.63.32-.39.81-.63 1.32-.63A1.5 1.5 0 018.87 7.7c0 1.2-1.09 2.19-2.7 3.62L6 11.4z" fill="#ec4899"/>
+    </g>` : '';
   const svg = `
-    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="40" viewBox="0 0 32 40">
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="40" viewBox="-2 -2 36 42">
       <path d="M16 0C7.2 0 0 7 0 15.5c0 11 14.3 24.4 14.9 25 .3.2.8.2 1.1 0 .6-.6 16-14 16-25C32 7 24.8 0 16 0z" fill="${color}" stroke="#fff" stroke-width="1.5"/>
       <circle cx="16" cy="15.5" r="9" fill="#fff"/>
       ${typeIconPath ? `<g transform="translate(7 6.5) scale(0.75)" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${typeIconPath}</g>` : ''}
+      ${heartBadge}
     </svg>`;
   return L.divIcon({
     html: svg,
     className: 'place-pin-icon',
-    iconSize: [32, 40],
-    iconAnchor: [16, 40],
-  });
-}
-
-// Pin roxo numerado pra modo roteiro
-function itineraryPinIcon(num) {
-  const color = '#7c3aed';
-  const svg = `
-    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="40" viewBox="0 0 32 40">
-      <path d="M16 0C7.2 0 0 7 0 15.5c0 11 14.3 24.4 14.9 25 .3.2.8.2 1.1 0 .6-.6 16-14 16-25C32 7 24.8 0 16 0z" fill="${color}" stroke="#fff" stroke-width="1.5"/>
-      <circle cx="16" cy="15.5" r="9" fill="#fff"/>
-      <text x="16" y="20" text-anchor="middle" font-family="Inter, sans-serif" font-size="13" font-weight="700" fill="${color}">${num}</text>
-    </svg>`;
-  return L.divIcon({
-    html: svg,
-    className: 'place-pin-icon-num',
-    iconSize: [32, 40],
-    iconAnchor: [16, 40],
+    iconSize: [36, 42],
+    iconAnchor: [18, 42],
   });
 }
 
