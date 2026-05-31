@@ -2340,6 +2340,154 @@
     color: var(--ink-faint);
   }
 
+  /* ============== EDITOR BLOCK-BASED (NOTION-STYLE) ============== */
+  .note-blocks {
+    padding: 20px 32px 80px;
+    font-size: 15px;
+    font-family: 'Inter', sans-serif;
+    color: var(--ink);
+    outline: none;
+    line-height: 1.6;
+  }
+  @media (max-width: 900px) {
+    .note-blocks { padding: 12px 20px 60px; }
+  }
+  .note-block {
+    position: relative;
+    padding: 3px 0;
+    outline: none;
+    white-space: pre-wrap;
+    word-break: break-word;
+    transition: background 0.1s;
+    min-height: 1.6em;
+  }
+  /* Placeholder estilo Notion no bloco focado e vazio */
+  .note-block:empty::before {
+    content: attr(data-placeholder);
+    color: var(--ink-faint);
+    pointer-events: none;
+    opacity: 0.7;
+  }
+  .note-block[data-type="p"]:empty::before { content: "Digite '/' pra inserir bloco ou comece a escrever..."; }
+  .note-block[data-type="h1"]:empty::before { content: "Título 1"; }
+  .note-block[data-type="h2"]:empty::before { content: "Título 2"; }
+  .note-block[data-type="h3"]:empty::before { content: "Título 3"; }
+  .note-block[data-type="bullet"]:empty::before { content: "Item da lista"; }
+  .note-block[data-type="todo"]:empty::before { content: "Tarefa"; }
+  .note-block[data-type="quote"]:empty::before { content: "Citação"; }
+  .note-block[data-type="code"]:empty::before { content: "Código"; }
+  /* Tipos */
+  .note-block[data-type="h1"] {
+    font-size: 30px;
+    font-weight: 700;
+    line-height: 1.25;
+    margin: 16px 0 4px;
+    letter-spacing: -0.02em;
+  }
+  .note-block[data-type="h2"] {
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.3;
+    margin: 14px 0 2px;
+    letter-spacing: -0.01em;
+  }
+  .note-block[data-type="h3"] {
+    font-size: 17px;
+    font-weight: 700;
+    line-height: 1.35;
+    margin: 10px 0 2px;
+  }
+  .note-block[data-type="bullet"] {
+    padding-left: 26px;
+  }
+  .note-block[data-type="bullet"]::after {
+    content: '•';
+    position: absolute;
+    left: 8px;
+    top: 3px;
+    color: var(--ink-soft);
+    font-weight: 700;
+  }
+  .note-block[data-type="todo"] {
+    padding-left: 28px;
+  }
+  .note-block[data-type="todo"]::after {
+    content: '';
+    position: absolute;
+    left: 4px;
+    top: 6px;
+    width: 16px;
+    height: 16px;
+    border: 1.5px solid var(--ink-faint);
+    border-radius: 4px;
+    cursor: pointer;
+    background: transparent;
+    transition: all 0.15s;
+  }
+  .note-block[data-type="todo"][data-checked="true"]::after {
+    background: var(--ink);
+    border-color: var(--ink);
+  }
+  .note-block[data-type="todo"][data-checked="true"]::before {
+    /* O ::before já tá ocupado pelo placeholder. Usamos um span interno pro check. */
+  }
+  .note-block[data-type="todo"][data-checked="true"] {
+    color: var(--ink-faint);
+    text-decoration: line-through;
+  }
+  .note-block-todo-check {
+    position: absolute;
+    left: 7px;
+    top: 9px;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    pointer-events: none;
+    display: none;
+  }
+  .note-block[data-type="todo"][data-checked="true"] .note-block-todo-check { display: block; }
+  .note-block[data-type="quote"] {
+    border-left: 3px solid var(--ink);
+    padding-left: 14px;
+    color: var(--ink-soft);
+    font-style: italic;
+    margin: 6px 0;
+  }
+  .note-block[data-type="code"] {
+    font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 13px;
+    background: var(--bg-card);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 10px 14px;
+    margin: 8px 0;
+    white-space: pre;
+    overflow-x: auto;
+  }
+  .note-block[data-type="divider"] {
+    border-top: 1px solid var(--line);
+    margin: 12px 0;
+    padding: 0;
+    min-height: 1px;
+    pointer-events: none;
+  }
+  .note-block[data-type="divider"]::before { display: none; }
+  /* Estilos inline preservados */
+  .note-blocks strong { font-weight: 700; }
+  .note-blocks em { font-style: italic; }
+  .note-blocks u { text-decoration: underline; }
+  .note-blocks code {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    background: var(--bg-card);
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-size: 0.92em;
+  }
+  /* Foco no bloco — sublinhado de cursor mais visível */
+  .note-block:focus { background: transparent; }
+  /* Drag handle (preparado pra futuro, mas escondido por enquanto) */
+  .note-block-handle { display: none; }
+
   .note-status {
     padding: 8px 32px;
     font-size: 11px;
@@ -3574,21 +3722,9 @@
               <button class="format-btn" data-fmt="quote" title="Citação">"</button>
             </div>
 
-            <div class="note-body-wrapper">
-              <textarea class="note-body-textarea" id="note-body-textarea" placeholder="Comece a escrever ou pressione / para inserir blocos..."></textarea>
-              <div class="note-preview" id="note-preview" style="display:none"></div>
+            <div class="note-body-wrapper" style="position:relative;flex:1;overflow-y:auto">
+              <div class="note-blocks" id="note-blocks" contenteditable="false"></div>
               <div class="slash-menu" id="slash-menu"></div>
-            </div>
-
-            <!-- Live preview (sempre visível, abaixo do editor) -->
-            <div class="note-live-preview-section" id="note-live-section">
-              <div class="note-live-preview-header">
-                <span>Visualização</span>
-                <button class="note-live-toggle" id="note-live-toggle" title="Esconder/mostrar visualização">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
-                </button>
-              </div>
-              <div class="note-live-preview" id="note-live-preview"></div>
             </div>
 
             <div class="note-status" id="note-status">Salvo</div>
@@ -7228,7 +7364,7 @@ function showNoteEditor(note) {
   document.getElementById('note-content').style.display = 'flex';
   document.getElementById('note-title-input').value = note.title || '';
   document.getElementById('note-tags-input').value = (note.tags || []).join(', ');
-  document.getElementById('note-body-textarea').value = note.body || '';
+  mountBlocks(note.body || '');
   updateNoteMeta(note);
   document.getElementById('pin-btn').classList.toggle('active', !!note.pinned);
   document.getElementById('note-status').textContent = 'Salvo';
@@ -7490,7 +7626,7 @@ function flushSave() {
   const note = state.notes.find(n => n.id === activeNoteId);
   if (!note) return;
   const newTitle = document.getElementById('note-title-input').value;
-  const newBody = document.getElementById('note-body-textarea').value;
+  const newBody = serializeBlocks();
   const newTagsRaw = document.getElementById('note-tags-input').value.trim();
   const newTags = newTagsRaw ? newTagsRaw.split(',').map(t => t.trim()).filter(Boolean) : [];
 
@@ -7512,7 +7648,334 @@ function flushSave() {
 
 document.getElementById('note-title-input').addEventListener('input', scheduleSave);
 document.getElementById('note-tags-input').addEventListener('input', scheduleSave);
-document.getElementById('note-body-textarea').addEventListener('input', scheduleSave);
+
+// ============== EDITOR BLOCK-BASED (NOTION-STYLE) ==============
+const noteBlocksEl = document.getElementById('note-blocks');
+
+// --- markdown inline → HTML (negrito, itálico, sublinhado, code inline) ---
+function inlineMdToHtml(text) {
+  // Escapa HTML primeiro
+  let s = text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+  // Code inline `code` (precisa vir antes pra não conflitar)
+  s = s.replace(/`([^`]+)`/g, '<code>$1</code>');
+  // Negrito **text** ou __text__
+  s = s.replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>');
+  s = s.replace(/__([^_\n]+)__/g, '<u>$1</u>');
+  // Itálico *text*
+  s = s.replace(/(^|\W)\*([^*\n]+)\*(?=\W|$)/g, '$1<em>$2</em>');
+  return s;
+}
+
+// --- HTML → markdown inline (pra serializar) ---
+function htmlToInlineMd(html) {
+  const tmp = document.createElement('div');
+  tmp.innerHTML = html;
+  function walk(node) {
+    let out = '';
+    for (const n of node.childNodes) {
+      if (n.nodeType === Node.TEXT_NODE) out += n.textContent;
+      else if (n.nodeType === Node.ELEMENT_NODE) {
+        const tag = n.tagName.toLowerCase();
+        const inner = walk(n);
+        if (tag === 'strong' || tag === 'b') out += '**' + inner + '**';
+        else if (tag === 'em' || tag === 'i') out += '*' + inner + '*';
+        else if (tag === 'u') out += '__' + inner + '__';
+        else if (tag === 'code') out += '`' + inner + '`';
+        else if (tag === 'br') out += '\n';
+        else out += inner;
+      }
+    }
+    return out;
+  }
+  return walk(tmp);
+}
+
+// --- Markdown completo → array de blocos {type, text, checked?} ---
+function parseMdToBlocks(md) {
+  const lines = (md || '').split('\n');
+  const blocks = [];
+  let i = 0;
+  while (i < lines.length) {
+    const line = lines[i];
+    let m;
+    if ((m = line.match(/^### (.*)$/))) blocks.push({ type: 'h3', text: m[1] });
+    else if ((m = line.match(/^## (.*)$/))) blocks.push({ type: 'h2', text: m[1] });
+    else if ((m = line.match(/^# (.*)$/))) blocks.push({ type: 'h1', text: m[1] });
+    else if ((m = line.match(/^- \[([ xX])\] (.*)$/))) blocks.push({ type: 'todo', text: m[2], checked: m[1].toLowerCase() === 'x' });
+    else if ((m = line.match(/^[-*] (.*)$/))) blocks.push({ type: 'bullet', text: m[1] });
+    else if ((m = line.match(/^> ?(.*)$/))) blocks.push({ type: 'quote', text: m[1] });
+    else if (/^---+$/.test(line)) blocks.push({ type: 'divider', text: '' });
+    else if (line.startsWith('```')) {
+      // bloco de código multilinha
+      i++;
+      const codeLines = [];
+      while (i < lines.length && !lines[i].startsWith('```')) {
+        codeLines.push(lines[i]);
+        i++;
+      }
+      blocks.push({ type: 'code', text: codeLines.join('\n') });
+    } else if (line.trim() === '') {
+      blocks.push({ type: 'p', text: '' });
+    } else {
+      blocks.push({ type: 'p', text: line });
+    }
+    i++;
+  }
+  if (blocks.length === 0) blocks.push({ type: 'p', text: '' });
+  return blocks;
+}
+
+// --- Array de blocos → string markdown (pra salvar) ---
+function serializeBlocks() {
+  const out = [];
+  noteBlocksEl.querySelectorAll(':scope > .note-block').forEach(el => {
+    const type = el.dataset.type;
+    // Clona pra não mutar o DOM e remove decorações internas (checkmark do todo)
+    const clone = el.cloneNode(true);
+    clone.querySelectorAll('.note-block-todo-check').forEach(n => n.remove());
+    const text = htmlToInlineMd(clone.innerHTML).replace(/\n+$/, '');
+    if (type === 'h1') out.push('# ' + text);
+    else if (type === 'h2') out.push('## ' + text);
+    else if (type === 'h3') out.push('### ' + text);
+    else if (type === 'bullet') out.push('- ' + text);
+    else if (type === 'todo') {
+      const checked = el.dataset.checked === 'true';
+      out.push('- [' + (checked ? 'x' : ' ') + '] ' + text);
+    }
+    else if (type === 'quote') out.push('> ' + text);
+    else if (type === 'divider') out.push('---');
+    else if (type === 'code') out.push('```\n' + text + '\n```');
+    else out.push(text);
+  });
+  return out.join('\n');
+}
+
+// --- Criar elemento de bloco ---
+function createBlockEl(type = 'p', text = '', checked = false) {
+  const el = document.createElement('div');
+  el.className = 'note-block';
+  el.dataset.type = type;
+  el.contentEditable = type === 'divider' ? 'false' : 'true';
+  if (type === 'todo') {
+    el.dataset.checked = checked ? 'true' : 'false';
+    // Adicionar o checkmark interno (escondido se não checked)
+    const chk = document.createElement('span');
+    chk.className = 'note-block-todo-check';
+    chk.textContent = '✓';
+    chk.contentEditable = 'false';
+    el.appendChild(chk);
+  }
+  if (text) el.innerHTML = (text === '' ? '' : inlineMdToHtml(text));
+  // Re-adiciona o checkmark se foi sobrescrito pelo innerHTML
+  if (type === 'todo' && !el.querySelector('.note-block-todo-check')) {
+    const chk = document.createElement('span');
+    chk.className = 'note-block-todo-check';
+    chk.textContent = '✓';
+    chk.contentEditable = 'false';
+    el.insertBefore(chk, el.firstChild);
+  }
+  return el;
+}
+
+// --- Montar todos os blocos no editor ---
+function mountBlocks(markdown) {
+  noteBlocksEl.innerHTML = '';
+  const blocks = parseMdToBlocks(markdown || '');
+  for (const b of blocks) {
+    noteBlocksEl.appendChild(createBlockEl(b.type, b.text, b.checked));
+  }
+}
+
+// --- Cursor helpers ---
+function getCurrentBlock() {
+  const sel = window.getSelection();
+  if (!sel || !sel.anchorNode) return null;
+  let node = sel.anchorNode;
+  while (node && node !== noteBlocksEl) {
+    if (node.classList && node.classList.contains('note-block')) return node;
+    node = node.parentNode;
+  }
+  return null;
+}
+function getCaretOffset(block) {
+  const sel = window.getSelection();
+  if (!sel || !sel.rangeCount) return 0;
+  const range = sel.getRangeAt(0).cloneRange();
+  range.selectNodeContents(block);
+  range.setEnd(sel.getRangeAt(0).endContainer, sel.getRangeAt(0).endOffset);
+  return range.toString().length;
+}
+function setCaretAt(block, offset = 0) {
+  const range = document.createRange();
+  const sel = window.getSelection();
+  let charsLeft = offset;
+  let placed = false;
+  function walk(node) {
+    if (placed) return;
+    if (node.nodeType === Node.TEXT_NODE) {
+      if (charsLeft <= node.textContent.length) {
+        range.setStart(node, charsLeft);
+        range.collapse(true);
+        placed = true;
+      } else {
+        charsLeft -= node.textContent.length;
+      }
+    } else {
+      for (const c of node.childNodes) walk(c);
+    }
+  }
+  walk(block);
+  if (!placed) {
+    range.selectNodeContents(block);
+    range.collapse(false);
+  }
+  sel.removeAllRanges();
+  sel.addRange(range);
+  block.focus();
+}
+
+// --- Trocar tipo de bloco preservando texto ---
+function changeBlockType(block, newType, newText) {
+  const currentText = htmlToInlineMd(block.innerHTML);
+  const finalText = newText !== undefined ? newText : currentText;
+  const newBlock = createBlockEl(newType, finalText, block.dataset.checked === 'true');
+  block.replaceWith(newBlock);
+  setCaretAt(newBlock, 0);
+  return newBlock;
+}
+
+// --- Detecta atalhos markdown ao digitar (executado depois do input) ---
+function maybeApplyMarkdownShortcut(block) {
+  if (!block || block.dataset.type === 'divider') return;
+  const text = block.textContent;
+  let m;
+  if ((m = text.match(/^(#{1,3}) (.*)$/))) {
+    const level = m[1].length;
+    changeBlockType(block, 'h' + level, m[2]);
+    return;
+  }
+  if ((m = text.match(/^- \[([ xX])\] (.*)$/))) {
+    const checked = m[1].toLowerCase() === 'x';
+    const newBlock = changeBlockType(block, 'todo', m[2]);
+    newBlock.dataset.checked = checked ? 'true' : 'false';
+    return;
+  }
+  if ((m = text.match(/^[-*] (.*)$/))) {
+    changeBlockType(block, 'bullet', m[1]);
+    return;
+  }
+  if ((m = text.match(/^> ?(.*)$/))) {
+    if (text === '> ' || m[1] !== '') changeBlockType(block, 'quote', m[1]);
+    return;
+  }
+  if (/^---+$/.test(text)) {
+    changeBlockType(block, 'divider', '');
+    // Cria novo bloco P depois e foca
+    const next = createBlockEl('p', '');
+    block.after(next);
+    setCaretAt(next, 0);
+    return;
+  }
+  if (text === '```' || text === '``` ') {
+    changeBlockType(block, 'code', '');
+    return;
+  }
+}
+
+// --- Lida com Enter, Backspace, etc ---
+function onBlockKeyDown(e) {
+  const block = getCurrentBlock();
+  if (!block) return;
+
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    if (slashActive) return; // slash menu trata Enter
+    // No final do bloco? Cria novo. Se bloco vazio de tipo "especial" (h1, bullet…), volta pra paragraph.
+    const isEmpty = block.textContent.trim() === '';
+    const t = block.dataset.type;
+    if (isEmpty && t !== 'p' && t !== 'divider') {
+      changeBlockType(block, 'p', '');
+      return;
+    }
+    // Novo bloco do mesmo tipo se for lista, senão paragraph
+    const newType = (t === 'bullet' || t === 'todo') ? t : 'p';
+    const newBlock = createBlockEl(newType, '');
+    block.after(newBlock);
+    setCaretAt(newBlock, 0);
+    return;
+  }
+
+  if (e.key === 'Backspace') {
+    const sel = window.getSelection();
+    const offset = getCaretOffset(block);
+    if (offset === 0 && sel.isCollapsed) {
+      const t = block.dataset.type;
+      // Tipo especial → degrade pra p
+      if (t !== 'p' && t !== 'divider') {
+        e.preventDefault();
+        changeBlockType(block, 'p');
+        return;
+      }
+      // Já é p e vazio → merge com bloco anterior
+      const prev = block.previousElementSibling;
+      if (prev && prev.classList.contains('note-block')) {
+        e.preventDefault();
+        const prevLen = prev.textContent.length;
+        if (block.textContent) {
+          prev.innerHTML = (prev.innerHTML || '') + block.innerHTML;
+        }
+        block.remove();
+        setCaretAt(prev, prevLen);
+        return;
+      }
+    }
+  }
+
+  // Atalhos de formatação inline (Cmd/Ctrl + B/I/U)
+  if ((e.metaKey || e.ctrlKey) && !e.shiftKey) {
+    const k = e.key.toLowerCase();
+    if (k === 'b') { e.preventDefault(); document.execCommand('bold', false); return; }
+    if (k === 'i') { e.preventDefault(); document.execCommand('italic', false); return; }
+    if (k === 'u') { e.preventDefault(); document.execCommand('underline', false); return; }
+  }
+}
+
+// --- Input: trigger save e detectar conversões ---
+function onBlockInput(e) {
+  const block = getCurrentBlock();
+  if (block) {
+    // tentar converter markdown shortcuts (espaço/dígitos no fim)
+    maybeApplyMarkdownShortcut(block);
+  }
+  scheduleSave();
+}
+
+// --- Click no checkbox do todo ---
+noteBlocksEl.addEventListener('click', (e) => {
+  const block = e.target.closest('.note-block[data-type="todo"]');
+  if (!block) return;
+  // Click no espaço do checkbox (left edge, dentro da padding-left)
+  const rect = block.getBoundingClientRect();
+  if (e.clientX - rect.left < 24) {
+    e.preventDefault();
+    block.dataset.checked = block.dataset.checked === 'true' ? 'false' : 'true';
+    scheduleSave();
+  }
+});
+
+// Click no editor (área vazia) foca no último bloco
+noteBlocksEl.addEventListener('click', (e) => {
+  if (e.target === noteBlocksEl) {
+    const last = noteBlocksEl.lastElementChild;
+    if (last) setCaretAt(last, last.textContent.length);
+  }
+});
+
+noteBlocksEl.addEventListener('keydown', onBlockKeyDown);
+noteBlocksEl.addEventListener('input', onBlockInput);
 
 // Pin
 document.getElementById('pin-btn').onclick = () => {
@@ -7564,7 +8027,18 @@ let slashStartPos = -1;
 let slashFilter = '';
 let slashSelectedIndex = 0;
 
-const textarea = document.getElementById('note-body-textarea');
+// Stub do textarea (removido em favor do block editor). Mantemos um shim
+// pra evitar quebrar handlers legados que ainda não foram migrados.
+const textarea = document.getElementById('note-body-textarea') || (function(){
+  const noop = ()=>{};
+  return {
+    value: '', selectionStart: 0, selectionEnd: 0,
+    addEventListener: noop, removeEventListener: noop,
+    focus: noop, blur: noop, setRangeText: noop,
+    setSelectionRange: noop, dispatchEvent: ()=>true,
+    getBoundingClientRect: ()=>({top:0,left:0,bottom:0,right:0,width:0,height:0}),
+  };
+})();
 const slashMenu = document.getElementById('slash-menu');
 
 textarea.addEventListener('input', (e) => {
