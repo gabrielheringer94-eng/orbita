@@ -16,6 +16,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="" defer></script>
 <style>
   /* CRITICAL: estilos que precisam estar disponíveis ANTES do CSS principal */
   @keyframes spin { to { transform: rotate(360deg); } }
@@ -1044,6 +1046,51 @@
     justify-content: center;
     font-size: 12px;
     font-weight: 700;
+  }
+
+  .place-card-map {
+    height: 140px;
+    margin: -18px -18px 12px;
+    border-bottom: 1px solid var(--line);
+    background: var(--bg-card);
+    position: relative;
+    overflow: hidden;
+  }
+  .place-card-map.is-placeholder::after {
+    content: 'Sem localização';
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    color: var(--ink-faint);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .place-card-map.is-loading::after {
+    content: 'Localizando…';
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    color: var(--ink-faint);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .place-card.is-recommended .place-card-map { margin-top: -17px; }
+  /* Mata o foco azul do Leaflet em cards e a interatividade indesejada */
+  .place-card-map .leaflet-container {
+    height: 100%;
+    width: 100%;
+    background: var(--bg-card);
+    cursor: pointer;
+  }
+  .place-card-map .leaflet-control-attribution {
+    font-size: 9px;
+    padding: 1px 4px;
   }
 
   .place-card-header {
@@ -4516,8 +4563,16 @@ function renderPlacesGrid() {
     const mapsQuery = encodeURIComponent([p.name, p.address, p.neighborhood, p.city].filter(Boolean).join(', '));
     const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${mapsQuery}`;
 
+    // Estado do mini-mapa: tem coords → render Leaflet; tem endereço mas sem coords → loading; nada → placeholder
+    const hasCoords = typeof p.lat === 'number' && typeof p.lng === 'number';
+    const hasGeocodable = !hasCoords && (p.address || p.neighborhood || p.city);
+    const mapClass = hasCoords ? '' : (hasGeocodable && !p.geocodeFailed ? 'is-loading' : 'is-placeholder');
+    const mapAttrs = hasCoords
+      ? `data-place-map data-lat="${p.lat}" data-lng="${p.lng}" data-name="${escapeHTML(p.name)}" data-maps-url="${mapsUrl}"`
+      : '';
     return `
       <div class="place-card ${isRecommended ? 'is-recommended' : ''}">
+        <div class="place-card-map ${mapClass}" ${mapAttrs}></div>
         <div class="place-card-header">
           <div class="place-card-name">${escapeHTML(p.name)}</div>
           <span class="place-card-status status-${p.status}">${p.status === 'visited' ? 'Já fui' : 'Quero ir'}</span>
@@ -4552,6 +4607,157 @@ function renderPlacesGrid() {
       openPlaceModal(b.dataset.placeEdit);
     };
   });
+
+  // Inicializa mini-mapas lazy e dispara backfill de geocoding
+  initPlaceMaps();
+  backfillPlaceCoords();
+}
+
+// ============== GEOCODING + MINI-MAPS ==============
+const NOMINATIM_URL = 'https://nominatim.openstreetmap.org/search';
+const geocodeCache = new Map();
+let geocodeQueue = Promise.resolve();
+
+// Geocodifica via Nominatim. Throttled: 1 req/segundo (política do OSM).
+// Tenta queries em ordem de especificidade decrescente até achar um hit.
+function geocodeAddress({ name, address, neighborhood, city }) {
+  // Queries em ordem decrescente de precisão. Nome do estabelecimento
+  // costuma deixar busca específica demais; deixa por último.
+  const candidates = [];
+  if (address && city) candidates.push([address, city].join(', '));
+  if (address && neighborhood && city) candidates.push([address, neighborhood, city].join(', '));
+  if (neighborhood && city) candidates.push([neighborhood, city].join(', '));
+  if (name && city) candidates.push([name, city].join(', '));
+  if (city) candidates.push(city);
+
+  if (!candidates.length) return Promise.resolve(null);
+  const cacheKey = candidates.join('|');
+  if (geocodeCache.has(cacheKey)) return Promise.resolve(geocodeCache.get(cacheKey));
+
+  // Enfileira pra respeitar rate limit do Nominatim (1 req/s)
+  geocodeQueue = geocodeQueue.then(async () => {
+    for (const q of candidates) {
+      try {
+        const url = `${NOMINATIM_URL}?format=json&limit=1&q=${encodeURIComponent(q)}`;
+        const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+        await new Promise(r => setTimeout(r, 1100));
+        if (!res.ok) continue;
+        const data = await res.json();
+        const hit = Array.isArray(data) && data[0];
+        if (hit) {
+          const coords = { lat: parseFloat(hit.lat), lng: parseFloat(hit.lon) };
+          geocodeCache.set(cacheKey, coords);
+          return coords;
+        }
+      } catch (err) {
+        console.warn('Geocoding tentativa falhou:', q, err);
+        await new Promise(r => setTimeout(r, 1100));
+      }
+    }
+    geocodeCache.set(cacheKey, null);
+    return null;
+  });
+  return geocodeQueue;
+}
+
+// Backfill: pra cada lugar com endereço mas sem coords, geocodifica e re-renderiza
+let backfillRunning = false;
+async function backfillPlaceCoords() {
+  if (backfillRunning) return;
+  if (typeof L === 'undefined') return; // Leaflet ainda não carregou; tenta de novo no próximo render
+  backfillRunning = true;
+  try {
+    const places = state.places || [];
+    let mutated = false;
+    for (const p of places) {
+      const hasCoords = typeof p.lat === 'number' && typeof p.lng === 'number';
+      if (hasCoords || p.geocodeFailed) continue;
+      if (!p.address && !p.neighborhood && !p.city) continue;
+      const coords = await geocodeAddress({
+        name: p.name,
+        address: p.address,
+        neighborhood: p.neighborhood,
+        city: p.city,
+      });
+      if (coords) {
+        p.lat = coords.lat;
+        p.lng = coords.lng;
+        mutated = true;
+      } else {
+        p.geocodeFailed = true;
+        mutated = true;
+      }
+    }
+    if (mutated) {
+      saveState();
+      renderPlacesGrid();
+    }
+  } finally {
+    backfillRunning = false;
+  }
+}
+
+// Inicializa mapas Leaflet só quando o card entra no viewport (performance)
+let placeMapObserver = null;
+function initPlaceMaps() {
+  if (typeof L === 'undefined') {
+    // Leaflet ainda não terminou de carregar; tenta de novo em 200ms
+    setTimeout(initPlaceMaps, 200);
+    return;
+  }
+  if (!placeMapObserver) {
+    placeMapObserver = new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting) continue;
+        const el = entry.target;
+        placeMapObserver.unobserve(el);
+        mountLeafletMap(el);
+      }
+    }, { rootMargin: '100px' });
+  }
+  document.querySelectorAll('[data-place-map]:not([data-mounted])').forEach(el => {
+    placeMapObserver.observe(el);
+  });
+}
+
+function mountLeafletMap(el) {
+  if (el.dataset.mounted) return;
+  const lat = parseFloat(el.dataset.lat);
+  const lng = parseFloat(el.dataset.lng);
+  if (Number.isNaN(lat) || Number.isNaN(lng)) return;
+  el.dataset.mounted = '1';
+  try {
+    const map = L.map(el, {
+      center: [lat, lng],
+      zoom: 15,
+      zoomControl: false,
+      attributionControl: true,
+      dragging: false,
+      doubleClickZoom: false,
+      scrollWheelZoom: false,
+      boxZoom: false,
+      keyboard: false,
+      touchZoom: false,
+      tap: false,
+    });
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '© <a href="https://openstreetmap.org/copyright">OSM</a>',
+    }).addTo(map);
+    L.marker([lat, lng], { keyboard: false }).addTo(map);
+
+    // Tap no mapa abre o Google Maps em nova aba
+    const mapsUrl = el.dataset.mapsUrl;
+    if (mapsUrl) {
+      el.addEventListener('click', (e) => {
+        e.stopPropagation();
+        window.open(mapsUrl, '_blank', 'noopener');
+      });
+    }
+  } catch (err) {
+    console.warn('Falha ao montar mapa:', err);
+    el.classList.add('is-placeholder');
+  }
 }
 
 // Filtros
@@ -4673,7 +4879,21 @@ document.getElementById('place-save').onclick = () => {
   if (!state.places) state.places = [];
   if (editingPlaceId) {
     const i = state.places.findIndex(p => p.id === editingPlaceId);
-    if (i >= 0) state.places[i] = { ...state.places[i], ...placeData };
+    if (i >= 0) {
+      const prev = state.places[i];
+      // Se mudou o endereço, limpa coords pra forçar re-geocoding no backfill
+      const addrChanged = prev.address !== placeData.address
+        || prev.neighborhood !== placeData.neighborhood
+        || prev.city !== placeData.city
+        || prev.name !== placeData.name;
+      const merged = { ...prev, ...placeData };
+      if (addrChanged) {
+        delete merged.lat;
+        delete merged.lng;
+        delete merged.geocodeFailed;
+      }
+      state.places[i] = merged;
+    }
   } else {
     state.places.push({ id: uid(), createdAt: new Date().toISOString(), ...placeData });
   }
