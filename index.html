@@ -1759,18 +1759,55 @@
   .places-overview-wrap {
     position: relative;
     margin-bottom: 20px;
-    border-radius: 14px;
+    border-radius: 18px;
     overflow: hidden;
     border: 1px solid var(--line);
-    box-shadow: var(--shadow-sm);
-    background: var(--bg-card);
+    box-shadow: var(--shadow-md);
+    background: #f5f5f3;
   }
   #places-overview-map {
     height: 380px;
     width: 100%;
   }
   .places-overview-wrap .leaflet-container {
-    background: var(--bg-card);
+    background: #f5f5f3;
+    font-family: 'Inter', sans-serif;
+  }
+  /* Controles de zoom mais modernos (estilo card flutuante) */
+  .places-overview-wrap .leaflet-bar {
+    border: none !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.12) !important;
+    border-radius: 10px !important;
+    overflow: hidden;
+  }
+  .places-overview-wrap .leaflet-bar a {
+    background: #fff !important;
+    color: var(--ink) !important;
+    border: none !important;
+    border-bottom: 1px solid var(--line-soft) !important;
+    width: 32px !important;
+    height: 32px !important;
+    line-height: 32px !important;
+    font-size: 18px !important;
+    font-weight: 500 !important;
+  }
+  .places-overview-wrap .leaflet-bar a:last-child { border-bottom: none !important; }
+  .places-overview-wrap .leaflet-bar a:hover { background: #f5f5f5 !important; }
+  /* Attribution mais sutil */
+  .places-overview-wrap .leaflet-control-attribution {
+    background: rgba(255,255,255,0.7) !important;
+    padding: 2px 6px !important;
+    border-radius: 4px 0 0 0;
+    font-size: 9px !important;
+  }
+  .places-overview-wrap .leaflet-control-attribution a { color: var(--ink-soft) !important; }
+  /* Popup mais moderno */
+  .places-overview-wrap .leaflet-popup-content-wrapper {
+    border-radius: 12px !important;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15) !important;
+  }
+  .places-overview-wrap .leaflet-popup-content {
+    margin: 12px 14px !important;
   }
   .places-overview-empty {
     position: absolute;
@@ -6148,9 +6185,12 @@ function renderPlacesOverviewMap(list) {
       scrollWheelZoom: false, // evita capturar scroll da página
       attributionControl: true,
     }).setView([-23.561, -46.656], 12); // default: SP
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19,
-      attribution: '© <a href="https://openstreetmap.org/copyright">OSM</a>',
+    // CartoDB Voyager: tiles claros e modernos, parecido com Google Maps.
+    // Suporta retina via {r}. Subdomínios a-d.
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+      maxZoom: 20,
+      subdomains: 'abcd',
+      attribution: '© <a href="https://www.openstreetmap.org/copyright">OSM</a> · © <a href="https://carto.com/attributions">CARTO</a>',
     }).addTo(placesOverviewMap);
     placesOverviewLayer = L.layerGroup().addTo(placesOverviewMap);
     // Habilita scroll-zoom ao clicar no mapa, desabilita ao tirar foco
