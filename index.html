@@ -8500,6 +8500,98 @@ function noteToPlainText(note) {
   return s.trim();
 }
 
+// Markdown → texto "rico" pra email/WhatsApp.
+// Preserva hierarquia visual com símbolos ASCII/Unicode em vez dos marcadores.
+function noteToRichText(note) {
+  const md = note.body || '';
+  const lines = md.split('\n');
+  const out = [];
+  let inToggle = false; // estamos dentro de um <details>?
+  let inTable = false;
+
+  const stripInline = (s) =>
+    s.replace(/\*\*([^*]+)\*\*/g, '$1')
+     .replace(/__([^_]+)__/g, '$1')
+     .replace(/\*([^*]+)\*/g, '$1')
+     .replace(/`([^`]+)`/g, '$1');
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    let m;
+
+    // Toggle: <details><summary>...</summary> ... </details>
+    if ((m = line.match(/^<details>\s*<summary>(.*?)<\/summary>(.*)$/))) {
+      out.push('');
+      out.push('▾ ' + stripInline(m[1]));
+      const rest = m[2].trim();
+      if (rest && !rest.includes('</details>')) {
+        // body começa na mesma linha
+        out.push('  ' + stripInline(rest));
+      }
+      inToggle = true;
+      continue;
+    }
+    if (line.includes('</details>')) {
+      inToggle = false;
+      out.push('');
+      continue;
+    }
+
+    // Pipe table: linha que começa e termina com |
+    if (/^\|.*\|$/.test(line.trim())) {
+      // pula separadores |---|---|
+      if (/^\|[\s:-]+\|/.test(line.trim())) { inTable = true; continue; }
+      const cells = line.trim().replace(/^\||\|$/g, '').split('|').map(c => c.trim());
+      // header da tabela: vem antes do separador
+      const prefix = inToggle ? '  ' : '';
+      out.push(prefix + '┃ ' + cells.join('  ┃  ') + '  ┃');
+      continue;
+    }
+
+    if ((m = line.match(/^# (.*)$/))) {
+      out.push('');
+      const txt = stripInline(m[1]).toUpperCase();
+      out.push(txt);
+      out.push('═'.repeat(Math.max(3, Math.min(40, txt.length))));
+      continue;
+    }
+    if ((m = line.match(/^## (.*)$/))) {
+      out.push('');
+      const txt = stripInline(m[1]);
+      out.push(txt);
+      out.push('─'.repeat(Math.max(3, Math.min(40, txt.length))));
+      continue;
+    }
+    if ((m = line.match(/^### (.*)$/))) {
+      out.push('');
+      out.push('▸ ' + stripInline(m[1]));
+      continue;
+    }
+    if ((m = line.match(/^- \[([ xX])\] (.*)$/))) {
+      const mark = m[1].toLowerCase() === 'x' ? '☑' : '☐';
+      out.push((inToggle ? '  ' : '') + mark + ' ' + stripInline(m[2]));
+      continue;
+    }
+    if ((m = line.match(/^[-*] (.*)$/))) {
+      out.push((inToggle ? '  ' : '') + '• ' + stripInline(m[1]));
+      continue;
+    }
+    if ((m = line.match(/^> ?(.*)$/))) {
+      out.push('  ❝ ' + stripInline(m[1]) + ' ❞');
+      continue;
+    }
+    if (/^---+$/.test(line)) {
+      out.push('─'.repeat(32));
+      continue;
+    }
+    // Linha normal
+    out.push((inToggle ? '  ' : '') + stripInline(line));
+  }
+
+  // Comprime múltiplas linhas vazias
+  return out.join('\n').replace(/\n{3,}/g, '\n\n').trim();
+}
+
 // Trigger download de um Blob
 function downloadBlob(blob, filename) {
   const url = URL.createObjectURL(blob);
@@ -8550,10 +8642,14 @@ document.getElementById('share-copy-md').onclick = async () => {
 document.getElementById('share-copy-text').onclick = async () => {
   const note = getActiveNoteForShare();
   if (!note) return;
-  const content = `${note.title || ''}\n\n${noteToPlainText(note)}`;
+  const title = note.title || '';
+  const titleBlock = title
+    ? title.toUpperCase() + '\n' + '═'.repeat(Math.max(3, Math.min(40, title.length)))
+    : '';
+  const content = `${titleBlock}\n\n${noteToRichText(note)}`;
   try {
     await navigator.clipboard.writeText(content);
-    showShareFeedback('✓ Copiado como texto');
+    showShareFeedback('✓ Copiado com formatação visual');
   } catch {
     showShareFeedback('Não consegui copiar');
   }
@@ -8579,13 +8675,13 @@ document.getElementById('share-email').onclick = () => {
   const note = getActiveNoteForShare();
   if (!note) return;
   const subject = encodeURIComponent(note.title || 'Nota do Órbita');
-  // Body em texto puro (mailto não suporta HTML). Adiciona separador no fim.
-  const bodyText = noteToPlainText(note);
-  const signature = `\n\n---\nEnviado do Órbita`;
+  // Body em texto rico ASCII/Unicode pra preservar hierarquia visual
+  const bodyText = noteToRichText(note);
+  const signature = `\n\n──────────────\nEnviado do Órbita`;
   const fullBody = bodyText + signature;
-  // Trunca se muito longo (mailto tem limite de URL ~2000 chars na maioria dos clientes)
+  // mailto tem limite de URL ~2000 chars na maioria dos clientes
   const truncated = fullBody.length > 1800
-    ? fullBody.slice(0, 1800) + '\n\n[...conteúdo truncado. Para a nota completa, baixe o arquivo .md ou .html.]'
+    ? fullBody.slice(0, 1800) + '\n\n[...conteúdo truncado. Pra nota completa, peça o arquivo .md ou .html.]'
     : fullBody;
   const url = `mailto:?subject=${subject}&body=${encodeURIComponent(truncated)}`;
   window.location.href = url;
