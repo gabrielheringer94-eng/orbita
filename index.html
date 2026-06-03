@@ -2165,6 +2165,65 @@
     box-shadow: var(--shadow-sm);
     height: calc(100vh - 120px);
     min-height: 600px;
+    transition: grid-template-columns 0.2s ease;
+    position: relative;
+  }
+  body.notes-list-collapsed .notes-layout {
+    grid-template-columns: 0 1fr;
+  }
+  body.notes-list-collapsed .notes-sidebar {
+    transform: translateX(-100%);
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /* Botão pra recolher dentro do header da notes-sidebar */
+  .notes-list-collapse-btn {
+    background: transparent;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    width: 28px;
+    height: 28px;
+    color: var(--ink-faint);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.15s;
+  }
+  .notes-list-collapse-btn:hover {
+    background: var(--bg);
+    color: var(--ink);
+    border-color: var(--ink);
+  }
+  /* Botão pra reabrir (aparece dentro do editor quando colapsado) */
+  .notes-list-reopen-btn {
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    z-index: 50;
+    width: 30px;
+    height: 30px;
+    background: var(--bg-elevated);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    color: var(--ink);
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.15s;
+  }
+  .notes-list-reopen-btn:hover {
+    background: var(--bg-card);
+  }
+  body.notes-list-collapsed .notes-list-reopen-btn { display: flex; }
+  @media (max-width: 900px) {
+    .notes-list-collapse-btn { display: none; }
+    .notes-list-reopen-btn { display: none !important; }
+    body.notes-list-collapsed .notes-layout { grid-template-columns: 1fr; }
   }
 
   .notes-sidebar {
@@ -3695,12 +3754,13 @@
 <div class="m-overlay" id="m-overlay"></div>
 
 <script>
-  // Aplica estado de sidebar logo no boot pra evitar flash
+  // Aplica estado de sidebar/notes-list logo no boot pra evitar flash
   try {
-    if (localStorage.getItem('orbita_sidebar_collapsed') === '1') {
-      document.documentElement.classList.add('sidebar-collapsed-boot');
-      document.addEventListener('DOMContentLoaded', () => document.body.classList.add('sidebar-collapsed'));
-    }
+    const applyEarly = () => {
+      if (localStorage.getItem('orbita_sidebar_collapsed') === '1') document.body.classList.add('sidebar-collapsed');
+      if (localStorage.getItem('orbita_notes_list_collapsed') === '1') document.body.classList.add('notes-list-collapsed');
+    };
+    document.addEventListener('DOMContentLoaded', applyEarly);
   } catch {}
 </script>
 <button class="sidebar-reopen-btn" id="sidebar-reopen-btn" title="Abrir menu lateral" aria-label="Abrir menu lateral">
@@ -4050,12 +4110,18 @@
           <div class="notes-sidebar-header">
             <input type="text" class="input" id="notes-search" placeholder="Buscar notas..." style="flex:1" />
             <button class="btn" id="new-note-btn" title="Nova nota">+</button>
+            <button class="notes-list-collapse-btn" id="notes-list-collapse-btn" title="Recolher lista" aria-label="Recolher lista de notas">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+            </button>
           </div>
           <div class="notes-tag-filter" id="notes-tag-filter"></div>
           <div class="notes-list" id="notes-list"></div>
         </aside>
 
         <main class="notes-editor" id="notes-editor">
+          <button class="notes-list-reopen-btn" id="notes-list-reopen-btn" title="Mostrar lista de notas" aria-label="Mostrar lista de notas">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+          </button>
           <div class="notes-empty" id="notes-empty">
             <!-- Conteúdo é trocado em renderNotesEmptyState(): convite quando não há notas,
                  ou prompt pra selecionar quando existem mas nenhuma está aberta. -->
@@ -4844,26 +4910,19 @@ function startApp() {
 
 // Toggle da sidebar (desktop) — persiste estado em localStorage
 function setupSidebarToggle() {
-  const STORAGE_KEY_SIDEBAR = 'orbita_sidebar_collapsed';
-  const apply = () => {
-    const collapsed = localStorage.getItem(STORAGE_KEY_SIDEBAR) === '1';
-    document.body.classList.toggle('sidebar-collapsed', collapsed);
+  const wire = (storageKey, collapseBtnId, reopenBtnId, bodyClass) => {
+    const apply = () => {
+      const collapsed = localStorage.getItem(storageKey) === '1';
+      document.body.classList.toggle(bodyClass, collapsed);
+    };
+    apply();
+    const cb = document.getElementById(collapseBtnId);
+    const rb = document.getElementById(reopenBtnId);
+    if (cb) cb.onclick = () => { localStorage.setItem(storageKey, '1'); apply(); };
+    if (rb) rb.onclick = () => { localStorage.setItem(storageKey, '0'); apply(); };
   };
-  apply();
-  const collapseBtn = document.getElementById('sidebar-collapse-btn');
-  const reopenBtn = document.getElementById('sidebar-reopen-btn');
-  if (collapseBtn) {
-    collapseBtn.onclick = () => {
-      localStorage.setItem(STORAGE_KEY_SIDEBAR, '1');
-      apply();
-    };
-  }
-  if (reopenBtn) {
-    reopenBtn.onclick = () => {
-      localStorage.setItem(STORAGE_KEY_SIDEBAR, '0');
-      apply();
-    };
-  }
+  wire('orbita_sidebar_collapsed', 'sidebar-collapse-btn', 'sidebar-reopen-btn', 'sidebar-collapsed');
+  wire('orbita_notes_list_collapsed', 'notes-list-collapse-btn', 'notes-list-reopen-btn', 'notes-list-collapsed');
 }
 
 function setupMobileDrawer() {
