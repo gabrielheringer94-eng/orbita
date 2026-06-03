@@ -2598,6 +2598,180 @@
     color: var(--ink);
     border-style: solid;
   }
+
+  /* ============== TABELA NOTION-STYLE ============== */
+  /* Header com tipo de coluna */
+  .note-block-table th {
+    position: relative;
+    padding-right: 22px;
+  }
+  .note-block-table th .col-type-icon {
+    display: inline-flex;
+    width: 14px;
+    height: 14px;
+    margin-right: 4px;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    color: var(--ink-faint);
+    vertical-align: -2px;
+  }
+  .note-block-table th .col-type-toggle {
+    position: absolute;
+    right: 4px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 16px;
+    height: 16px;
+    border: none;
+    background: transparent;
+    color: var(--ink-faint);
+    cursor: pointer;
+    border-radius: 3px;
+    font-size: 11px;
+    line-height: 1;
+    opacity: 0;
+    transition: opacity 0.1s;
+  }
+  .note-block-table th:hover .col-type-toggle { opacity: 1; }
+  .note-block-table th .col-type-toggle:hover { background: var(--bg); color: var(--ink); }
+
+  /* Chip nas células */
+  .table-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.4;
+    border: 1px solid;
+    white-space: nowrap;
+    margin: 1px 2px 1px 0;
+  }
+  .table-chip-add {
+    display: inline-flex;
+    align-items: center;
+    color: var(--ink-faint);
+    cursor: pointer;
+    font-size: 11px;
+    padding: 2px 4px;
+    border-radius: 3px;
+    opacity: 0;
+    transition: opacity 0.1s;
+  }
+  .note-block-table td:hover .table-chip-add { opacity: 0.6; }
+  .table-chip-add:hover { opacity: 1 !important; background: var(--bg); }
+
+  /* Cores dos chips */
+  .table-chip.c-gray   { background: #f3f4f6; color: #374151; border-color: #d1d5db; }
+  .table-chip.c-blue   { background: #dbeafe; color: #1e40af; border-color: #93c5fd; }
+  .table-chip.c-yellow { background: #fef3c7; color: #92400e; border-color: #fcd34d; }
+  .table-chip.c-green  { background: #d1fae5; color: #065f46; border-color: #86efac; }
+  .table-chip.c-orange { background: #ffedd5; color: #9a3412; border-color: #fdba74; }
+  .table-chip.c-red    { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
+  .table-chip.c-purple { background: #ede9fe; color: #5b21b6; border-color: #c4b5fd; }
+  .table-chip.c-pink   { background: #fce7f3; color: #9d174d; border-color: #f9a8d4; }
+  .table-chip.c-cyan   { background: #cffafe; color: #155e75; border-color: #67e8f9; }
+  .table-chip.c-black  { background: #1f2937; color: #fff;    border-color: #1f2937; }
+
+  /* Dropdown picker (compartilhado entre tipo e opções) */
+  .table-picker {
+    position: absolute;
+    z-index: 1000;
+    background: var(--bg-elevated);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    padding: 6px;
+    min-width: 180px;
+    max-width: 260px;
+    max-height: 320px;
+    overflow-y: auto;
+    font-size: 13px;
+  }
+  .table-picker-section-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink-faint);
+    padding: 6px 8px 4px;
+    font-weight: 600;
+  }
+  .table-picker-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  .table-picker-item:hover { background: var(--bg-card); }
+  .table-picker-item .pi-check {
+    width: 14px;
+    color: var(--ink);
+    text-align: center;
+    visibility: hidden;
+  }
+  .table-picker-item.is-selected .pi-check { visibility: visible; }
+
+  /* Subitens */
+  .note-block-table tr.is-child td:first-child {
+    padding-left: 32px;
+    position: relative;
+  }
+  .note-block-table tr.is-child td:first-child::before {
+    content: '↳';
+    position: absolute;
+    left: 14px;
+    color: var(--ink-faint);
+    font-size: 12px;
+    pointer-events: none;
+  }
+  .note-block-table tr.is-parent td:first-child {
+    padding-left: 28px;
+    position: relative;
+  }
+  .row-collapse-toggle {
+    position: absolute;
+    left: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 16px;
+    height: 16px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    color: var(--ink-faint);
+    font-size: 9px;
+    line-height: 16px;
+    text-align: center;
+    border-radius: 3px;
+    transition: transform 0.1s;
+  }
+  .note-block-table tr.is-parent[data-expanded="true"] .row-collapse-toggle {
+    transform: translateY(-50%) rotate(90deg);
+  }
+  .row-collapse-toggle:hover { background: var(--bg); color: var(--ink); }
+  /* Quando linha pai está colapsada, esconde filhas */
+  .note-block-table tr.is-parent[data-expanded="false"] ~ tr.is-child[data-parent-of] {
+    display: none;
+  }
+  /* "+ Novo subitem" inline */
+  .table-add-subitem {
+    background: transparent;
+    border: none;
+    color: var(--ink-faint);
+    font-size: 11px;
+    cursor: pointer;
+    padding: 2px 6px;
+    margin-top: 4px;
+    border-radius: 3px;
+    font-family: 'Inter', sans-serif;
+    opacity: 0;
+  }
+  .note-block-table tr:hover .table-add-subitem { opacity: 1; }
+  .table-add-subitem:hover { color: var(--ink); background: var(--bg); }
   /* Estilos inline preservados */
   .note-blocks strong { font-weight: 700; }
   .note-blocks em { font-style: italic; }
@@ -7888,6 +8062,33 @@ function parseMdToBlocks(md) {
         i++;
       }
       blocks.push({ type: 'code', text: codeLines.join('\n') });
+    } else if (line.startsWith('<table>')) {
+      // HTML table com metadata (data-type por coluna, data-depth por linha)
+      let html = line;
+      // Pode estar tudo na mesma linha
+      if (!html.includes('</table>')) {
+        i++;
+        while (i < lines.length && !lines[i].includes('</table>')) {
+          html += '\n' + lines[i];
+          i++;
+        }
+        if (i < lines.length) html += '\n' + lines[i];
+      }
+      const tmp = document.createElement('div');
+      tmp.innerHTML = html;
+      const tbl = tmp.querySelector('table');
+      if (tbl) {
+        const ths = Array.from(tbl.querySelectorAll('thead th'));
+        const headers = ths.map(th => th.textContent.trim());
+        const colTypes = ths.map(th => th.dataset.type || 'text');
+        const rowsParsed = [];
+        Array.from(tbl.querySelectorAll('tbody tr')).forEach(tr => {
+          const depth = parseInt(tr.dataset.depth || '0', 10);
+          const cells = Array.from(tr.querySelectorAll('td')).map(td => td.textContent);
+          rowsParsed.push({ cells, depth });
+        });
+        blocks.push({ type: 'table', text: '', headers, colTypes, rows: rowsParsed });
+      }
     } else if (line.startsWith('|') && lines[i+1] && /^\|[\s:-]+\|/.test(lines[i+1])) {
       // Pipe table: | a | b | seguido de |---|---|
       const splitCells = (l) => l.replace(/^\||\|$/g, '').split('|').map(c => c.trim());
@@ -7899,7 +8100,9 @@ function parseMdToBlocks(md) {
         i++;
       }
       i--; // o while externo vai incrementar
-      blocks.push({ type: 'table', text: '', headers, rows });
+      const colTypes = headers.map(() => 'text');
+      const rowsObj = rows.map(r => ({ cells: r, depth: 0 }));
+      blocks.push({ type: 'table', text: '', headers, colTypes, rows: rowsObj });
     } else if (line.startsWith('<details>')) {
       // <details><summary>Title</summary>body</details> — toggle block
       let summary = '';
@@ -7938,20 +8141,56 @@ function serializeContainer(container) {
   const out = [];
   container.querySelectorAll(':scope > .note-block').forEach(el => {
     const type = el.dataset.type;
-    // Tabela: serializa como pipe table
+    // Tabela: serializa como pipe table (se todas as colunas são "text") ou HTML <table> (se há tipos)
     if (type === 'table') {
       const table = el.querySelector('table');
       if (!table) return;
-      const headerCells = Array.from(table.querySelectorAll('thead th'))
-        .map(th => htmlToInlineMd(th.innerHTML).replace(/\|/g, '\\|').trim() || ' ');
-      out.push('| ' + headerCells.join(' | ') + ' |');
-      out.push('| ' + headerCells.map(() => '---').join(' | ') + ' |');
-      const bodyRows = Array.from(table.querySelectorAll('tbody tr'));
-      bodyRows.forEach(tr => {
-        const cells = Array.from(tr.querySelectorAll('td'))
-          .map(td => htmlToInlineMd(td.innerHTML).replace(/\|/g, '\\|').trim() || ' ');
-        out.push('| ' + cells.join(' | ') + ' |');
+      const ths = Array.from(table.querySelectorAll('thead th'));
+      const colTypes = ths.map(th => th.dataset.colType || 'text');
+      const hasTypedCols = colTypes.some(t => t !== 'text');
+      const hasSubitems = !!table.querySelector('tr.is-child');
+
+      const headerLabels = ths.map(th => {
+        const labelEl = th.querySelector('.col-label');
+        const raw = labelEl ? labelEl.textContent : th.textContent;
+        return raw.trim() || ' ';
       });
+
+      if (!hasTypedCols && !hasSubitems) {
+        // Pipe table tradicional
+        out.push('| ' + headerLabels.map(h => h.replace(/\|/g, '\\|')).join(' | ') + ' |');
+        out.push('| ' + headerLabels.map(() => '---').join(' | ') + ' |');
+        Array.from(table.querySelectorAll('tbody tr')).forEach(tr => {
+          const cells = Array.from(tr.querySelectorAll('td'))
+            .map(td => (td.dataset.value || htmlToInlineMd(td.innerHTML).trim()).replace(/\|/g, '\\|') || ' ');
+          out.push('| ' + cells.join(' | ') + ' |');
+        });
+        return;
+      }
+
+      // HTML table com metadata
+      let html = '<table>';
+      html += '<thead><tr>';
+      ths.forEach((th, i) => {
+        html += `<th data-type="${colTypes[i]}">${escapeHTML(headerLabels[i])}</th>`;
+      });
+      html += '</tr></thead><tbody>';
+      Array.from(table.querySelectorAll('tbody tr')).forEach(tr => {
+        const isChild = tr.classList.contains('is-child');
+        html += `<tr${isChild ? ' data-depth="1"' : ''} data-row-id="${tr.dataset.rowId || ''}">`;
+        Array.from(tr.querySelectorAll('td')).forEach((td, i) => {
+          let val = td.dataset.value;
+          if (val === undefined) {
+            const clone = td.cloneNode(true);
+            clone.querySelectorAll('.row-collapse-toggle, .table-add-subitem, br').forEach(n => n.remove());
+            val = htmlToInlineMd(clone.innerHTML).trim();
+          }
+          html += `<td>${escapeHTML(val || '')}</td>`;
+        });
+        html += '</tr>';
+      });
+      html += '</tbody></table>';
+      out.push(html);
       return;
     }
     // Para toggle, lê summary e recursão no body
@@ -7988,6 +8227,176 @@ function serializeBlocks() {
   return serializeContainer(noteBlocksEl);
 }
 
+// ============== TABELA NOTION-STYLE: TIPOS, OPÇÕES, PICKERS ==============
+const TABLE_COL_TYPES = {
+  text:     { label: 'Texto',      icon: 'Aa' },
+  status:   { label: 'Status',     icon: '●', options: [
+    { id: 'ideia',       label: 'Ideia',         color: 'gray' },
+    { id: 'planejando',  label: 'Planejando',    color: 'blue' },
+    { id: 'andamento',   label: 'Em andamento',  color: 'yellow' },
+    { id: 'concluido',   label: 'Concluído',     color: 'green' },
+    { id: 'pausado',     label: 'Pausado',       color: 'orange' },
+  ]},
+  priority: { label: 'Prioridade', icon: '!', options: [
+    { id: 'baixa',  label: 'Baixa',    color: 'gray' },
+    { id: 'media',  label: 'Média',    color: 'yellow' },
+    { id: 'alta',   label: 'Alta',     color: 'red' },
+    { id: 'critica',label: 'Crítica',  color: 'black' },
+  ]},
+  area:     { label: 'Área (multi)', icon: '☰', multi: true, options: [
+    { id: 'web',      label: 'Web',      color: 'purple' },
+    { id: 'mobile',   label: 'Mobile',   color: 'blue' },
+    { id: 'backend',  label: 'Backend',  color: 'green' },
+    { id: 'frontend', label: 'Frontend', color: 'orange' },
+    { id: 'design',   label: 'Design',   color: 'pink' },
+    { id: 'data',     label: 'Data',     color: 'cyan' },
+  ]},
+};
+
+function findOption(type, id) {
+  return (TABLE_COL_TYPES[type]?.options || []).find(o => o.id === id);
+}
+
+function chipHtml(type, optionId) {
+  const opt = findOption(type, optionId);
+  if (!opt) return '';
+  return `<span class="table-chip c-${opt.color}" data-opt-id="${opt.id}">${escapeHTML(opt.label)}</span>`;
+}
+
+function renderCellContent(type, value) {
+  if (!type || type === 'text') return value || '';
+  if (TABLE_COL_TYPES[type]?.multi) {
+    const ids = (value || '').split(',').map(s => s.trim()).filter(Boolean);
+    return ids.map(id => chipHtml(type, id)).join('') +
+      '<span class="table-chip-add" data-add-chip>+</span>';
+  }
+  return value ? chipHtml(type, value) : '<span class="table-chip-add" data-add-chip>+ definir</span>';
+}
+
+// Fecha qualquer picker aberto
+function closeTablePickers() {
+  document.querySelectorAll('.table-picker').forEach(p => p.remove());
+}
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.table-picker') && !e.target.closest('[data-picker-trigger]')) {
+    closeTablePickers();
+  }
+});
+
+// Picker pra escolher TIPO da coluna
+function openColTypePicker(anchorEl, th) {
+  closeTablePickers();
+  const picker = document.createElement('div');
+  picker.className = 'table-picker';
+  picker.innerHTML = '<div class="table-picker-section-label">Tipo da coluna</div>' +
+    Object.entries(TABLE_COL_TYPES).map(([key, cfg]) => `
+      <div class="table-picker-item ${th.dataset.colType === key ? 'is-selected' : ''}" data-set-type="${key}">
+        <span style="width:18px;text-align:center;color:var(--ink-faint);font-weight:600">${cfg.icon}</span>
+        <span style="flex:1">${cfg.label}</span>
+        <span class="pi-check">✓</span>
+      </div>
+    `).join('');
+  document.body.appendChild(picker);
+  const rect = anchorEl.getBoundingClientRect();
+  picker.style.left = rect.left + window.scrollX + 'px';
+  picker.style.top = (rect.bottom + window.scrollY + 4) + 'px';
+  picker.querySelectorAll('[data-set-type]').forEach(item => {
+    item.onclick = (e) => {
+      e.stopPropagation();
+      const newType = item.dataset.setType;
+      th.dataset.colType = newType;
+      updateColumnTypeHeader(th);
+      // Re-renderiza as células dessa coluna nesse tipo novo (mantendo valor texto)
+      const cellIdx = Array.from(th.parentElement.children).indexOf(th);
+      const tbody = th.closest('table').querySelector('tbody');
+      tbody.querySelectorAll('tr').forEach(tr => {
+        const cell = tr.children[cellIdx];
+        if (!cell) return;
+        const currentValue = cell.dataset.value || cell.textContent.trim();
+        cell.dataset.value = currentValue;
+        cell.innerHTML = renderCellContent(newType, currentValue);
+        cell.contentEditable = newType === 'text' ? 'true' : 'false';
+      });
+      closeTablePickers();
+      scheduleSave();
+    };
+  });
+}
+
+// Picker pra escolher VALOR da célula (status, priority, area)
+function openCellValuePicker(anchorEl, cell, colType) {
+  closeTablePickers();
+  const cfg = TABLE_COL_TYPES[colType];
+  if (!cfg || !cfg.options) return;
+  const multi = !!cfg.multi;
+  const currentVal = cell.dataset.value || '';
+  const selectedIds = multi
+    ? currentVal.split(',').map(s => s.trim()).filter(Boolean)
+    : [currentVal].filter(Boolean);
+
+  const picker = document.createElement('div');
+  picker.className = 'table-picker';
+  picker.innerHTML = `<div class="table-picker-section-label">${cfg.label}${multi ? ' (múltiplas)' : ''}</div>` +
+    cfg.options.map(opt => `
+      <div class="table-picker-item ${selectedIds.includes(opt.id) ? 'is-selected' : ''}" data-set-val="${opt.id}">
+        <span class="table-chip c-${opt.color}">${escapeHTML(opt.label)}</span>
+        <span style="flex:1"></span>
+        <span class="pi-check">✓</span>
+      </div>
+    `).join('') +
+    (currentVal ? `<div class="table-picker-item" data-clear-val style="color:var(--ink-faint);font-size:12px">
+      <span class="pi-check" style="visibility:visible">×</span> Limpar
+    </div>` : '');
+  document.body.appendChild(picker);
+  const rect = anchorEl.getBoundingClientRect();
+  picker.style.left = rect.left + window.scrollX + 'px';
+  picker.style.top = (rect.bottom + window.scrollY + 4) + 'px';
+
+  const commit = (newVal) => {
+    cell.dataset.value = newVal;
+    cell.innerHTML = renderCellContent(colType, newVal);
+    scheduleSave();
+  };
+
+  picker.querySelectorAll('[data-set-val]').forEach(item => {
+    item.onclick = (e) => {
+      e.stopPropagation();
+      const id = item.dataset.setVal;
+      if (multi) {
+        const set = new Set(selectedIds);
+        if (set.has(id)) set.delete(id); else set.add(id);
+        commit(Array.from(set).join(','));
+        // Re-renderiza picker pra refletir
+        closeTablePickers();
+        openCellValuePicker(anchorEl, cell, colType);
+      } else {
+        commit(id);
+        closeTablePickers();
+      }
+    };
+  });
+  picker.querySelector('[data-clear-val]')?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    commit('');
+    closeTablePickers();
+  });
+}
+
+function updateColumnTypeHeader(th) {
+  const colType = th.dataset.colType || 'text';
+  const cfg = TABLE_COL_TYPES[colType] || TABLE_COL_TYPES.text;
+  // Coloca ícone + nome (preserva o label digitável)
+  let label = th.querySelector('.col-label');
+  if (!label) {
+    const original = th.textContent;
+    th.innerHTML = `<span class="col-type-icon">${cfg.icon}</span><span class="col-label" contenteditable="true"></span><button class="col-type-toggle" data-picker-trigger title="Tipo da coluna">⌄</button>`;
+    label = th.querySelector('.col-label');
+    label.textContent = original;
+  } else {
+    th.querySelector('.col-type-icon').textContent = cfg.icon;
+  }
+}
+
 // --- Criar elemento de bloco ---
 function createBlockEl(type = 'p', text = '', extra = {}) {
   const el = document.createElement('div');
@@ -7997,33 +8406,128 @@ function createBlockEl(type = 'p', text = '', extra = {}) {
     el.contentEditable = 'false';
     const headers = (extra.headers && extra.headers.length)
       ? extra.headers
-      : ['Coluna 1', 'Coluna 2', 'Coluna 3'];
-    const rows = (extra.rows && extra.rows.length)
-      ? extra.rows
-      : [['', '', ''], ['', '', '']];
+      : ['Item', 'Status', 'Prioridade', 'Área'];
+    const colTypes = (extra.colTypes && extra.colTypes.length === headers.length)
+      ? extra.colTypes
+      : ['text', 'status', 'priority', 'area']; // defaults Notion-like
+    // rows: cada item pode ser { cells: [...], depth: 0|1 }
+    let rows = extra.rows;
+    if (!rows || !rows.length) {
+      rows = [
+        { cells: ['Novo item', 'planejando', 'media', 'web'], depth: 0 },
+        { cells: ['Outro item', 'ideia', 'baixa', ''], depth: 0 },
+      ];
+    }
+    // Normaliza: row pode vir como array (compat) ou objeto
+    rows = rows.map(r => Array.isArray(r) ? { cells: r, depth: 0 } : r);
+
     const table = document.createElement('table');
     table.className = 'note-block-table';
     const thead = document.createElement('thead');
     const headRow = document.createElement('tr');
-    headers.forEach(h => {
+    headers.forEach((h, idx) => {
       const th = document.createElement('th');
-      th.contentEditable = 'true';
-      th.innerHTML = inlineMdToHtml(h);
+      th.dataset.colType = colTypes[idx] || 'text';
+      const cfg = TABLE_COL_TYPES[th.dataset.colType] || TABLE_COL_TYPES.text;
+      th.innerHTML = `<span class="col-type-icon">${cfg.icon}</span><span class="col-label" contenteditable="true">${escapeHTML(h)}</span><button class="col-type-toggle" data-picker-trigger title="Tipo da coluna">⌄</button>`;
       headRow.appendChild(th);
     });
     thead.appendChild(headRow);
     table.appendChild(thead);
     const tbody = document.createElement('tbody');
-    rows.forEach(row => {
+    rows.forEach((row, rowIdx) => {
       const tr = document.createElement('tr');
+      tr.dataset.rowId = 'r' + Math.random().toString(36).slice(2, 7);
+      const isChild = row.depth > 0;
+      tr.classList.toggle('is-child', isChild);
+      if (isChild) tr.dataset.parentOf = row.parentId || '';
       for (let i = 0; i < headers.length; i++) {
         const td = document.createElement('td');
-        td.contentEditable = 'true';
-        td.innerHTML = inlineMdToHtml(row[i] || '');
+        const colType = colTypes[i] || 'text';
+        const val = row.cells[i] || '';
+        td.dataset.value = val;
+        if (colType === 'text') {
+          td.contentEditable = 'true';
+          td.innerHTML = inlineMdToHtml(val);
+        } else {
+          td.contentEditable = 'false';
+          td.innerHTML = renderCellContent(colType, val);
+        }
         tr.appendChild(td);
       }
       tbody.appendChild(tr);
     });
+    // Pós-processo: marca rows que têm filhos como is-parent + adiciona toggle
+    function refreshRowHierarchy() {
+      Array.from(tbody.children).forEach((tr, idx) => {
+        const next = tbody.children[idx + 1];
+        tr.classList.toggle('is-parent', next && next.classList.contains('is-child'));
+        const firstTd = tr.firstElementChild;
+        const existing = firstTd.querySelector('.row-collapse-toggle');
+        if (tr.classList.contains('is-parent') && !existing) {
+          tr.dataset.expanded = tr.dataset.expanded || 'true';
+          const toggle = document.createElement('button');
+          toggle.className = 'row-collapse-toggle';
+          toggle.textContent = '▶';
+          toggle.contentEditable = 'false';
+          firstTd.insertBefore(toggle, firstTd.firstChild);
+        } else if (!tr.classList.contains('is-parent') && existing) {
+          existing.remove();
+        }
+        // Conecta filhos via parentOf
+        if (tr.classList.contains('is-parent')) {
+          let n = next;
+          while (n && n.classList.contains('is-child')) {
+            n.dataset.parentOf = tr.dataset.rowId;
+            n = n.nextElementSibling;
+          }
+        }
+        // Botão "+ subitem" na última td de rows pai (somente)
+        const lastTd = tr.lastElementChild;
+        let addBtn = lastTd.querySelector('.table-add-subitem');
+        if (!tr.classList.contains('is-child')) {
+          if (!addBtn) {
+            addBtn = document.createElement('button');
+            addBtn.className = 'table-add-subitem';
+            addBtn.textContent = '+ subitem';
+            addBtn.contentEditable = 'false';
+            addBtn.onclick = (ev) => {
+              ev.preventDefault();
+              const colCount = thead.querySelector('tr').children.length;
+              const headTypes = Array.from(thead.querySelectorAll('th')).map(th => th.dataset.colType || 'text');
+              const childTr = document.createElement('tr');
+              childTr.classList.add('is-child');
+              childTr.dataset.rowId = 'r' + Math.random().toString(36).slice(2, 7);
+              childTr.dataset.parentOf = tr.dataset.rowId;
+              for (let i = 0; i < colCount; i++) {
+                const td = document.createElement('td');
+                td.dataset.value = '';
+                if (headTypes[i] === 'text') td.contentEditable = 'true';
+                else { td.contentEditable = 'false'; td.innerHTML = renderCellContent(headTypes[i], ''); }
+                childTr.appendChild(td);
+              }
+              // Insere depois do último filho já existente desse pai
+              let insertAfter = tr;
+              while (insertAfter.nextElementSibling &&
+                     insertAfter.nextElementSibling.classList.contains('is-child') &&
+                     insertAfter.nextElementSibling.dataset.parentOf === tr.dataset.rowId) {
+                insertAfter = insertAfter.nextElementSibling;
+              }
+              insertAfter.after(childTr);
+              refreshRowHierarchy();
+              childTr.firstElementChild.focus();
+              scheduleSave();
+            };
+            lastTd.appendChild(document.createElement('br'));
+            lastTd.appendChild(addBtn);
+          }
+        } else if (addBtn) {
+          addBtn.remove();
+        }
+      });
+    }
+    refreshRowHierarchy();
+    el._refreshRowHierarchy = refreshRowHierarchy;
     table.appendChild(tbody);
     el.appendChild(table);
     const controls = document.createElement('div');
@@ -8031,14 +8535,22 @@ function createBlockEl(type = 'p', text = '', extra = {}) {
     controls.contentEditable = 'false';
     const addRowBtn = document.createElement('button');
     addRowBtn.className = 'note-block-table-btn';
-    addRowBtn.textContent = '+ linha';
+    addRowBtn.textContent = '+ Nova página';
     addRowBtn.onclick = (e) => {
       e.preventDefault();
       const colCount = table.querySelector('thead tr').children.length;
       const newTr = document.createElement('tr');
+      newTr.dataset.rowId = 'r' + Math.random().toString(36).slice(2, 7);
+      const headTypes = Array.from(thead.querySelectorAll('th')).map(th => th.dataset.colType || 'text');
       for (let i = 0; i < colCount; i++) {
         const td = document.createElement('td');
-        td.contentEditable = 'true';
+        td.dataset.value = '';
+        if (headTypes[i] === 'text') {
+          td.contentEditable = 'true';
+        } else {
+          td.contentEditable = 'false';
+          td.innerHTML = renderCellContent(headTypes[i], '');
+        }
         newTr.appendChild(td);
       }
       tbody.appendChild(newTr);
@@ -8051,15 +8563,15 @@ function createBlockEl(type = 'p', text = '', extra = {}) {
     addColBtn.onclick = (e) => {
       e.preventDefault();
       const newTh = document.createElement('th');
-      newTh.contentEditable = 'true';
-      newTh.textContent = 'Nova';
+      newTh.dataset.colType = 'text';
+      newTh.innerHTML = `<span class="col-type-icon">Aa</span><span class="col-label" contenteditable="true">Nova</span><button class="col-type-toggle" data-picker-trigger title="Tipo da coluna">⌄</button>`;
       thead.querySelector('tr').appendChild(newTh);
       tbody.querySelectorAll('tr').forEach(tr => {
         const td = document.createElement('td');
         td.contentEditable = 'true';
+        td.dataset.value = '';
         tr.appendChild(td);
       });
-      newTh.focus();
       scheduleSave();
     };
     controls.appendChild(addRowBtn);
@@ -8340,6 +8852,44 @@ function onBlockInput(e) {
   }
   scheduleSave();
 }
+
+// --- Tabela: click no ⌄ do header abre picker de tipo ---
+noteBlocksEl.addEventListener('click', (e) => {
+  const trigger = e.target.closest('[data-picker-trigger]');
+  if (!trigger) return;
+  const th = trigger.closest('th');
+  if (!th) return;
+  e.preventDefault();
+  e.stopPropagation();
+  openColTypePicker(trigger, th);
+});
+
+// --- Tabela: click em chip/célula tipada abre picker de valor ---
+noteBlocksEl.addEventListener('click', (e) => {
+  const cell = e.target.closest('td');
+  if (!cell || cell.contentEditable === 'true') return;
+  // Pega o tipo da coluna pelo índice
+  const tr = cell.parentElement;
+  const cellIdx = Array.from(tr.children).indexOf(cell);
+  const table = cell.closest('table');
+  const th = table.querySelectorAll('thead th')[cellIdx];
+  const colType = th?.dataset.colType || 'text';
+  if (colType === 'text') return;
+  e.preventDefault();
+  e.stopPropagation();
+  openCellValuePicker(cell, cell, colType);
+});
+
+// --- Tabela: click no ▶ da linha pai expande/recolhe ---
+noteBlocksEl.addEventListener('click', (e) => {
+  const toggle = e.target.closest('.row-collapse-toggle');
+  if (!toggle) return;
+  e.preventDefault();
+  e.stopPropagation();
+  const tr = toggle.closest('tr');
+  const expanded = tr.dataset.expanded === 'true';
+  tr.dataset.expanded = expanded ? 'false' : 'true';
+});
 
 // --- Click no checkbox do todo ---
 noteBlocksEl.addEventListener('click', (e) => {
