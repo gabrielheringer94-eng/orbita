@@ -71,6 +71,70 @@
     display: grid;
     grid-template-columns: 240px 1fr;
     min-height: 100vh;
+    transition: grid-template-columns 0.2s ease;
+  }
+  body.sidebar-collapsed .app {
+    grid-template-columns: 0 1fr;
+  }
+  body.sidebar-collapsed .sidebar {
+    transform: translateX(-100%);
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /* Botão pra recolher dentro da sidebar (desktop only) */
+  .sidebar-collapse-btn {
+    position: absolute;
+    top: 14px;
+    right: 10px;
+    width: 26px;
+    height: 26px;
+    background: transparent;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    color: var(--ink-faint);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+  }
+  .sidebar-collapse-btn:hover {
+    background: var(--bg);
+    color: var(--ink);
+    border-color: var(--ink);
+  }
+
+  /* Botão flutuante pra reabrir (só aparece quando colapsado, desktop) */
+  .sidebar-reopen-btn {
+    position: fixed;
+    top: 12px;
+    left: 12px;
+    width: 36px;
+    height: 36px;
+    background: var(--bg-elevated);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    color: var(--ink);
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow-sm);
+    z-index: 1800;
+    transition: all 0.15s;
+  }
+  .sidebar-reopen-btn:hover {
+    background: var(--bg-card);
+    box-shadow: var(--shadow-md);
+  }
+  body.sidebar-collapsed .sidebar-reopen-btn { display: flex; }
+
+  /* No mobile, esses botões não existem — a sidebar vira drawer */
+  @media (max-width: 900px) {
+    .sidebar-collapse-btn { display: none; }
+    .sidebar-reopen-btn { display: none !important; }
+    body.sidebar-collapsed .app { grid-template-columns: minmax(0, 1fr); }
   }
 
   /* SIDEBAR */
@@ -3630,9 +3694,25 @@
 </header>
 <div class="m-overlay" id="m-overlay"></div>
 
+<script>
+  // Aplica estado de sidebar logo no boot pra evitar flash
+  try {
+    if (localStorage.getItem('orbita_sidebar_collapsed') === '1') {
+      document.documentElement.classList.add('sidebar-collapsed-boot');
+      document.addEventListener('DOMContentLoaded', () => document.body.classList.add('sidebar-collapsed'));
+    }
+  } catch {}
+</script>
+<button class="sidebar-reopen-btn" id="sidebar-reopen-btn" title="Abrir menu lateral" aria-label="Abrir menu lateral">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+</button>
+
 <div class="app">
   <!-- SIDEBAR -->
   <aside class="sidebar">
+    <button class="sidebar-collapse-btn" id="sidebar-collapse-btn" title="Recolher menu" aria-label="Recolher menu">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
     <div class="brand">
       <span class="brand-dot"></span>
       Órbita
@@ -4759,6 +4839,31 @@ function startApp() {
   if (typeof renderDashboard === 'function') renderDashboard();
   // Setup do drawer mobile (após app carregado, evita estado preso)
   setupMobileDrawer();
+  setupSidebarToggle();
+}
+
+// Toggle da sidebar (desktop) — persiste estado em localStorage
+function setupSidebarToggle() {
+  const STORAGE_KEY_SIDEBAR = 'orbita_sidebar_collapsed';
+  const apply = () => {
+    const collapsed = localStorage.getItem(STORAGE_KEY_SIDEBAR) === '1';
+    document.body.classList.toggle('sidebar-collapsed', collapsed);
+  };
+  apply();
+  const collapseBtn = document.getElementById('sidebar-collapse-btn');
+  const reopenBtn = document.getElementById('sidebar-reopen-btn');
+  if (collapseBtn) {
+    collapseBtn.onclick = () => {
+      localStorage.setItem(STORAGE_KEY_SIDEBAR, '1');
+      apply();
+    };
+  }
+  if (reopenBtn) {
+    reopenBtn.onclick = () => {
+      localStorage.setItem(STORAGE_KEY_SIDEBAR, '0');
+      apply();
+    };
+  }
 }
 
 function setupMobileDrawer() {
