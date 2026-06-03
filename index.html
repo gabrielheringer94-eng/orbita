@@ -50,6 +50,28 @@
     --shadow-md: 0 4px 12px rgba(0,0,0,0.06);
   }
 
+  /* Tema escuro — sobrescreve quando html tem .theme-dark */
+  html.theme-dark {
+    --bg: #18181b;
+    --bg-card: #27272a;
+    --bg-elevated: #1f1f23;
+    --ink: #fafafa;
+    --ink-soft: #d4d4d8;
+    --ink-faint: #71717a;
+    --line: #3f3f46;
+    --line-soft: #2a2a2e;
+    --accent: #fafafa;
+    --accent-soft: #2a2a2e;
+    --accent-deep: #ffffff;
+    --shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.4);
+  }
+  html.theme-dark img, html.theme-dark .place-pin-icon { /* não inverte conteúdo */ }
+  html.theme-dark .leaflet-tile { filter: brightness(0.85) contrast(1.05); }
+  html.theme-dark input, html.theme-dark textarea, html.theme-dark select {
+    color-scheme: dark;
+  }
+
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
   html, body {
@@ -3754,8 +3776,11 @@
 <div class="m-overlay" id="m-overlay"></div>
 
 <script>
-  // Aplica estado de sidebar/notes-list logo no boot pra evitar flash
+  // Aplica estado de sidebar/notes-list/tema logo no boot pra evitar flash
   try {
+    if (localStorage.getItem('orbita_theme') === 'dark') {
+      document.documentElement.classList.add('theme-dark');
+    }
     const applyEarly = () => {
       if (localStorage.getItem('orbita_sidebar_collapsed') === '1') document.body.classList.add('sidebar-collapsed');
       if (localStorage.getItem('orbita_notes_list_collapsed') === '1') document.body.classList.add('notes-list-collapsed');
@@ -3832,7 +3857,12 @@
       <div id="sync-status" style="font-size:10px;color:var(--ink-faint);margin-bottom:4px">
         <span style="color:#16a34a">●</span> Sincronizado
       </div>
-      Dados na nuvem · sincronizam<br>entre dispositivos.
+      <button id="theme-toggle-btn" title="Alternar tema claro/escuro" style="background:transparent;border:1px solid var(--line);border-radius:6px;padding:6px 10px;font-size:11px;color:var(--ink-soft);cursor:pointer;font-family:'Inter',sans-serif;display:inline-flex;align-items:center;gap:6px;margin-bottom:6px">
+        <svg id="theme-icon-light" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+        <svg id="theme-icon-dark" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+        <span id="theme-toggle-label">Tema escuro</span>
+      </button>
+      <div style="font-size:10px;color:var(--ink-faint);line-height:1.4">Dados na nuvem · sincronizam entre dispositivos.</div>
     </div>
   </aside>
 
@@ -4138,6 +4168,9 @@
               </button>
               <button class="note-tool-btn" id="toggle-view-btn" title="Alternar visualizar/editar">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+              <button class="note-tool-btn" id="history-note-btn" title="Histórico de versões">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 4v6h6"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/><polyline points="12 7 12 12 16 14"/></svg>
               </button>
               <button class="note-tool-btn" id="share-note-btn" title="Compartilhar / exportar">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
@@ -4454,6 +4487,29 @@
       <button class="btn btn-ghost" id="task-edit-delete">Excluir</button>
       <button class="btn btn-ghost" data-close-modal>Cancelar</button>
       <button class="btn" id="task-edit-save">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- NOTE HISTORY MODAL -->
+<div class="modal-bg" id="history-note-modal">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-title">Histórico de versões</div>
+    <div class="modal-sub" id="history-note-sub">—</div>
+
+    <div id="history-list" style="max-height:400px;overflow-y:auto;border:1px solid var(--line);border-radius:8px;background:var(--bg-card);margin-bottom:14px">
+      <div style="padding:16px;text-align:center;color:var(--ink-faint);font-size:13px">Carregando…</div>
+    </div>
+
+    <div id="history-preview" style="display:none;border:1px solid var(--line);border-radius:8px;padding:14px;background:var(--bg-card);max-height:280px;overflow-y:auto;margin-bottom:14px;font-size:13px;white-space:pre-wrap;font-family:inherit;color:var(--ink-soft)"></div>
+
+    <div style="font-size:11px;color:var(--ink-faint);text-align:center;margin-bottom:8px">
+      Snapshots automáticos a cada ~5min. Mantemos os últimos 20.
+    </div>
+
+    <div class="modal-actions" style="justify-content:space-between">
+      <button class="btn btn-ghost" id="history-restore-btn" style="display:none">Restaurar esta versão</button>
+      <button class="btn btn-ghost" data-close-modal>Fechar</button>
     </div>
   </div>
 </div>
@@ -4906,6 +4962,31 @@ function startApp() {
   // Setup do drawer mobile (após app carregado, evita estado preso)
   setupMobileDrawer();
   setupSidebarToggle();
+  setupThemeToggle();
+}
+
+// Toggle de tema claro/escuro
+function setupThemeToggle() {
+  const STORAGE = 'orbita_theme';
+  const apply = () => {
+    const dark = localStorage.getItem(STORAGE) === 'dark';
+    document.documentElement.classList.toggle('theme-dark', dark);
+    const lightIcon = document.getElementById('theme-icon-light');
+    const darkIcon = document.getElementById('theme-icon-dark');
+    const label = document.getElementById('theme-toggle-label');
+    if (lightIcon && darkIcon && label) {
+      lightIcon.style.display = dark ? 'none' : 'inline-block';
+      darkIcon.style.display = dark ? 'inline-block' : 'none';
+      label.textContent = dark ? 'Tema claro' : 'Tema escuro';
+    }
+  };
+  apply();
+  const btn = document.getElementById('theme-toggle-btn');
+  if (btn) btn.onclick = () => {
+    const current = localStorage.getItem(STORAGE);
+    localStorage.setItem(STORAGE, current === 'dark' ? 'light' : 'dark');
+    apply();
+  };
 }
 
 // Toggle da sidebar (desktop) — persiste estado em localStorage
@@ -9174,6 +9255,137 @@ document.getElementById('pin-btn').onclick = () => {
   saveState();
   document.getElementById('pin-btn').classList.toggle('active', note.pinned);
   renderNotesList();
+};
+
+// ============== HISTÓRICO DE VERSÕES DAS NOTAS ==============
+// Snapshot por nota: dispara em saves espaçados por >=5min ou quando body muda muito
+const VERSION_SNAPSHOT_GAP_MS = 5 * 60 * 1000;
+const VERSION_KEEP_PER_NOTE = 20;
+const lastSnapshotAt = new Map(); // noteId -> timestamp do último snapshot
+
+async function maybeSnapshotNoteVersion(note) {
+  if (!currentUser || !note || !note.id) return;
+  const now = Date.now();
+  const last = lastSnapshotAt.get(note.id) || 0;
+  if (now - last < VERSION_SNAPSHOT_GAP_MS) return;
+  try {
+    const { error } = await sb.from('note_versions').insert({
+      user_id: currentUser.id,
+      note_id: note.id,
+      title: note.title || null,
+      body: note.body || '',
+    });
+    if (error) { console.warn('snapshot falhou:', error); return; }
+    lastSnapshotAt.set(note.id, now);
+    // Trim: mantém os 20 mais recentes — apaga os mais antigos além disso
+    const { data: all } = await sb.from('note_versions')
+      .select('id, created_at')
+      .eq('user_id', currentUser.id)
+      .eq('note_id', note.id)
+      .order('created_at', { ascending: false });
+    if (all && all.length > VERSION_KEEP_PER_NOTE) {
+      const toDelete = all.slice(VERSION_KEEP_PER_NOTE).map(r => r.id);
+      if (toDelete.length) {
+        await sb.from('note_versions').delete().in('id', toDelete);
+      }
+    }
+  } catch (err) {
+    console.warn('snapshot exception:', err);
+  }
+}
+
+async function fetchNoteVersions(noteId) {
+  if (!currentUser) return [];
+  const { data, error } = await sb.from('note_versions')
+    .select('id, title, body, char_count, created_at')
+    .eq('user_id', currentUser.id)
+    .eq('note_id', noteId)
+    .order('created_at', { ascending: false })
+    .limit(VERSION_KEEP_PER_NOTE);
+  if (error) { console.warn(error); return []; }
+  return data || [];
+}
+
+function formatRelativeTime(iso) {
+  const d = new Date(iso);
+  const now = Date.now();
+  const diff = (now - d.getTime()) / 1000;
+  if (diff < 60) return 'Agora mesmo';
+  if (diff < 3600) return `Há ${Math.round(diff / 60)} min`;
+  if (diff < 86400) return `Há ${Math.round(diff / 3600)}h`;
+  if (diff < 86400 * 7) return `Há ${Math.round(diff / 86400)}d`;
+  return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' });
+}
+
+let selectedVersionForRestore = null;
+
+document.getElementById('history-note-btn').onclick = async () => {
+  if (!activeNoteId) return;
+  flushSave();
+  const note = state.notes.find(n => n.id === activeNoteId);
+  if (!note) return;
+  document.getElementById('history-note-sub').textContent = (note.title || 'Sem título').toUpperCase();
+  document.getElementById('history-preview').style.display = 'none';
+  document.getElementById('history-restore-btn').style.display = 'none';
+  selectedVersionForRestore = null;
+  const listEl = document.getElementById('history-list');
+  listEl.innerHTML = '<div style="padding:16px;text-align:center;color:var(--ink-faint);font-size:13px">Carregando…</div>';
+  document.getElementById('history-note-modal').classList.add('active');
+
+  const versions = await fetchNoteVersions(activeNoteId);
+  if (versions.length === 0) {
+    listEl.innerHTML = '<div style="padding:24px 16px;text-align:center;color:var(--ink-faint);font-size:13px">Nenhuma versão salva ainda.<br><span style="font-size:11px">Snapshots começam a cada ~5min depois de editar.</span></div>';
+    return;
+  }
+  listEl.innerHTML = versions.map(v => `
+    <div class="itinerary-pick-item" data-version-id="${v.id}" style="display:flex;justify-content:space-between;align-items:center;cursor:pointer">
+      <div>
+        <div style="font-weight:600;font-size:13px">${formatRelativeTime(v.created_at)}</div>
+        <div style="font-size:11px;color:var(--ink-faint)">${new Date(v.created_at).toLocaleString('pt-BR')} · ${v.char_count || 0} chars</div>
+      </div>
+      <span style="font-size:11px;color:var(--ink-faint)">ver →</span>
+    </div>
+  `).join('');
+  listEl.querySelectorAll('[data-version-id]').forEach(el => {
+    el.onclick = () => {
+      const v = versions.find(x => x.id === el.dataset.versionId);
+      if (!v) return;
+      selectedVersionForRestore = v;
+      const preview = document.getElementById('history-preview');
+      preview.style.display = 'block';
+      preview.textContent = v.body || '(vazio)';
+      document.getElementById('history-restore-btn').style.display = '';
+      listEl.querySelectorAll('[data-version-id]').forEach(x => x.classList.remove('is-in'));
+      el.classList.add('is-in');
+    };
+  });
+};
+
+document.getElementById('history-restore-btn').onclick = () => {
+  if (!selectedVersionForRestore || !activeNoteId) return;
+  if (!confirm('Restaurar esta versão? Sua versão atual será salva como nova versão antes da substituição.')) return;
+  const note = state.notes.find(n => n.id === activeNoteId);
+  if (!note) return;
+  // Salva o estado atual primeiro como snapshot extra (override do gap)
+  lastSnapshotAt.set(note.id, 0);
+  maybeSnapshotNoteVersion(note);
+  // Substitui
+  note.title = selectedVersionForRestore.title || note.title;
+  note.body = selectedVersionForRestore.body || '';
+  note.updatedAt = new Date().toISOString();
+  saveState();
+  showNoteEditor(note);
+  closeAllModals();
+  showShareFeedback && showShareFeedback('✓ Versão restaurada');
+};
+
+// Hook no flushSave existente: snapshot na nuvem
+const _origFlushSave = flushSave;
+flushSave = function() {
+  _origFlushSave.apply(this, arguments);
+  if (!activeNoteId) return;
+  const note = state.notes.find(n => n.id === activeNoteId);
+  if (note) maybeSnapshotNoteVersion(note);
 };
 
 // ============== SHARE / EXPORT NOTE ==============
