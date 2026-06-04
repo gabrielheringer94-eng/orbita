@@ -2902,21 +2902,34 @@
   .note-block-table tr.is-parent[data-expanded="false"] ~ tr.is-child[data-parent-of] {
     display: none;
   }
-  /* "+ Novo subitem" inline */
+  /* "+ Novo subitem" inline — sempre visível (era hover-only, ruim no mobile) */
   .table-add-subitem {
     background: transparent;
-    border: none;
+    border: 1px dashed var(--line);
     color: var(--ink-faint);
     font-size: 11px;
     cursor: pointer;
-    padding: 2px 6px;
-    margin-top: 4px;
-    border-radius: 3px;
+    padding: 3px 10px;
+    margin-top: 6px;
+    border-radius: 4px;
     font-family: 'Inter', sans-serif;
-    opacity: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
   }
-  .note-block-table tr:hover .table-add-subitem { opacity: 1; }
-  .table-add-subitem:hover { color: var(--ink); background: var(--bg); }
+  .table-add-subitem:hover {
+    color: var(--ink);
+    background: var(--bg-card);
+    border-color: var(--ink);
+    border-style: solid;
+  }
+  /* No mobile, ainda mais visível pra não passar batido */
+  @media (max-width: 900px) {
+    .table-add-subitem {
+      font-size: 12px;
+      padding: 5px 12px;
+    }
+  }
   /* Estilos inline preservados */
   .note-blocks strong { font-weight: 700; }
   .note-blocks em { font-style: italic; }
