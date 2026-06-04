@@ -2689,15 +2689,13 @@
   .note-block-table {
     border-collapse: collapse;
     width: 100%;
-    background: var(--bg-elevated);
+    background: transparent;
     font-size: 14px;
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    overflow: hidden;
+    /* Sem outer border, sem border-radius, sem fundo — estilo Notion */
   }
   .note-block-table th,
   .note-block-table td {
-    border: 1px solid var(--line);
+    border: none;
     padding: 8px 12px;
     text-align: left;
     vertical-align: top;
@@ -2705,17 +2703,30 @@
     outline: none;
     transition: background 0.1s;
   }
+  /* Separador horizontal sutil entre rows */
+  .note-block-table tbody tr {
+    border-bottom: 1px solid var(--line-soft);
+  }
+  .note-block-table tbody tr:last-child { border-bottom: none; }
+  /* Header com underline sutil pra separar do conteúdo */
+  .note-block-table thead tr {
+    border-bottom: 1px solid var(--line);
+  }
   .note-block-table th {
-    background: var(--bg-card);
-    font-weight: 700;
-    font-size: 12px;
+    background: transparent;
+    font-weight: 600;
+    font-size: 11px;
     text-transform: uppercase;
     letter-spacing: 0.04em;
-    color: var(--ink);
+    color: var(--ink-faint);
   }
+  /* Foco sutil — não preenche a célula inteira, só leve highlight */
   .note-block-table td:focus,
   .note-block-table th:focus {
     background: var(--accent-soft);
+  }
+  .note-block-table tbody tr:hover {
+    background: var(--line-soft);
   }
   .note-block-table-controls {
     display: flex;
