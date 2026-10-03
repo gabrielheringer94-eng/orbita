@@ -296,6 +296,76 @@
     to { opacity: 1; transform: translateY(0); }
   }
 
+  /* SAÚDE */
+  .sa-tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 28px; }
+  .sa-tile { background: var(--bg-elevated); border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; display: flex; flex-direction: column; gap: 4px; }
+  .sa-tile span { font-size: 10px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-faint); }
+  .sa-tile b { font-size: 30px; font-weight: 300; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; line-height: 1.1; }
+  .sa-tile b small { white-space: nowrap; font-size: 14px; color: var(--ink-faint); font-weight: 400; letter-spacing: 0; }
+  .sa-tile em { font-style: normal; font-size: 12px; color: var(--ink-faint); }
+  .sa-sec { margin-bottom: 28px; }
+  .sa-sec-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+  .sa-sec-head h2 { font-size: 22px; font-weight: 300; letter-spacing: -0.02em; margin: 0; }
+  .sa-sec-head p { margin: 2px 0 0; font-size: 13px; color: var(--ink-faint); }
+  .sa-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .sa-form { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; }
+  .sa-field { display: flex; flex-direction: column; gap: 4px; font-size: 11px; color: var(--ink-faint); font-weight: 600; letter-spacing: .04em; }
+  .sa-in { border: 1px solid var(--line); background: var(--bg-card); color: var(--ink); border-radius: 8px; padding: 8px 10px; font: 500 14px 'DM Sans', sans-serif; min-width: 0; }
+  .sa-in:focus { outline: none; border-color: var(--ink); }
+  .sa-q { display: flex; gap: 4px; }
+  .sa-q button { width: 34px; height: 36px; border: 1px solid var(--line); background: var(--bg-card); color: var(--ink-soft); border-radius: 8px; font: 600 13px 'DM Sans', sans-serif; cursor: pointer; }
+  .sa-q button.on { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  .sa-btn { border: 1px solid var(--ink); background: var(--ink); color: var(--bg); border-radius: 8px; padding: 9px 16px; font: 600 13px 'DM Sans', sans-serif; cursor: pointer; }
+  .sa-btn.ghost { background: transparent; color: var(--ink); border-color: var(--line); }
+  .sa-btn.danger { background: transparent; color: #dc2626; border-color: transparent; padding: 6px 8px; }
+  .sa-chart { position: relative; margin-top: 14px; }
+  .sa-chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+  .sa-tip { position: absolute; pointer-events: none; background: var(--ink); color: var(--bg); font-size: 12px; font-weight: 600; padding: 4px 8px; border-radius: 6px; white-space: nowrap; transform: translate(-50%, -130%); z-index: 2; }
+  .sa-note { font-size: 12px; color: var(--ink-faint); margin-top: 10px; line-height: 1.5; }
+  .sa-empty { font-size: 14px; color: var(--ink-faint); padding: 8px 0; line-height: 1.5; }
+  .sa-mk { display: grid; grid-template-columns: minmax(130px, 1.3fr) 110px minmax(120px, 1.4fr) 92px 80px; gap: 14px; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--line-soft); }
+  .sa-mk:last-child { border-bottom: 0; }
+  .sa-mk .nm { font-weight: 600; font-size: 14px; }
+  .sa-mk .nm small { display: block; font-weight: 400; font-size: 12px; color: var(--ink-faint); }
+  .sa-mk .val { font-size: 18px; font-weight: 500; font-variant-numeric: tabular-nums; }
+  .sa-mk .val small { font-size: 11px; color: var(--ink-faint); font-weight: 400; margin-left: 3px; }
+  .sa-mk .delta { display: block; font-size: 11px; color: var(--ink-faint); font-weight: 400; }
+  .sa-range { position: relative; height: 22px; margin-top: 6px; }
+  .sa-range .track { position: absolute; left: 0; right: 0; top: 9px; height: 4px; border-radius: 4px; background: var(--line); }
+  .sa-range .ok { position: absolute; top: 9px; height: 4px; border-radius: 4px; background: #16a34a; opacity: .45; }
+  .sa-range .dot { position: absolute; top: 5px; width: 12px; height: 12px; border-radius: 50%; background: var(--ink); box-shadow: 0 0 0 2px var(--bg-elevated); transform: translateX(-50%); }
+  .sa-range .lim { position: absolute; top: -9px; font-size: 9px; color: var(--ink-faint); transform: translateX(-50%); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .sa-st { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 700; padding: 3px 9px; border-radius: 999px; white-space: nowrap; }
+  .sa-st.good { background: #dcfce7; color: #15803d; }
+  .sa-st.high, .sa-st.low { background: #fee2e2; color: #b91c1c; }
+  .sa-st.none { background: var(--bg-card); color: var(--ink-faint); }
+  html.theme-dark .sa-st.good { background: #14532d; color: #86efac; }
+  html.theme-dark .sa-st.high, html.theme-dark .sa-st.low { background: #450a0a; color: #fca5a5; }
+  .sa-spark svg { display: block; width: 80px; height: 26px; overflow: visible; }
+  .sa-filter { display: flex; gap: 4px; padding: 3px; background: var(--bg-card); border: 1px solid var(--line); border-radius: 9px; }
+  .sa-filter button { border: 0; background: transparent; color: var(--ink-faint); font: 600 12px 'DM Sans', sans-serif; padding: 6px 10px; border-radius: 6px; cursor: pointer; }
+  .sa-filter button.on { background: var(--bg-elevated); color: var(--ink); box-shadow: var(--shadow-sm); }
+  .sa-rows { display: flex; flex-direction: column; gap: 8px; margin: 14px 0; }
+  .sa-row { display: grid; grid-template-columns: minmax(150px, 2fr) 1fr 1fr 1fr 1fr 32px; gap: 8px; align-items: center; }
+  .sa-row .sa-in { width: 100%; }
+  .sa-hist { display: flex; flex-direction: column; }
+  .sa-hist div { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--line-soft); font-size: 13px; }
+  .sa-hist div:last-child { border-bottom: 0; }
+  .sa-lifts { display: flex; flex-direction: column; }
+  .sa-lifts div { display: flex; justify-content: space-between; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--line-soft); font-size: 13px; }
+  .sa-lifts div:last-child { border-bottom: 0; }
+  .sa-lifts b { font-variant-numeric: tabular-nums; }
+  @media (max-width: 900px) {
+    .sa-tiles { grid-template-columns: repeat(2, 1fr); }
+    .sa-tile b small { display: block; margin-top: 2px; }
+    .sa-grid2 { grid-template-columns: 1fr; }
+    .sa-mk { grid-template-columns: 1fr auto; gap: 6px 12px; }
+    .sa-mk .sa-range { grid-column: 1 / -1; }
+    .sa-mk .sa-spark { display: none; }
+    .sa-row { grid-template-columns: 1fr 1fr 1fr; }
+    .sa-row .sa-in:first-child { grid-column: 1 / -1; }
+  }
+
   /* TREINO */
   .tr-tabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; padding: 4px; background: var(--bg-card); border: 1px solid var(--line); border-radius: 10px; margin-bottom: 20px; max-width: 480px; }
   .tr-tab { border: 0; background: transparent; color: var(--ink-faint); font: 600 13px 'DM Sans', sans-serif; padding: 8px 4px; border-radius: 7px; cursor: pointer; }
@@ -3955,6 +4025,10 @@
         <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
         Cronograma
       </div>
+      <div class="nav-item" data-page="saude">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 0 0 0-7.8z"/><path d="M3.5 12h4l2-3 3 6 2-3h6"/></svg>
+        Saúde
+      </div>
 
       <div class="nav-section">Execução</div>
       <div class="nav-item" data-page="tasks">
@@ -4164,6 +4238,17 @@
       </div>
 
       <div class="habit-summary-card" id="habit-summary-card"></div>
+    </section>
+
+    <!-- SAUDE -->
+    <section class="page" id="page-saude">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Saú<em>de</em></h1>
+          <div class="page-meta">Exames · treinos · sono</div>
+        </div>
+      </div>
+      <div id="sa-body"></div>
     </section>
 
     <!-- TREINO -->
@@ -5340,7 +5425,7 @@ navItems.forEach(item => {
     if (target === 'tasks') renderTasks();
     if (target === 'goals') renderGoals();
     if (target === 'habits') renderHabits();
-    if (target === 'treino') renderTreino();
+    if (target === 'treino') renderTreino(); if (target === 'saude') renderSaude();
     if (target === 'shopping') renderShopping();
     if (target === 'places') renderPlaces();
     if (target === 'birthdays') renderBirthdays();
@@ -10558,6 +10643,7 @@ const renderTreino = (() => {
     {n:"Jantar", w:"20:00", p:40, c:85, g:14, i:["170 g de peixe, carne magra ou frango","300 g de batata-doce ou 220 g de macarrão cozido","Legumes no vapor","Fio de azeite"]}
   ];
   const MEAL_KCAL = MEALS.map(m => m.p*4 + m.c*4 + m.g*9);
+  window.__treinoPlan = PLAN;
   const IMG = {"Agachamento livre": "Barbell_Full_Squat", "Supino reto com barra": "Barbell_Bench_Press_-_Medium_Grip", "Elevação lateral halteres": "Side_Lateral_Raise", "Tríceps corda na polia": "Triceps_Pushdown_-_Rope_Attachment", "Panturrilha em pé": "Standing_Calf_Raises", "Levantamento terra romeno": "Romanian_Deadlift", "Barra fixa pronada": "Pullups", "Remada curvada com barra": "Bent_Over_Barbell_Row", "Face pull na polia": "Face_Pull", "Rosca direta barra": "Barbell_Curl", "Supino inclinado com barra": "Barbell_Incline_Bench_Press_-_Medium_Grip", "Desenvolvimento halteres sentado": "Seated_Dumbbell_Press", "Paralelas (dips)": "Dips_-_Chest_Version", "Elevação lateral na polia": "Cable_Seated_Lateral_Raise", "Tríceps francês na polia": "Cable_Rope_Overhead_Triceps_Extension", "Puxada frontal aberta": "Wide-Grip_Lat_Pulldown", "Remada unilateral halter": "One-Arm_Dumbbell_Row", "Remada cavalinho (T-bar)": "T-Bar_Row_with_Handle", "Rosca Scott barra EZ": "Preacher_Curl", "Crucifixo inverso (peck deck)": "Reverse_Machine_Flyes", "Rosca inclinada halteres": "Incline_Dumbbell_Curl", "Leg press 45°": "Leg_Press", "Supino reto halteres": "Dumbbell_Bench_Press", "Agachamento búlgaro": "Split_Squat_with_Dumbbells", "Crossover na polia": "Cable_Crossover", "Tríceps testa barra EZ": "EZ-Bar_Skullcrusher", "Box jump": "Front_Box_Jump", "Hip thrust": "Barbell_Hip_Thrust", "Barra fixa supinada": "Chin-Up", "Nordic curl (excêntrico)": "Natural_Glute_Ham_Raise", "Rosca martelo": "Hammer_Curls", "Rosca concentrada": "Concentration_Curls", "World's greatest stretch": "Worlds_Greatest_Stretch", "Dead bug": "Dead_Bug", "Pallof press": "Pallof_Press", "Prancha Copenhagen": "Side_Bridge", "Roda abdominal": "Ab_Roller", "Elevação de pernas na barra": "Hanging_Leg_Raise", "Sprints de 20 m": "Single-Cone_Sprint_Drill"};
   const DOW = ["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];
   const pad = n => String(n).padStart(2, "0");
@@ -10934,6 +11020,309 @@ const renderTreino = (() => {
   document.querySelectorAll("#tr-tabs [data-v]").forEach(b => b.onclick = () => show(b.dataset.v));
 
   return () => { cur = todayIdx(); gDate = null; show(view); };
+})();
+
+// ============== SAÚDE ==============
+// Dashboard de exames, treinos e sono. Exames e sono em state.saude; treinos vêm de state.treino.
+const renderSaude = (() => {
+  const PRESETS = [
+    ["Glicose em jejum","mg/dL",70,99],["Hemoglobina glicada (HbA1c)","%",4,5.6],["Insulina","µUI/mL",2,25],
+    ["Colesterol total","mg/dL",0,190],["HDL","mg/dL",40,100],["LDL","mg/dL",0,130],["Triglicerídeos","mg/dL",0,150],
+    ["Hemoglobina","g/dL",13.5,17.5],["Hematócrito","%",40,52],["Leucócitos","/mm³",4000,11000],["Plaquetas","mil/mm³",150,450],
+    ["Ferritina","ng/mL",30,400],["Vitamina D (25-OH)","ng/mL",30,100],["Vitamina B12","pg/mL",200,900],
+    ["TSH","µUI/mL",0.4,4.5],["T4 livre","ng/dL",0.9,1.8],["Testosterona total","ng/dL",300,1000],
+    ["Creatinina","mg/dL",0.7,1.3],["Ureia","mg/dL",15,45],["Ácido úrico","mg/dL",3.4,7],
+    ["TGO (AST)","U/L",0,40],["TGP (ALT)","U/L",0,41],["Gama GT","U/L",0,60],["CK (CPK)","U/L",39,308],["PCR ultrassensível","mg/L",0,3]
+  ];
+  const pad = n => String(n).padStart(2, "0");
+  const dkey = d => d.getFullYear() + "-" + pad(d.getMonth()+1) + "-" + pad(d.getDate());
+  const kdate = k => { const [y,m,d] = k.split("-").map(Number); return new Date(y, m-1, d); };
+  const shift = (k, n) => { const d = kdate(k); d.setDate(d.getDate() + n); return dkey(d); };
+  const today = () => dkey(new Date());
+  const br = d => pad(d.getDate()) + "/" + pad(d.getMonth()+1);
+  const num = v => { const n = parseFloat(String(v ?? "").replace(",", ".")); return isNaN(n) ? null : n; };
+  const fmtN = v => v == null ? "–" : (Math.round(v*100)/100).toLocaleString("pt-BR");
+  const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+  const uidS = () => Math.random().toString(36).slice(2, 10);
+
+  let examFilter = "all", formOpen = false, formRows = [], sleepQ = 3;
+
+  function S() {
+    if (!state.saude || typeof state.saude !== "object") state.saude = {};
+    const s = state.saude; s.exames = s.exames || []; s.sono = s.sono || {};
+    return s;
+  }
+  function tLog() { return (state.treino && state.treino.log) || {}; }
+
+  // ---------- dados ----------
+  function markers() {
+    // agrupa por nome, ordena por data
+    const by = {};
+    S().exames.slice().sort((a,b) => a.date.localeCompare(b.date)).forEach(ex => {
+      (ex.items || []).forEach(it => {
+        const v = num(it.valor); if (v == null || !it.nome) return;
+        const k = it.nome.trim();
+        (by[k] = by[k] || []).push({date: ex.date, v, unit: it.unidade || "", min: num(it.min), max: num(it.max)});
+      });
+    });
+    return Object.keys(by).map(n => {
+      const h = by[n], last = h[h.length-1];
+      let st = "none";
+      if (last.min != null || last.max != null) st = (last.max != null && last.v > last.max) ? "high" : (last.min != null && last.v < last.min) ? "low" : "good";
+      return {n, h, last, st};
+    }).sort((a,b) => (a.st === "good") - (b.st === "good") || a.n.localeCompare(b.n, "pt-BR"));
+  }
+  function sleepNights(nDays) {
+    const td = today(), s = S().sono;
+    return Array.from({length: nDays}, (_, i) => { const k = shift(td, i - nDays + 1); return {k, ...(s[k] || {})}; });
+  }
+  function trainedDays() { const l = tLog(); return Object.keys(l).filter(k => l[k] && l[k].treino); }
+  function latestWeight() {
+    const l = tLog(); const ks = Object.keys(l).filter(k => l[k] && typeof l[k].peso === "number").sort();
+    return ks.length ? {k: ks[ks.length-1], w: l[ks[ks.length-1]].peso} : null;
+  }
+
+  // ---------- render ----------
+  function render() {
+    const page = document.getElementById("sa-body"); if (!page) return;
+    const mk = markers(), out = mk.filter(m => m.st === "high" || m.st === "low").length, withRef = mk.filter(m => m.st !== "none").length;
+    const exs = S().exames.slice().sort((a,b) => b.date.localeCompare(a.date));
+    const n7 = sleepNights(7).filter(x => typeof x.h === "number");
+    const avg7 = n7.length ? n7.reduce((a,x) => a + x.h, 0) / n7.length : null;
+    const td = today(), mon = shift(td, -((new Date().getDay()+6)%7)), days = trainedDays();
+    const wk = days.filter(k => k >= mon && k <= td).length;
+    const mo = days.filter(k => k.slice(0,7) === td.slice(0,7)).length;
+    const lw = latestWeight();
+
+    page.innerHTML = `
+      <div class="sa-tiles">
+        <div class="sa-tile"><span>Exames</span>${mk.length ? `<b>${withRef - out}<small> / ${withRef} na referência</small></b><em>${out ? `${out} ${out === 1 ? "marcador fora" : "marcadores fora"}` : "Tudo dentro da referência"} · último em ${br(kdate(exs[0].date))}</em>` : `<b>–</b><em>Nenhum exame registrado</em>`}</div>
+        <div class="sa-tile"><span>Treinos</span><b>${wk}<small> nesta semana</small></b><em>${mo} no mês</em></div>
+        <div class="sa-tile"><span>Sono · 7 noites</span><b>${avg7 == null ? "–" : fmtN(Math.round(avg7*10)/10) + "<small> h/noite</small>"}</b><em>${n7.length ? `${n7.filter(x => x.h >= 7).length} de ${n7.length} noites com 7 h+` : "Registre suas noites abaixo"}</em></div>
+        <div class="sa-tile"><span>Peso</span><b>${lw ? fmtN(lw.w) + "<small> kg</small>" : "–"}</b><em>${lw ? "registrado em " + br(kdate(lw.k)) : "Registre na Gestão do Treino"}</em></div>
+      </div>
+
+      <div class="sa-sec">
+        <div class="sa-sec-head">
+          <div><h2>Exames</h2><p>Último valor de cada marcador comparado com a referência do laudo.</p></div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            ${mk.length ? `<div class="sa-filter" id="sa-filter"><button data-f="all" class="${examFilter==="all"?"on":""}">Todos</button><button data-f="out" class="${examFilter==="out"?"on":""}">Fora da referência</button></div>` : ""}
+            <button class="sa-btn" id="sa-new-exam">${formOpen ? "Fechar" : "+ Registrar exame"}</button>
+          </div>
+        </div>
+        ${formOpen ? examForm() : ""}
+        <div class="card">${mk.length ? markerList(mk) : `<div class="sa-empty">Registre o seu primeiro exame: escolha os marcadores do laudo, digite os valores e a referência. Eu mostro o que está fora do intervalo e como cada um evolui entre exames.</div>`}</div>
+        ${exs.length ? `<div class="card" style="margin-top:12px"><div class="card-title">Histórico</div><div class="card-subtitle">${exs.length} ${exs.length===1?"exame":"exames"}</div><div class="sa-hist">${exs.map(e => `<div><span><b>${br(kdate(e.date))}/${e.date.slice(0,4)}</b> · ${esc(e.lab || "Exame")} · ${(e.items||[]).length} marcadores</span><button class="sa-btn danger" data-del="${e.id}">Excluir</button></div>`).join("")}</div></div>` : ""}
+      </div>
+
+      <div class="sa-grid2">
+        <div class="sa-sec">
+          <div class="sa-sec-head"><div><h2>Sono</h2><p>Horas por noite nas últimas 2 semanas. Meta: 7 h.</p></div></div>
+          <div class="card">
+            <div class="sa-form">
+              <label class="sa-field">Noite de<input class="sa-in" id="sa-s-date" type="date" value="${shift(today(), 0)}" max="${today()}"></label>
+              <label class="sa-field">Horas<input class="sa-in" id="sa-s-h" type="text" inputmode="decimal" placeholder="7,5" style="width:80px"></label>
+              <div class="sa-field">Qualidade<div class="sa-q" id="sa-s-q">${[1,2,3,4,5].map(q => `<button type="button" data-q="${q}" class="${q===sleepQ?"on":""}" aria-label="Qualidade ${q}">${q}</button>`).join("")}</div></div>
+              <button class="sa-btn" id="sa-s-save">Salvar</button>
+            </div>
+            <div class="sa-chart" id="sa-sleep-chart"></div>
+            <p class="sa-note">Noites com 7 h ou mais marcam o hábito "Sono" na Gestão do Treino automaticamente.</p>
+          </div>
+        </div>
+        <div class="sa-sec">
+          <div class="sa-sec-head"><div><h2>Treinos</h2><p>Dias treinados por semana nas últimas 12 semanas.</p></div></div>
+          <div class="card">
+            <div class="sa-chart" id="sa-train-chart"></div>
+            <div class="card-title" style="margin-top:18px">Cargas atuais</div>
+            <div class="card-subtitle">Últimas anotadas na ficha</div>
+            <div class="sa-lifts">${liftsList()}</div>
+          </div>
+        </div>
+      </div>`;
+
+    wire(); drawSleep(); drawTrain();
+  }
+
+  function markerList(mk) {
+    const list = examFilter === "out" ? mk.filter(m => m.st === "high" || m.st === "low") : mk;
+    if (!list.length) return `<div class="sa-empty">Nenhum marcador fora da referência no último exame.</div>`;
+    return list.map(m => {
+      const L = m.last, prev = m.h.length > 1 ? m.h[m.h.length-2] : null;
+      const delta = prev ? L.v - prev.v : null;
+      const lab = {good:"✓ Normal", high:"↑ Alto", low:"↓ Baixo", none:"Sem referência"}[m.st];
+      return `<div class="sa-mk">
+        <div class="nm">${esc(m.n)}<small>${br(kdate(L.date))}/${L.date.slice(0,4)}</small></div>
+        <div class="val">${fmtN(L.v)}<small>${esc(L.unit)}</small>${delta != null ? `<span class="delta">${delta >= 0 ? "+" : ""}${fmtN(delta)} vs ${br(kdate(prev.date))}</span>` : ""}</div>
+        ${rangeBar(L)}
+        <div><span class="sa-st ${m.st}">${lab}</span></div>
+        <div class="sa-spark">${spark(m.h)}</div>
+      </div>`;
+    }).join("");
+  }
+  function rangeBar(L) {
+    if (L.min == null && L.max == null) return `<div class="sa-range"><div class="track"></div></div>`;
+    const lo = L.min ?? 0, hi = L.max ?? (lo * 2 || 1), span = Math.max(hi - lo, 1e-9);
+    const d0 = Math.min(lo - span*0.4, L.v), d1 = Math.max(hi + span*0.4, L.v);
+    const x = v => ((v - d0) / (d1 - d0) * 100).toFixed(1) + "%";
+    return `<div class="sa-range" title="Referência: ${L.min != null ? fmtN(L.min) : "–"} a ${L.max != null ? fmtN(L.max) : "–"} ${esc(L.unit)}">
+      <div class="track"></div><div class="ok" style="left:${x(lo)};width:calc(${x(hi)} - ${x(lo)})"></div>
+      ${L.min != null && L.min > 0 ? `<span class="lim" style="left:${x(L.min)}">${fmtN(L.min)}</span>` : ""}${L.max != null ? `<span class="lim" style="left:${x(L.max)}">${fmtN(L.max)}</span>` : ""}
+      <div class="dot" style="left:${x(L.v)}"></div></div>`;
+  }
+  function spark(h) {
+    if (h.length < 2) return "";
+    const vs = h.map(p => p.v), mn = Math.min(...vs), mx = Math.max(...vs), r = mx - mn || 1;
+    const X = i => 2 + i / (h.length-1) * 76, Y = v => 22 - (v - mn) / r * 18;
+    return `<svg viewBox="0 0 80 26" aria-label="Evolução: ${vs.map(fmtN).join(", ")}"><path d="${h.map((p,i) => (i?"L":"M") + X(i).toFixed(1) + " " + Y(p.v).toFixed(1)).join(" ")}" fill="none" stroke="var(--ink-faint)" stroke-width="1.5" stroke-linejoin="round"/><circle cx="${X(h.length-1)}" cy="${Y(vs[vs.length-1])}" r="3" fill="var(--ink)"/></svg>`;
+  }
+  function liftsList() {
+    const plan = window.__treinoPlan || [], load = (state.treino && state.treino.load) || {};
+    const rows = [];
+    plan.forEach((p, d) => p.ex.forEach((e, j) => { const v = num(load[d+"-"+j]); if (v) rows.push([e.n, p.d, v]); }));
+    if (!rows.length) return `<div class="sa-empty" style="display:block;border:0">Anote as cargas no campo "kg" de cada exercício em Treino.</div>`;
+    return rows.sort((a,b) => b[2] - a[2]).slice(0, 8).map(r => `<div><span>${esc(r[0])} <span style="color:var(--ink-faint)">· ${r[1]}</span></span><b>${fmtN(r[2])} kg</b></div>`).join("");
+  }
+
+  function examForm() {
+    if (!formRows.length) formRows = [{nome:"",valor:"",unidade:"",min:"",max:""}];
+    return `<div class="card" style="margin-bottom:12px" id="sa-form">
+      <div class="sa-form">
+        <label class="sa-field">Data do exame<input class="sa-in" id="sa-e-date" type="date" value="${today()}" max="${today()}"></label>
+        <label class="sa-field" style="flex:1;min-width:160px">Laboratório (opcional)<input class="sa-in" id="sa-e-lab" type="text" placeholder="Ex.: Fleury"></label>
+      </div>
+      <datalist id="sa-presets">${PRESETS.map(p => `<option value="${esc(p[0])}">`).join("")}</datalist>
+      <div class="sa-rows" id="sa-rows">
+        <div class="sa-row" style="font-size:11px;color:var(--ink-faint);font-weight:600"><span>Marcador</span><span>Valor</span><span>Unidade</span><span>Ref. mín.</span><span>Ref. máx.</span><span></span></div>
+        ${formRows.map((r, i) => `<div class="sa-row" data-i="${i}">
+          <input class="sa-in" list="sa-presets" data-f="nome" value="${esc(r.nome)}" placeholder="Digite ou escolha">
+          <input class="sa-in" data-f="valor" inputmode="decimal" value="${esc(r.valor)}" placeholder="Valor">
+          <input class="sa-in" data-f="unidade" value="${esc(r.unidade)}" placeholder="mg/dL">
+          <input class="sa-in" data-f="min" inputmode="decimal" value="${esc(r.min)}" placeholder="mín.">
+          <input class="sa-in" data-f="max" inputmode="decimal" value="${esc(r.max)}" placeholder="máx.">
+          <button class="sa-btn danger" data-rm="${i}" aria-label="Remover linha">✕</button>
+        </div>`).join("")}
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="sa-btn ghost" id="sa-add-row">+ Marcador</button>
+        <button class="sa-btn ghost" id="sa-add-panel">+ Check-up básico</button>
+        <button class="sa-btn" id="sa-save-exam" style="margin-left:auto">Salvar exame</button>
+      </div>
+      <p class="sa-note">Ao escolher um marcador da lista, unidade e referência são preenchidas com valores típicos para adultos. Confira com a referência do seu laudo, que pode variar por laboratório.</p>
+    </div>`;
+  }
+
+  function wire() {
+    document.getElementById("sa-new-exam").onclick = () => { formOpen = !formOpen; if (!formOpen) formRows = []; render(); };
+    document.querySelectorAll("#sa-filter [data-f]").forEach(b => b.onclick = () => { examFilter = b.dataset.f; render(); });
+    document.querySelectorAll("[data-del]").forEach(b => b.onclick = () => {
+      if (b.dataset.armed !== "1") { b.dataset.armed = "1"; b.textContent = "Confirmar"; setTimeout(() => { if (b.isConnected) { b.dataset.armed = ""; b.textContent = "Excluir"; } }, 3000); return; }
+      S().exames = S().exames.filter(e => e.id !== b.dataset.del); saveState(); render();
+    });
+    if (formOpen) {
+      const rowsEl = document.getElementById("sa-rows");
+      rowsEl.querySelectorAll(".sa-row[data-i] input").forEach(inp => inp.oninput = () => {
+        const i = +inp.closest(".sa-row").dataset.i, f = inp.dataset.f;
+        formRows[i][f] = inp.value;
+        if (f === "nome") {
+          const p = PRESETS.find(x => x[0].toLowerCase() === inp.value.trim().toLowerCase());
+          if (p) {
+            const row = inp.closest(".sa-row");
+            if (inp.value !== p[0]) inp.value = p[0];
+            Object.assign(formRows[i], {nome: p[0], unidade: p[1], min: String(p[2]).replace(".", ","), max: String(p[3]).replace(".", ",")});
+            row.querySelector('[data-f="unidade"]').value = p[1];
+            row.querySelector('[data-f="min"]').value = formRows[i].min;
+            row.querySelector('[data-f="max"]').value = formRows[i].max;
+          }
+        }
+      });
+      rowsEl.querySelectorAll("[data-rm]").forEach(b => b.onclick = () => { formRows.splice(+b.dataset.rm, 1); keepHead(); render(); });
+      document.getElementById("sa-add-row").onclick = () => { formRows.push({nome:"",valor:"",unidade:"",min:"",max:""}); keepHead(); render(); };
+      document.getElementById("sa-add-panel").onclick = () => {
+        const basic = ["Glicose em jejum","Hemoglobina glicada (HbA1c)","Colesterol total","HDL","LDL","Triglicerídeos","Hemoglobina","Creatinina","TGO (AST)","TGP (ALT)","TSH","Vitamina D (25-OH)"];
+        const have = new Set(formRows.map(r => r.nome));
+        formRows = formRows.filter(r => r.nome || r.valor);
+        basic.filter(n => !have.has(n)).forEach(n => { const p = PRESETS.find(x => x[0] === n); formRows.push({nome:n, valor:"", unidade:p[1], min:String(p[2]).replace(".", ","), max:String(p[3]).replace(".", ",")}); });
+        keepHead(); render();
+      };
+      document.getElementById("sa-save-exam").onclick = () => {
+        const items = formRows.filter(r => r.nome.trim() && num(r.valor) != null).map(r => ({nome:r.nome.trim(), valor:num(r.valor), unidade:r.unidade.trim(), min:num(r.min), max:num(r.max)}));
+        const btn = document.getElementById("sa-save-exam");
+        if (!items.length) { btn.textContent = "Preencha ao menos 1 valor"; setTimeout(() => { if (btn.isConnected) btn.textContent = "Salvar exame"; }, 2500); return; }
+        S().exames.push({id: uidS(), date: document.getElementById("sa-e-date").value || today(), lab: document.getElementById("sa-e-lab").value.trim(), items});
+        saveState(); formOpen = false; formRows = []; render();
+      };
+    }
+    const sd = document.getElementById("sa-s-date"), sh = document.getElementById("sa-s-h");
+    const loadNight = () => { const n = S().sono[sd.value]; sh.value = n ? String(n.h).replace(".", ",") : ""; sleepQ = n?.q || 3; document.querySelectorAll("#sa-s-q button").forEach(b => b.classList.toggle("on", +b.dataset.q === sleepQ)); };
+    sd.onchange = loadNight; loadNight();
+    document.querySelectorAll("#sa-s-q button").forEach(b => b.onclick = () => { sleepQ = +b.dataset.q; document.querySelectorAll("#sa-s-q button").forEach(x => x.classList.toggle("on", x === b)); });
+    document.getElementById("sa-s-save").onclick = () => {
+      const h = num(sh.value), k = sd.value || today();
+      if (h == null || h < 0 || h > 16) { sh.focus(); return; }
+      S().sono[k] = {h: Math.round(h*100)/100, q: sleepQ};
+      if (state.treino) {
+        const log = state.treino.log = state.treino.log || {};
+        const d = log[k] || {treino:false, ref:[false,false,false,false,false], creatina:false, agua:false, sono:false, peso:null};
+        d.sono = h >= 7; log[k] = d;
+      }
+      saveState(); render();
+    };
+  }
+  function keepHead() {
+    const d = document.getElementById("sa-e-date"), l = document.getElementById("sa-e-lab");
+    keepHead.v = {d: d && d.value, l: l && l.value};
+    setTimeout(() => { const d2 = document.getElementById("sa-e-date"), l2 = document.getElementById("sa-e-lab"); if (d2 && keepHead.v.d) d2.value = keepHead.v.d; if (l2) l2.value = keepHead.v.l || ""; }, 0);
+  }
+
+  // ---------- gráficos ----------
+  function barChart(el, items, opts) {
+    // items: [{label, v (number|null), tip}] — uma série, barras finas, linha de referência opcional
+    const W = 340, H = 160, L = 28, R = 6, T = 10, B = 22;
+    const vmax = Math.max(opts.max, ...items.map(i => i.v || 0));
+    const n = items.length, slot = (W - L - R) / n, bw = Math.min(18, slot * 0.6);
+    const y = v => T + (1 - v / vmax) * (H - T - B);
+    const ticks = opts.ticks;
+    el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${opts.aria}">
+      ${ticks.map(t => `<line x1="${L}" x2="${W-R}" y1="${y(t)}" y2="${y(t)}" stroke="var(--line-soft)"/><text x="${L-6}" y="${y(t)+3.5}" text-anchor="end" font-size="9.5" fill="var(--ink-faint)">${t}</text>`).join("")}
+      ${opts.ref != null ? `<line x1="${L}" x2="${W-R}" y1="${y(opts.ref)}" y2="${y(opts.ref)}" stroke="#16a34a" stroke-dasharray="4 3" stroke-width="1.5"/><text x="${W-R}" y="${y(opts.ref)-4}" text-anchor="end" font-size="9.5" fill="#16a34a">${opts.refLabel}</text>` : ""}
+      ${items.map((it, i) => {
+        const cx = L + slot*i + slot/2;
+        const bar = it.v ? (() => { const top = y(it.v), h = (H - B) - top, r = Math.min(4, bw/2, h); return `<path d="M${cx-bw/2} ${H-B} V${top+r} Q${cx-bw/2} ${top} ${cx-bw/2+r} ${top} H${cx+bw/2-r} Q${cx+bw/2} ${top} ${cx+bw/2} ${top+r} V${H-B} Z" fill="${it.fill || "var(--ink)"}"/>`; })() : `<rect x="${cx-bw/2}" y="${H-B-2}" width="${bw}" height="2" rx="1" fill="var(--line)"/>`;
+        return `${bar}${it.label ? `<text x="${cx}" y="${H-7}" text-anchor="middle" font-size="9.5" fill="var(--ink-faint)">${it.label}</text>` : ""}<rect class="hit" data-i="${i}" x="${L + slot*i}" y="${T}" width="${slot}" height="${H-T-B+4}" fill="transparent"/>`;
+      }).join("")}
+      <line x1="${L}" x2="${W-R}" y1="${H-B}" y2="${H-B}" stroke="var(--line)"/>
+    </svg><div class="sa-tip" hidden></div>`;
+    const svg = el.querySelector("svg"), tip = el.querySelector(".sa-tip");
+    el.querySelectorAll(".hit").forEach(h => {
+      const show = () => { const it = items[+h.dataset.i], r = svg.getBoundingClientRect(), i = +h.dataset.i;
+        tip.hidden = false; tip.textContent = it.tip;
+        tip.style.left = ((L + slot*i + slot/2) / W * r.width) + "px"; tip.style.top = (y(it.v || 0) / H * r.height) + "px"; };
+      h.addEventListener("pointerenter", show); h.addEventListener("pointerdown", show);
+      h.addEventListener("pointerleave", () => { tip.hidden = true; });
+    });
+  }
+  function drawSleep() {
+    const el = document.getElementById("sa-sleep-chart"); if (!el) return;
+    const nights = sleepNights(14), Q = ["","muito ruim","ruim","ok","boa","ótima"];
+    barChart(el, nights.map((n, i) => {
+      const d = kdate(n.k), has = typeof n.h === "number";
+      return {v: has ? n.h : null, label: (i % 2 === 1 || i === nights.length-1) ? String(d.getDate()) : "",
+        fill: has && n.h < 7 ? "var(--ink-faint)" : "var(--ink)",
+        tip: has ? `${br(d)} · ${fmtN(n.h)} h · qualidade ${Q[n.q] || "–"}` : `${br(d)} · sem registro`};
+    }), {max: 10, ticks: [0, 4, 8], ref: 7, refLabel: "7 h", aria: "Horas de sono nas últimas 14 noites"});
+  }
+  function drawTrain() {
+    const el = document.getElementById("sa-train-chart"); if (!el) return;
+    const td = today(), mon = shift(td, -((new Date().getDay()+6)%7)), days = new Set(trainedDays());
+    const weeks = Array.from({length: 12}, (_, i) => shift(mon, (i - 11) * 7));
+    barChart(el, weeks.map((w, i) => {
+      let c = 0; for (let j = 0; j < 7; j++) if (days.has(shift(w, j))) c++;
+      const d = kdate(w);
+      return {v: c || null, label: (i % 3 === 2 || i === 11) ? br(d) : "", tip: `Semana de ${br(d)} · ${c} ${c===1?"treino":"treinos"}`};
+    }), {max: 7, ticks: [0, 3, 6], ref: 6, refLabel: "meta 6", aria: "Treinos por semana nas últimas 12 semanas"});
+  }
+
+  return render;
 })();
 
 // ============== INIT ==============
