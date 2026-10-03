@@ -14,14 +14,14 @@
 <meta name="apple-mobile-web-app-title" content="Órbita">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="" defer></script>
 <style>
   /* CRITICAL: estilos que precisam estar disponíveis ANTES do CSS principal */
   @keyframes spin { to { transform: rotate(360deg); } }
-  body { margin: 0; font-family: 'Inter', sans-serif; }
+  body { margin: 0; font-family: 'DM Sans', sans-serif; }
   #google-login-btn:hover:not(:disabled) { background: #333 !important; }
   #migrate-upload-btn:hover { background: #333 !important; }
   #migrate-fresh-btn:hover { border-color: #000 !important; }
@@ -77,7 +77,7 @@
   html, body {
     background: var(--bg);
     color: var(--ink);
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     min-height: 100vh;
     -webkit-font-smoothing: antialiased;
     overflow-x: hidden;
@@ -172,7 +172,7 @@
   }
 
   .brand {
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     font-weight: 700;
     font-size: 22px;
     letter-spacing: -0.02em;
@@ -190,7 +190,7 @@
   }
 
   .brand-sub {
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     font-size: 10px;
     text-transform: uppercase;
     letter-spacing: 0.18em;
@@ -202,7 +202,7 @@
   .nav { display: flex; flex-direction: column; gap: 2px; }
 
   .nav-section {
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     font-size: 10px;
     text-transform: uppercase;
     letter-spacing: 0.18em;
@@ -243,7 +243,7 @@
     margin-top: auto;
     padding: 12px;
     border-top: 1px solid var(--line);
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     font-size: 10px;
     color: var(--ink-faint);
     line-height: 1.5;
@@ -266,22 +266,22 @@
   }
 
   .page-title {
-    font-family: 'Inter', sans-serif;
-    font-weight: 700;
-    font-size: 36px;
-    letter-spacing: -0.02em;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    font-size: 40px;
+    letter-spacing: -0.03em;
     line-height: 1.1;
     color: var(--ink);
   }
   .page-title em {
     font-style: normal;
     color: var(--ink);
-    font-family: 'Inter', sans-serif;
-    font-weight: 700;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
   }
 
   .page-meta {
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     font-size: 11px;
     text-transform: uppercase;
     letter-spacing: 0.15em;
@@ -298,10 +298,10 @@
 
   /* TREINO */
   .tr-tabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; padding: 4px; background: var(--bg-card); border: 1px solid var(--line); border-radius: 10px; margin-bottom: 20px; max-width: 480px; }
-  .tr-tab { border: 0; background: transparent; color: var(--ink-faint); font: 600 13px 'Inter', sans-serif; padding: 8px 4px; border-radius: 7px; cursor: pointer; }
+  .tr-tab { border: 0; background: transparent; color: var(--ink-faint); font: 600 13px 'DM Sans', sans-serif; padding: 8px 4px; border-radius: 7px; cursor: pointer; }
   .tr-tab.active { background: var(--bg-elevated); color: var(--ink); box-shadow: var(--shadow-sm); }
   .tr-days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-bottom: 24px; }
-  .tr-day { position: relative; border: 1px solid var(--line); background: var(--bg-elevated); color: var(--ink); border-radius: 10px; padding: 8px 4px; cursor: pointer; font-family: 'Inter', sans-serif; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  .tr-day { position: relative; border: 1px solid var(--line); background: var(--bg-elevated); color: var(--ink); border-radius: 10px; padding: 8px 4px; cursor: pointer; font-family: 'DM Sans', sans-serif; display: flex; flex-direction: column; align-items: center; gap: 2px; }
   .tr-day b { font-size: 13px; font-weight: 700; }
   .tr-day small { font-size: 10px; color: var(--ink-faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
   .tr-day.active { background: var(--ink); color: var(--bg); border-color: var(--ink); }
@@ -309,7 +309,7 @@
   .tr-day .tr-dot { position: absolute; top: 5px; right: 6px; width: 6px; height: 6px; border-radius: 50%; background: #16a34a; }
   .tr-hero { margin-bottom: 16px; }
   .tr-eyebrow { font-size: 11px; text-transform: uppercase; letter-spacing: .12em; color: var(--ink-faint); margin-bottom: 6px; }
-  .tr-h2 { font-size: 24px; font-weight: 700; letter-spacing: -0.02em; margin: 0; }
+  .tr-h2 { font-size: 28px; font-weight: 300; letter-spacing: -0.03em; margin: 0; }
   .tr-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
   .tr-chip { font-size: 12px; font-weight: 600; border: 1px solid var(--line); border-radius: 999px; padding: 3px 10px; color: var(--ink-soft); background: var(--bg-card); }
   .tr-chip.strong { background: var(--ink); color: var(--bg); border-color: var(--ink); }
@@ -335,11 +335,11 @@
   .tr-cue { font-size: 13px; color: var(--ink-faint); line-height: 1.45; }
   .tr-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 6px; }
   .tr-stat { font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; background: var(--bg-card); border-radius: 8px; padding: 3px 10px; }
-  .tr-rest { border: 1px solid var(--line); background: transparent; color: var(--ink); border-radius: 8px; padding: 4px 10px; font: 600 13px 'Inter', sans-serif; cursor: pointer; font-variant-numeric: tabular-nums; }
+  .tr-rest { border: 1px solid var(--line); background: transparent; color: var(--ink); border-radius: 8px; padding: 4px 10px; font: 600 13px 'DM Sans', sans-serif; cursor: pointer; font-variant-numeric: tabular-nums; }
   .tr-rest.running { background: var(--ink); color: var(--bg); border-color: var(--ink); }
   .tr-direct { font-size: 12px; color: var(--ink-faint); border: 1px dashed var(--line); border-radius: 8px; padding: 4px 10px; }
   .tr-load { margin-left: auto; display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--ink-faint); }
-  .tr-load input, .tr-input { width: 70px; border: 1px solid var(--line); background: var(--bg-card); color: var(--ink); border-radius: 8px; padding: 6px 8px; font: 600 14px 'Inter', sans-serif; text-align: right; font-variant-numeric: tabular-nums; }
+  .tr-load input, .tr-input { width: 70px; border: 1px solid var(--line); background: var(--bg-card); color: var(--ink); border-radius: 8px; padding: 6px 8px; font: 600 14px 'DM Sans', sans-serif; text-align: right; font-variant-numeric: tabular-nums; }
   .tr-h3 { font-size: 16px; font-weight: 600; margin: 28px 0 10px; }
   .tr-macros { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 14px; }
   .tr-macro { background: var(--bg-card); border-radius: 10px; padding: 10px; text-align: center; }
@@ -394,11 +394,11 @@
   .tr-legend i { display: inline-block; width: 14px; height: 8px; border-radius: 2px; margin-right: 5px; vertical-align: middle; }
   .tr-heat { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; max-width: 420px; }
   .tr-heat .hd { font-size: 10px; font-weight: 700; color: var(--ink-faint); text-align: center; }
-  .tr-cell { border: 0; aspect-ratio: 1; border-radius: 6px; font: 600 11px 'Inter', sans-serif; color: var(--ink); cursor: pointer; padding: 0; }
+  .tr-cell { border: 0; aspect-ratio: 1; border-radius: 6px; font: 600 11px 'DM Sans', sans-serif; color: var(--ink); cursor: pointer; padding: 0; }
   .tr-cell.future { visibility: hidden; }
   .tr-cell.sel { outline: 2px solid var(--ink); outline-offset: 1px; }
   .tr-cell.hi { color: #fff; }
-  .tr-reset { border: 1px solid var(--line); background: transparent; color: var(--ink-faint); border-radius: 8px; padding: 10px 12px; font: 600 13px 'Inter', sans-serif; cursor: pointer; margin-top: 18px; width: 100%; }
+  .tr-reset { border: 1px solid var(--line); background: transparent; color: var(--ink-faint); border-radius: 8px; padding: 10px 12px; font: 600 13px 'DM Sans', sans-serif; cursor: pointer; margin-top: 18px; width: 100%; }
   .tr-reset.confirm { border-color: #dc2626; color: #dc2626; }
   html.theme-dark .tr-pill.good { background: #14532d; color: #86efac; }
   html.theme-dark .tr-pill.warn { background: #451a03; color: #fcd34d; }
@@ -409,6 +409,9 @@
     .tr-kpis { grid-template-columns: repeat(2, 1fr); }
     .tr-macros { grid-template-columns: repeat(2, 1fr); }
   }
+
+  /* Rodapé com cara de fonte de sistema */
+  .sidebar-footer, .sidebar-footer * { font-family: "Helvetica Neue", Helvetica, Arial, sans-serif !important; }
 
   /* DASHBOARD */
   .capture-box {
@@ -424,7 +427,7 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     font-size: 11px;
     text-transform: uppercase;
     letter-spacing: 0.1em;
@@ -439,7 +442,7 @@
     border-radius: 8px;
     padding: 14px 18px;
     font-size: 15px;
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     color: var(--ink);
     outline: none;
     transition: all 0.15s;
@@ -447,7 +450,7 @@
   .capture-input::placeholder {
     color: var(--ink-faint);
     font-style: normal;
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     font-size: 15px;
   }
   .capture-input:focus {
@@ -462,7 +465,7 @@
     font-size: 12px;
     color: var(--ink-faint);
     margin-top: 8px;
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     line-height: 1.5;
   }
   .capture-preview {
@@ -485,7 +488,7 @@
   }
   .preview-type {
     display: inline-block;
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     font-size: 10px;
     text-transform: uppercase;
     letter-spacing: 0.1em;
@@ -503,7 +506,7 @@
     margin-bottom: 6px;
   }
   .preview-meta {
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     font-size: 12px;
     color: var(--ink-soft);
   }
@@ -523,7 +526,7 @@
     gap: 8px;
     color: var(--ink);
     font-size: 13px;
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     padding: 4px 0;
   }
   .capture-loading::before {
@@ -565,7 +568,7 @@
   }
 
   .card-title {
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     font-size: 16px;
     font-weight: 600;
     letter-spacing: -0.01em;
@@ -573,7 +576,7 @@
   }
 
   .card-subtitle {
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     font-size: 10px;
     text-transform: uppercase;
     letter-spacing: 0.15em;
@@ -608,7 +611,7 @@
   .stat:nth-child(4)::before { background: var(--ink); }
 
   .stat-label {
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     font-size: 10px;
     text-transform: uppercase;
     letter-spacing: 0.15em;
@@ -616,7 +619,7 @@
     margin-bottom: 8px;
   }
   .stat-value {
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     font-size: 32px;
     font-weight: 700;
     line-height: 1;
@@ -643,7 +646,7 @@
     color: var(--ink-faint);
     padding: 28px 0;
     font-style: normal;
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     font-size: 14px;
   }
 
@@ -674,7 +677,7 @@
   .icon-btn:hover { background: var(--line-soft); color: var(--ink); }
 
   .week-label {
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     font-size: 12px;
     color: var(--ink);
     font-weight: 500;
@@ -689,7 +692,7 @@
     gap: 8px;
   }
   .bdays-month-label {
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     font-size: 13px;
     font-weight: 600;
     color: var(--ink);
@@ -710,7 +713,7 @@
     gap: 4px;
   }
   .bdays-cal-dayname {
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     font-size: 10px;
     text-transform: uppercase;
     letter-spacing: 0.12em;
@@ -855,7 +858,7 @@
     text-align: center;
     border-bottom: 1px solid var(--line);
     background: var(--bg-card);
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     font-size: 10px;
     text-transform: uppercase;
     letter-spacing: 0.12em;
@@ -868,7 +871,7 @@
   }
   .schedule-header .day-num {
     display: block;
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     font-size: 16px;
     font-weight: 700;
     text-transform: none;
@@ -882,7 +885,7 @@
     padding: 8px 6px;
     border-right: 1px solid var(--line);
     border-bottom: 1px solid var(--line-soft);
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     font-size: 10px;
     color: var(--ink-faint);
     text-align: right;
@@ -954,7 +957,7 @@
     padding: 10px 14px;
     font-size: 14px;
     color: var(--ink);
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     outline: none;
     transition: border 0.15s;
   }
@@ -969,7 +972,7 @@
     padding: 10px 20px;
     font-size: 14px;
     font-weight: 600;
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     cursor: pointer;
     transition: all 0.15s;
   }
@@ -995,7 +998,7 @@
   }
   .filter-row .btn-ghost { padding: 6px 14px; font-size: 12px; }
   .filter-row-label {
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     font-size: 11px;
     text-transform: uppercase;
     letter-spacing: 0.08em;
@@ -1060,7 +1063,7 @@
     align-items: center;
     padding: 3px 9px;
     border-radius: 6px;
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     font-size: 10px;
     text-transform: uppercase;
     letter-spacing: 0.08em;
@@ -1195,7 +1198,7 @@
     color: var(--ink-faint);
     font-size: 12px;
     cursor: pointer;
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     padding: 4px 0;
   }
   .subtask-add-btn:hover { color: var(--ink); }
@@ -1206,7 +1209,7 @@
     border-radius: 6px;
     padding: 6px 10px;
     font-size: 13px;
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     color: var(--ink);
     outline: none;
   }
@@ -1217,7 +1220,7 @@
     gap: 4px;
     font-size: 10px;
     color: var(--ink-faint);
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     font-weight: 600;
     margin-left: 6px;
     background: var(--bg-card);
@@ -1241,7 +1244,7 @@
     color: var(--ink-faint);
   }
   .empty-state-title {
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     font-size: 16px;
     font-weight: 600;
     font-style: normal;
@@ -1277,7 +1280,7 @@
     margin-bottom: 14px;
   }
   .goal-title {
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     font-size: 16px;
     font-weight: 600;
     letter-spacing: -0.01em;
@@ -1300,7 +1303,7 @@
   .goal-meta {
     display: flex;
     justify-content: space-between;
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     font-size: 11px;
     color: var(--ink-soft);
   }
@@ -1347,7 +1350,7 @@
     padding: 14px 0;
   }
   .habits-header > div {
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     font-size: 10px;
     text-transform: uppercase;
     letter-spacing: 0.12em;
@@ -1415,7 +1418,7 @@
 
   .habit-streak {
     text-align: center;
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     font-size: 12px;
     font-weight: 700;
     color: var(--ink);
@@ -1435,7 +1438,7 @@
     padding: 16px 8px;
     cursor: pointer;
     transition: all 0.15s;
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -1471,7 +1474,7 @@
     box-shadow: var(--shadow-sm);
   }
   .habit-summary-title {
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     font-size: 14px;
     font-weight: 700;
     color: var(--ink);
@@ -1810,7 +1813,7 @@
     display: inline-flex;
     align-items: baseline;
     gap: 2px;
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     font-weight: 700;
     margin: 6px 0;
   }
@@ -1938,7 +1941,7 @@
     border-radius: 6px;
     padding: 4px 10px;
     font-size: 11px;
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     color: var(--ink-soft);
     cursor: pointer;
     transition: all 0.15s;
@@ -2014,7 +2017,7 @@
   }
   .places-overview-wrap .leaflet-container {
     background: #f5f5f3;
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
   }
   /* Controles de zoom mais modernos (estilo card flutuante) */
   .places-overview-wrap .leaflet-bar {
@@ -2245,7 +2248,7 @@
     align-items: center;
     justify-content: center;
     gap: 4px;
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     font-weight: 500;
   }
   .place-card-action:hover {
@@ -2276,7 +2279,7 @@
     font-size: 12px;
     color: var(--ink-soft);
     margin-left: 10px;
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
   }
 
   /* Mobile */
@@ -2489,7 +2492,7 @@
     border: 1px solid var(--line);
     border-radius: 4px;
     padding: 1px 6px;
-    font-family: 'Inter', monospace;
+    font-family: 'DM Sans', monospace;
     font-size: 11px;
     margin: 0 2px;
   }
@@ -2550,7 +2553,7 @@
     padding: 24px 32px 8px;
     font-size: 28px;
     font-weight: 700;
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     color: var(--ink);
     background: transparent;
     letter-spacing: -0.02em;
@@ -2566,7 +2569,7 @@
     width: 100%;
     padding: 4px 32px 16px;
     font-size: 12px;
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     color: var(--ink-soft);
     background: transparent;
     border-bottom: 1px solid var(--line-soft);
@@ -2589,7 +2592,7 @@
     resize: none;
     padding: 20px 32px 32px;
     font-size: 15px;
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     line-height: 1.7;
     color: var(--ink);
     background: transparent;
@@ -2603,7 +2606,7 @@
   .note-blocks {
     padding: 20px 32px 80px;
     font-size: 15px;
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     color: var(--ink);
     outline: none;
     line-height: 1.6;
@@ -2861,7 +2864,7 @@
     font-size: 11px;
     color: var(--ink-soft);
     cursor: pointer;
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
   }
   .note-block-table-btn:hover {
     border-color: var(--ink);
@@ -3037,7 +3040,7 @@
     padding: 3px 10px;
     margin-top: 6px;
     border-radius: 4px;
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     display: inline-flex;
     align-items: center;
     gap: 4px;
@@ -3194,13 +3197,13 @@
   }
 
   .modal-title {
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     font-size: 18px;
     font-weight: 600;
     margin-bottom: 4px;
   }
   .modal-sub {
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     font-size: 11px;
     text-transform: uppercase;
     letter-spacing: 0.15em;
@@ -3223,7 +3226,7 @@
     border-radius: 8px;
     padding: 10px 14px;
     font-size: 14px;
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     color: var(--ink);
     outline: none;
   }
@@ -3367,7 +3370,7 @@
       gap: 12px;
       margin-bottom: 24px;
     }
-    .page-title { font-size: 26px; line-height: 1.15; }
+    .page-title { font-size: 30px; line-height: 1.15; }
     .page-header > button { width: 100%; }
 
     /* Cards e grids */
@@ -3491,7 +3494,7 @@
     height: 32px;
     cursor: pointer;
     color: var(--ink);
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     font-size: 13px;
     font-weight: 500;
     display: flex;
@@ -3849,7 +3852,7 @@
 <body>
 
 <!-- LOADING SCREEN (mostrada enquanto verifica sessão) -->
-<div id="loading-screen" style="position:fixed;inset:0;background:#fff;display:flex;align-items:center;justify-content:center;z-index:9999;flex-direction:column;gap:16px;font-family:'Inter',sans-serif">
+<div id="loading-screen" style="position:fixed;inset:0;background:#fff;display:flex;align-items:center;justify-content:center;z-index:9999;flex-direction:column;gap:16px;font-family:'DM Sans',sans-serif">
   <div style="width:36px;height:36px;border:3px solid #e5e5e5;border-top-color:#000;border-radius:50%;animation:spin 0.8s linear infinite"></div>
   <div style="font-size:13px;color:#888;letter-spacing:0.05em">Carregando...</div>
 </div>
@@ -3857,10 +3860,10 @@
 <!-- LOGIN SCREEN -->
 <div id="login-screen" style="display:none;position:fixed;inset:0;background:#fff;z-index:9998;align-items:center;justify-content:center;padding:20px">
   <div style="max-width:400px;width:100%;text-align:center">
-    <div style="font-size:48px;font-weight:700;letter-spacing:-0.03em;margin-bottom:8px">Órbita</div>
+    <div style="font-size:48px;font-weight:300;letter-spacing:-0.04em;margin-bottom:8px">Órbita</div>
     <div style="font-size:16px;color:#555;margin-bottom:48px;line-height:1.5">Seu espaço pessoal de produtividade. Tudo sincronizado, em qualquer dispositivo.</div>
 
-    <button id="google-login-btn" style="width:100%;background:#000;color:#fff;border:none;padding:14px 24px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:10px;font-family:'Inter',sans-serif;transition:all 0.15s">
+    <button id="google-login-btn" style="width:100%;background:#000;color:#fff;border:none;padding:14px 24px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:10px;font-family:'DM Sans',sans-serif;transition:all 0.15s">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
         <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#fff"/>
         <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#fff" opacity="0.9"/>
@@ -3882,7 +3885,7 @@
 <!-- MIGRATION SCREEN (mostrada se houver dados locais ao logar pela primeira vez) -->
 <div id="migration-screen" style="display:none;position:fixed;inset:0;background:#fff;z-index:9997;align-items:center;justify-content:center;padding:20px">
   <div style="max-width:480px;width:100%">
-    <div style="font-size:32px;font-weight:700;letter-spacing:-0.02em;margin-bottom:8px">Encontramos seus dados locais</div>
+    <div style="font-size:32px;font-weight:300;letter-spacing:-0.03em;margin-bottom:8px">Encontramos seus dados locais</div>
     <div style="font-size:15px;color:#555;margin-bottom:24px;line-height:1.5">
       Detectamos dados que você já criou no Órbita neste navegador. O que quer fazer?
     </div>
@@ -3890,11 +3893,11 @@
     <div id="migration-summary" style="background:#fafafa;border:1px solid #e5e5e5;border-radius:10px;padding:16px;margin-bottom:24px;font-size:13px;line-height:1.8"></div>
 
     <div style="display:flex;flex-direction:column;gap:10px">
-      <button id="migrate-upload-btn" style="background:#000;color:#fff;border:none;padding:14px 20px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;text-align:left">
+      <button id="migrate-upload-btn" style="background:#000;color:#fff;border:none;padding:14px 20px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;text-align:left">
         <div style="font-weight:700;margin-bottom:2px">Subir dados pra nuvem</div>
         <div style="font-size:12px;font-weight:400;opacity:0.85">Recomendado · Mantém tudo que você criou e sincroniza entre dispositivos</div>
       </button>
-      <button id="migrate-fresh-btn" style="background:#fff;color:#000;border:1px solid #e5e5e5;padding:14px 20px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;text-align:left">
+      <button id="migrate-fresh-btn" style="background:#fff;color:#000;border:1px solid #e5e5e5;padding:14px 20px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;text-align:left">
         <div style="font-weight:700;margin-bottom:2px">Começar do zero</div>
         <div style="font-size:12px;font-weight:400;color:#666">Ignorar dados locais e usar apenas o que está na nuvem</div>
       </button>
@@ -3999,7 +4002,7 @@
       <div id="sync-status" style="font-size:10px;color:var(--ink-faint);margin-bottom:4px">
         <span style="color:#16a34a">●</span> Sincronizado
       </div>
-      <button id="theme-toggle-btn" title="Alternar tema claro/escuro" style="background:transparent;border:1px solid var(--line);border-radius:6px;padding:6px 10px;font-size:11px;color:var(--ink-soft);cursor:pointer;font-family:'Inter',sans-serif;display:inline-flex;align-items:center;gap:6px;margin-bottom:6px">
+      <button id="theme-toggle-btn" title="Alternar tema claro/escuro" style="background:transparent;border:1px solid var(--line);border-radius:6px;padding:6px 10px;font-size:11px;color:var(--ink-soft);cursor:pointer;font-family:'DM Sans',sans-serif;display:inline-flex;align-items:center;gap:6px;margin-bottom:6px">
         <svg id="theme-icon-light" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
         <svg id="theme-icon-dark" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
         <span id="theme-toggle-label">Tema escuro</span>
@@ -5392,7 +5395,7 @@ function renderDashboard() {
         <div class="checkbox ${t.done ? 'checked' : ''}" data-toggle="${t.id}"></div>
         <div style="flex:1">
           <div class="task-text">${escapeHTML(t.text)}</div>
-          <div style="font-size:11px;color:var(--ink-faint);margin-top:2px;font-family:'Inter',sans-serif">
+          <div style="font-size:11px;color:var(--ink-faint);margin-top:2px;font-family:'DM Sans',sans-serif">
             ${t.date < today ? '⚠ atrasada · ' : ''}${t.project ? escapeHTML(t.project) : 'sem projeto'}
           </div>
         </div>
@@ -5428,7 +5431,7 @@ function renderDashboard() {
           <div style="width:4px;height:32px;background:${colorVar(e.color, e.customColor)};border-radius:2px"></div>
           <div style="flex:1">
             <div class="task-text">${escapeHTML(e.title)}</div>
-            <div style="font-size:11px;color:var(--ink-faint);margin-top:2px;font-family:'Inter',sans-serif">
+            <div style="font-size:11px;color:var(--ink-faint);margin-top:2px;font-family:'DM Sans',sans-serif">
               ${fmtDateBR(d).toUpperCase()} · ${e.start}–${e.end}
             </div>
           </div>
@@ -5856,7 +5859,7 @@ function renderTasks() {
         <div class="checkbox ${t.done ? 'checked' : ''}" data-toggle="${t.id}"></div>
         <div class="task-clickable" data-toggle-expand="${t.id}" style="cursor:pointer">
           <div class="task-text">${escapeHTML(t.text)}${progress}${scheduledIcon}</div>
-          ${t.date ? `<div style="font-size:11px;color:var(--ink-faint);margin-top:3px;font-family:'Inter',sans-serif">
+          ${t.date ? `<div style="font-size:11px;color:var(--ink-faint);margin-top:3px;font-family:'DM Sans',sans-serif">
             ${t.date < today && !t.done ? '⚠ ATRASADA · ' : ''}${formatTaskDate(t.date)}
           </div>` : ''}
         </div>
@@ -6288,7 +6291,7 @@ function renderHabits() {
   days.forEach(d => {
     const isToday = isoDate(d) === todayIso;
     hh += `<div style="${isToday ? 'color:var(--accent);font-weight:700' : ''}">
-      ${DAY_NAMES[(d.getDay() + 6) % 7]}<br><span style="font-family:'Inter',sans-serif;font-size:14px;text-transform:none;letter-spacing:-0.01em;color:var(--ink)">${d.getDate()}</span>
+      ${DAY_NAMES[(d.getDay() + 6) % 7]}<br><span style="font-family:'DM Sans',sans-serif;font-size:14px;text-transform:none;letter-spacing:-0.01em;color:var(--ink)">${d.getDate()}</span>
     </div>`;
   });
   hh += '<div>Streak</div>';
@@ -6564,7 +6567,7 @@ function renderShopping() {
   });
 
   el.innerHTML = Object.entries(grouped).map(([cat, items]) => `
-    <div style="padding:12px 20px 6px;font-family:'Inter',sans-serif;font-size:10px;text-transform:uppercase;letter-spacing:0.15em;color:var(--ink-faint);background:var(--bg-card);border-bottom:1px solid var(--line-soft)">
+    <div style="padding:12px 20px 6px;font-family:'DM Sans',sans-serif;font-size:10px;text-transform:uppercase;letter-spacing:0.15em;color:var(--ink-faint);background:var(--bg-card);border-bottom:1px solid var(--line-soft)">
       ${escapeHTML(cat)} · ${items.filter(i => !i.done).length}/${items.length}
     </div>
     ${items.map(s => `
@@ -7175,10 +7178,10 @@ function renderPlacesOverviewMap(list) {
       : 'Quero ir';
     marker.bindTooltip(cleanName, { direction: 'top', offset: [0, -32] });
     marker.bindPopup(`
-      <div style="font-family:'Inter',sans-serif;min-width:160px">
+      <div style="font-family:'DM Sans',sans-serif;min-width:160px">
         <div style="font-weight:700;font-size:14px;margin-bottom:2px">${cleanName}</div>
         <div style="font-size:11px;color:#666;margin-bottom:6px">${statusLabel}${cleanLoc ? ' · ' + cleanLoc : ''}</div>
-        <button data-overview-card="${p.id}" style="background:#000;color:#fff;border:none;border-radius:6px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif">Ver card</button>
+        <button data-overview-card="${p.id}" style="background:#000;color:#fff;border:none;border-radius:6px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">Ver card</button>
       </div>
     `);
     placesOverviewLayer.addLayer(marker);
@@ -9573,7 +9576,7 @@ function renderNoteAsHTML(note) {
 <meta charset="utf-8">
 <title>${title}</title>
 <style>
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif; max-width: 720px; margin: 40px auto; padding: 0 20px; color: #111; line-height: 1.6; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'DM Sans', sans-serif; max-width: 720px; margin: 40px auto; padding: 0 20px; color: #111; line-height: 1.6; }
   h1 { font-size: 32px; letter-spacing: -0.02em; margin-bottom: 4px; }
   h2 { font-size: 22px; margin-top: 24px; }
   h3 { font-size: 17px; margin-top: 18px; }
