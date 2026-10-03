@@ -1,0 +1,33 @@
+# Evita que o projeto gratuito do Supabase seja pausado por inatividade
+# (o plano free pausa após ~7 dias sem uso). Faz uma consulta leve a cada 3 dias.
+name: Supabase keep-alive
+
+on:
+  schedule:
+    - cron: '17 12 */3 * *'
+  workflow_dispatch:
+
+permissions:
+  actions: write
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Consulta o banco
+        env:
+          # Mesma chave pública (publishable) já usada no index.html
+          SUPABASE_URL: https://dnhcfehwcnkxsfrhdevi.supabase.co
+          SUPABASE_KEY: sb_publishable_Vr49Vz3fam7ghoso8_Xfdg_9qQHcJAP
+        run: |
+          code=$(curl -s -o /dev/null -w '%{http_code}' \
+            "$SUPABASE_URL/rest/v1/orbita_state?select=user_id&limit=1" \
+            -H "apikey: $SUPABASE_KEY" -H "Authorization: Bearer $SUPABASE_KEY")
+          echo "HTTP $code"
+          test "$code" = "200"
+
+      - name: Mantém o agendamento ativo
+        # O GitHub desliga workflows agendados após 60 dias sem atividade no repo
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api -X PUT "repos/${{ github.repository }}/actions/workflows/supabase-keepalive.yml/enable"
