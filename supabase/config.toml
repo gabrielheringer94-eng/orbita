@@ -5,3 +5,6 @@ verify_jwt = true
 
 [functions.smart-capture-place]
 verify_jwt = true
+
+[functions.saude-import]
+verify_jwt = true

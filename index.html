@@ -297,7 +297,7 @@
   }
 
   /* SAÚDE */
-  .sa-tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 28px; }
+  .sa-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin-bottom: 28px; }
   .sa-tile { background: var(--bg-elevated); border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; display: flex; flex-direction: column; gap: 4px; }
   .sa-tile span { font-size: 10px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-faint); }
   .sa-tile b { font-size: 30px; font-weight: 300; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; line-height: 1.1; }
@@ -355,7 +355,29 @@
   .sa-lifts div { display: flex; justify-content: space-between; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--line-soft); font-size: 13px; }
   .sa-lifts div:last-child { border-bottom: 0; }
   .sa-lifts b { font-variant-numeric: tabular-nums; }
+  .sa-imp { margin-bottom: 24px; }
+  .sa-imp-load { display: flex; gap: 10px; align-items: center; font-size: 14px; color: var(--ink-soft); }
+  .sa-spin { width: 16px; height: 16px; border: 2px solid var(--line); border-top-color: var(--ink); border-radius: 50%; animation: sa-spin .8s linear infinite; flex-shrink: 0; }
+  @keyframes sa-spin { to { transform: rotate(360deg); } }
+  .sa-imp-err { color: #b91c1c; font-size: 14px; line-height: 1.5; }
+  html.theme-dark .sa-imp-err { color: #fca5a5; }
+  .sa-imp-av { margin: 12px 0 0; padding: 10px 12px; border-radius: 8px; background: var(--bg-card); font-size: 12px; color: var(--ink-soft); line-height: 1.5; }
+  .sa-imp-av li { margin-left: 16px; }
+  .sa-imp-grp { margin-top: 18px; }
+  .sa-imp-grp h3 { font-size: 11px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-faint); margin: 0 0 8px; }
+  .sa-imp-row { display: flex; gap: 8px; align-items: center; margin-bottom: 6px; flex-wrap: wrap; }
+  .sa-imp-row .sa-in { width: 96px; padding: 6px 8px; font-size: 13px; }
+  .sa-imp-row .sa-in.d { width: 150px; }
+  .sa-imp-row .sa-in.t { flex: 1; min-width: 150px; }
+  .sa-imp-row input[type=checkbox] { width: 16px; height: 16px; accent-color: var(--ink); margin: 0; }
+  .sa-imp-row.off .sa-in { opacity: .4; }
+  .sa-imp-cur { font-size: 12px; color: var(--ink-faint); }
+  .sa-imp-ex { border-top: 1px solid var(--line-soft); padding-top: 12px; margin-top: 12px; }
+  .sa-imp-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 18px; flex-wrap: wrap; }
   @media (max-width: 900px) {
+    .sa-imp-row .sa-in { width: auto; flex: 1 1 90px; }
+    .sa-imp-row .sa-in.d { flex: 0 0 172px; }
+    .sa-imp-row .sa-in.t { min-width: calc(100% - 28px); }
     .sa-tiles { grid-template-columns: repeat(2, 1fr); }
     .sa-tile b small { display: block; margin-top: 2px; }
     .sa-grid2 { grid-template-columns: 1fr; }
@@ -4247,7 +4269,10 @@
           <h1 class="page-title">Saú<em>de</em></h1>
           <div class="page-meta">Exames · treinos · sono</div>
         </div>
+        <button class="sa-btn" id="sa-imp-btn">Importar prints ou laudo</button>
+        <input type="file" id="sa-file" accept="image/*,application/pdf" multiple hidden>
       </div>
+      <div id="sa-import"></div>
       <div id="sa-body"></div>
     </section>
 
@@ -11049,7 +11074,7 @@ const renderSaude = (() => {
 
   function S() {
     if (!state.saude || typeof state.saude !== "object") state.saude = {};
-    const s = state.saude; s.exames = s.exames || []; s.sono = s.sono || {};
+    const s = state.saude; s.exames = s.exames || []; s.sono = s.sono || {}; s.fc = s.fc || {}; s.atividades = s.atividades || {};
     return s;
   }
   function tLog() { return (state.treino && state.treino.log) || {}; }
@@ -11076,7 +11101,20 @@ const renderSaude = (() => {
     const td = today(), s = S().sono;
     return Array.from({length: nDays}, (_, i) => { const k = shift(td, i - nDays + 1); return {k, ...(s[k] || {})}; });
   }
-  function trainedDays() { const l = tLog(); return Object.keys(l).filter(k => l[k] && l[k].treino); }
+  function trainedDays() {
+    const l = tLog(), a = S().atividades;
+    return [...new Set([...Object.keys(l).filter(k => l[k] && l[k].treino), ...Object.keys(a).filter(k => a[k] && a[k].length)])];
+  }
+  function latestFc() {
+    const f = S().fc, ks = Object.keys(f).sort(); if (!ks.length) return null;
+    const td = today(), w = ks.filter(k => k > shift(td, -7)).map(k => f[k]);
+    return {k: ks[ks.length-1], v: f[ks[ks.length-1]], avg: w.length ? w.reduce((a,b) => a+b, 0) / w.length : null};
+  }
+  function treinoDay(k) {
+    if (!state.treino) state.treino = {done:{}, load:{}, log:{}, peso:null};
+    const log = state.treino.log = state.treino.log || {};
+    return log[k] = log[k] || {treino:false, ref:[false,false,false,false,false], creatina:false, agua:false, sono:false, peso:null};
+  }
   function latestWeight() {
     const l = tLog(); const ks = Object.keys(l).filter(k => l[k] && typeof l[k].peso === "number").sort();
     return ks.length ? {k: ks[ks.length-1], w: l[ks[ks.length-1]].peso} : null;
@@ -11092,7 +11130,7 @@ const renderSaude = (() => {
     const td = today(), mon = shift(td, -((new Date().getDay()+6)%7)), days = trainedDays();
     const wk = days.filter(k => k >= mon && k <= td).length;
     const mo = days.filter(k => k.slice(0,7) === td.slice(0,7)).length;
-    const lw = latestWeight();
+    const lw = latestWeight(), fc = latestFc();
 
     page.innerHTML = `
       <div class="sa-tiles">
@@ -11100,6 +11138,7 @@ const renderSaude = (() => {
         <div class="sa-tile"><span>Treinos</span><b>${wk}<small> nesta semana</small></b><em>${mo} no mês</em></div>
         <div class="sa-tile"><span>Sono · 7 noites</span><b>${avg7 == null ? "–" : fmtN(Math.round(avg7*10)/10) + "<small> h/noite</small>"}</b><em>${n7.length ? `${n7.filter(x => x.h >= 7).length} de ${n7.length} noites com 7 h+` : "Registre suas noites abaixo"}</em></div>
         <div class="sa-tile"><span>Peso</span><b>${lw ? fmtN(lw.w) + "<small> kg</small>" : "–"}</b><em>${lw ? "registrado em " + br(kdate(lw.k)) : "Registre na Gestão do Treino"}</em></div>
+        <div class="sa-tile"><span>FC em repouso</span><b>${fc ? Math.round(fc.v) + "<small> bpm</small>" : "–"}</b><em>${fc ? (fc.avg != null ? "média 7 dias " + Math.round(fc.avg) + " bpm · " : "") + br(kdate(fc.k)) : "Importe os prints do Saúde"}</em></div>
       </div>
 
       <div class="sa-sec">
@@ -11111,7 +11150,7 @@ const renderSaude = (() => {
           </div>
         </div>
         ${formOpen ? examForm() : ""}
-        <div class="card">${mk.length ? markerList(mk) : `<div class="sa-empty">Registre o seu primeiro exame: escolha os marcadores do laudo, digite os valores e a referência. Eu mostro o que está fora do intervalo e como cada um evolui entre exames.</div>`}</div>
+        <div class="card">${mk.length ? markerList(mk) : `<div class="sa-empty">Importe a foto ou o PDF do laudo pelo botão "Importar prints ou laudo", ou registre os valores à mão. Aqui aparece o que está fora da referência e como cada marcador evolui entre exames.</div>`}</div>
         ${exs.length ? `<div class="card" style="margin-top:12px"><div class="card-title">Histórico</div><div class="card-subtitle">${exs.length} ${exs.length===1?"exame":"exames"}</div><div class="sa-hist">${exs.map(e => `<div><span><b>${br(kdate(e.date))}/${e.date.slice(0,4)}</b> · ${esc(e.lab || "Exame")} · ${(e.items||[]).length} marcadores</span><button class="sa-btn danger" data-del="${e.id}">Excluir</button></div>`).join("")}</div></div>` : ""}
       </div>
 
@@ -11140,8 +11179,128 @@ const renderSaude = (() => {
         </div>
       </div>`;
 
-    wire(); drawSleep(); drawTrain();
+    wire(); drawSleep(); drawTrain(); wireImport(); renderImport();
   }
+
+  // ---------- importação (prints do app Saúde / laudos) ----------
+  let imp = null; // {status: 'loading'|'error'|'review', n, msg, data}
+  const fmtIn = v => v == null || v === "" ? "" : String(v).replace(".", ",");
+
+  function wireImport() {
+    const btn = document.getElementById("sa-imp-btn"), file = document.getElementById("sa-file");
+    if (!btn || btn.dataset.wired) return;
+    btn.dataset.wired = "1";
+    btn.onclick = () => { if (!imp || imp.status !== "loading") file.click(); };
+    file.onchange = () => { const fs = [...file.files]; file.value = ""; if (fs.length) runImport(fs); };
+  }
+
+  function b64(blob) {
+    return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(String(r.result).split(",")[1]); r.onerror = rej; r.readAsDataURL(blob); });
+  }
+  async function prepFile(f) {
+    if (f.type === "application/pdf") {
+      if (f.size > 8e6) throw new Error(`${f.name} passa de 8 MB`);
+      return {media_type: "application/pdf", data: await b64(f), name: f.name};
+    }
+    let bmp;
+    try { bmp = await createImageBitmap(f); } catch { throw new Error(`Não consegui abrir ${f.name}. Envie em JPG, PNG ou PDF.`); }
+    const sc = Math.min(1, 1600 / Math.max(bmp.width, bmp.height));
+    const c = document.createElement("canvas"); c.width = Math.round(bmp.width * sc); c.height = Math.round(bmp.height * sc);
+    c.getContext("2d").drawImage(bmp, 0, 0, c.width, c.height);
+    return {media_type: "image/jpeg", data: c.toDataURL("image/jpeg", 0.85).split(",")[1], name: f.name};
+  }
+
+  async function runImport(fs) {
+    if (fs.length > 12) { imp = {status: "error", msg: "Envie no máximo 12 arquivos por vez."}; return renderImport(); }
+    imp = {status: "loading", n: fs.length}; renderImport();
+    try {
+      const files = await Promise.all(fs.map(prepFile));
+      const { data, error } = await sb.functions.invoke("saude-import", { body: { files, today: today() } });
+      if (error) {
+        let msg = error.message || "Falha ao chamar a função";
+        try { const j = await error.context.json(); if (j?.error) msg = j.error; } catch {}
+        throw new Error(msg);
+      }
+      if (data?.error) throw new Error(data.error);
+      const d = {sono: [], peso: [], fc_repouso: [], atividades: [], exames: [], avisos: [], ...data};
+      const n = d.sono.length + d.peso.length + d.fc_repouso.length + d.atividades.length + d.exames.reduce((a, e) => a + (e.marcadores || []).length, 0);
+      imp = n ? {status: "review", data: d} : {status: "error", msg: "Não encontrei dados de saúde nesses arquivos." + (d.avisos.length ? " " + d.avisos.join(" ") : "")};
+    } catch (e) {
+      console.error(e);
+      imp = {status: "error", msg: e.message || String(e)};
+    }
+    renderImport();
+  }
+
+  function getPath(path) { return path.split(".").reduce((o, k) => o?.[k], imp.data); }
+  function setPath(path, v) { const ks = path.split("."), last = ks.pop(); ks.reduce((o, k) => o[k], imp.data)[last] = v; }
+
+  function impRows(key, items, cols, cur) {
+    return items.map((it, i) => `<div class="sa-imp-row ${it._off ? "off" : ""}">
+      <input type="checkbox" data-on="${key}.${i}" ${it._off ? "" : "checked"} aria-label="Incluir">
+      ${cols.map(c => `<input class="sa-in ${c.cls || ""}" data-k="${key}.${i}.${c.f}" data-num="${c.num ? 1 : ""}" ${c.date ? 'type="date"' : c.num ? 'inputmode="decimal"' : ""} value="${esc(c.num ? fmtIn(it[c.f]) : it[c.f] ?? "")}" placeholder="${c.ph || ""}" aria-label="${c.ph || c.f}">`).join("")}
+      ${cur ? `<span class="sa-imp-cur">${cur(it) || ""}</span>` : ""}
+    </div>`).join("");
+  }
+
+  function renderImport() {
+    const el = document.getElementById("sa-import"); if (!el) return;
+    if (!imp) { el.innerHTML = ""; return; }
+    if (imp.status === "loading") {
+      el.innerHTML = `<div class="card sa-imp"><div class="sa-imp-load"><span class="sa-spin"></span>Lendo ${imp.n} ${imp.n === 1 ? "arquivo" : "arquivos"}… pode levar até um minuto.</div></div>`;
+      return;
+    }
+    if (imp.status === "error") {
+      el.innerHTML = `<div class="card sa-imp"><div class="sa-imp-err">Não consegui importar: ${esc(imp.msg)}</div><div class="sa-imp-actions"><button class="sa-btn ghost" id="sa-imp-x">Fechar</button></div></div>`;
+      document.getElementById("sa-imp-x").onclick = () => { imp = null; renderImport(); };
+      return;
+    }
+    const d = imp.data, s = S(), L = tLog();
+    const grp = (t, html) => html ? `<div class="sa-imp-grp"><h3>${t}</h3>${html}</div>` : "";
+    const dt = {f: "data", date: true, cls: "d", ph: "Data"};
+    el.innerHTML = `<div class="card sa-imp">
+      <div class="card-title">Confira antes de salvar</div>
+      <div class="card-subtitle">Corrija o que precisar e desmarque o que não quiser importar</div>
+      ${d.avisos.length ? `<ul class="sa-imp-av">${d.avisos.map(a => `<li>${esc(a)}</li>`).join("")}</ul>` : ""}
+      ${grp("Sono (horas)", impRows("sono", d.sono, [dt, {f: "horas", num: 1, ph: "Horas"}], it => s.sono[it.data] ? `atual: ${fmtN(s.sono[it.data].h)} h` : ""))}
+      ${grp("Peso (kg)", impRows("peso", d.peso, [dt, {f: "kg", num: 1, ph: "kg"}], it => L[it.data]?.peso ? `atual: ${fmtN(L[it.data].peso)} kg` : ""))}
+      ${grp("FC em repouso (bpm)", impRows("fc_repouso", d.fc_repouso, [dt, {f: "bpm", num: 1, ph: "bpm"}], it => s.fc[it.data] ? `atual: ${s.fc[it.data]} bpm` : ""))}
+      ${grp("Treinos", impRows("atividades", d.atividades, [dt, {f: "tipo", cls: "t", ph: "Tipo"}, {f: "minutos", num: 1, ph: "min"}]))}
+      ${d.exames.map((e, j) => `<div class="sa-imp-grp sa-imp-ex"><h3>Exame</h3>
+        <div class="sa-imp-row"><input class="sa-in d" type="date" data-k="exames.${j}.data" value="${esc(e.data)}" aria-label="Data do exame"><input class="sa-in t" data-k="exames.${j}.laboratorio" value="${esc(e.laboratorio || "")}" placeholder="Laboratório" aria-label="Laboratório"></div>
+        ${impRows(`exames.${j}.marcadores`, e.marcadores || [], [{f: "nome", cls: "t", ph: "Marcador"}, {f: "valor", num: 1, ph: "Valor"}, {f: "unidade", ph: "Unidade"}, {f: "ref_min", num: 1, ph: "Ref. mín."}, {f: "ref_max", num: 1, ph: "Ref. máx."}])}
+      </div>`).join("")}
+      <div class="sa-imp-actions"><button class="sa-btn ghost" id="sa-imp-x">Descartar</button><button class="sa-btn" id="sa-imp-ok">Salvar selecionados</button></div>
+    </div>`;
+    el.querySelectorAll("[data-k]").forEach(inp => inp.oninput = () => setPath(inp.dataset.k, inp.dataset.num ? num(inp.value) : inp.value));
+    el.querySelectorAll("[data-on]").forEach(cb => cb.onchange = () => { getPath(cb.dataset.on)._off = !cb.checked; cb.closest(".sa-imp-row").classList.toggle("off", !cb.checked); });
+    document.getElementById("sa-imp-x").onclick = () => { imp = null; renderImport(); };
+    document.getElementById("sa-imp-ok").onclick = saveImport;
+  }
+
+  function saveImport() {
+    const d = imp.data, s = S(), ok = it => !it._off && /^\d{4}-\d{2}-\d{2}$/.test(it.data || "");
+    d.sono.filter(ok).forEach(it => { const h = num(it.horas); if (h == null || h < 0 || h > 16) return; s.sono[it.data] = {h: Math.round(h*100)/100, q: s.sono[it.data]?.q ?? null}; treinoDay(it.data).sono = h >= 7; });
+    d.peso.filter(ok).forEach(it => { const kg = num(it.kg); if (kg) treinoDay(it.data).peso = kg; });
+    d.fc_repouso.filter(ok).forEach(it => { const b = num(it.bpm); if (b) s.fc[it.data] = Math.round(b); });
+    const acts = {};
+    d.atividades.filter(it => ok(it) && (it.tipo || "").trim()).forEach(it => (acts[it.data] = acts[it.data] || []).push({tipo: it.tipo.trim(), min: num(it.minutos)}));
+    Object.assign(s.atividades, acts);
+    d.exames.forEach(e => {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(e.data || "")) return;
+      const items = (e.marcadores || []).filter(m => !m._off && (m.nome || "").trim() && num(m.valor) != null)
+        .map(m => ({nome: m.nome.trim(), valor: num(m.valor), unidade: (m.unidade || "").trim(), min: num(m.ref_min), max: num(m.ref_max)}));
+      if (!items.length) return;
+      const same = s.exames.find(x => x.date === e.data);
+      if (same) {
+        const names = new Set(items.map(i => i.nome));
+        same.items = [...(same.items || []).filter(i => !names.has(i.nome)), ...items];
+        if (!same.lab && e.laboratorio) same.lab = e.laboratorio;
+      } else s.exames.push({id: uidS(), date: e.data, lab: (e.laboratorio || "").trim(), items});
+    });
+    saveState(); imp = null; render();
+  }
+
 
   function markerList(mk) {
     const list = examFilter === "out" ? mk.filter(m => m.st === "high" || m.st === "low") : mk;
@@ -11260,11 +11419,7 @@ const renderSaude = (() => {
       const h = num(sh.value), k = sd.value || today();
       if (h == null || h < 0 || h > 16) { sh.focus(); return; }
       S().sono[k] = {h: Math.round(h*100)/100, q: sleepQ};
-      if (state.treino) {
-        const log = state.treino.log = state.treino.log || {};
-        const d = log[k] || {treino:false, ref:[false,false,false,false,false], creatina:false, agua:false, sono:false, peso:null};
-        d.sono = h >= 7; log[k] = d;
-      }
+      treinoDay(k).sono = h >= 7;
       saveState(); render();
     };
   }
