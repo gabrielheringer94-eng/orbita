@@ -70,6 +70,12 @@ Deno.serve(async (req) => {
     return json({ error: 'ANTHROPIC_API_KEY não configurada na função' }, 500);
   }
 
+  // verify_jwt também aceita a anon key pública, então confere se há usuário logado.
+  const userRes = await fetch(`${Deno.env.get('SUPABASE_URL')}/auth/v1/user`, {
+    headers: { Authorization: req.headers.get('Authorization') ?? '', apikey: Deno.env.get('SUPABASE_ANON_KEY') ?? '' },
+  });
+  if (!userRes.ok) return json({ error: 'Faça login para usar a captura inteligente' }, 401);
+
   let text: string;
   try {
     const body = await req.json();
