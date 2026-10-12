@@ -5575,8 +5575,8 @@ function showMigrationScreen(localData) {
 function startApp() {
   appInitialized = true;
   showApp();
-  // Renderiza a página inicial (dashboard)
-  if (typeof renderDashboard === 'function') renderDashboard();
+  // Volta para a última página aberta (ou Hoje, se não houver)
+  if (!restoreLastPage() && typeof renderDashboard === 'function') renderDashboard();
   // Setup do drawer mobile (após app carregado, evita estado preso)
   setupMobileDrawer();
   setupSidebarToggle();
@@ -5779,6 +5779,22 @@ const DAY_NAMES = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
 const MONTHS_FULL = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
 
 // ============== ROUTING ==============
+const LAST_PAGE_KEY = 'orbita_last_page';
+function restoreLastPage() {
+  let target = decodeURIComponent(location.hash.slice(1));
+  if (!target) { try { target = localStorage.getItem(LAST_PAGE_KEY) || ''; } catch {} }
+  const item = target && target !== 'dashboard' && document.querySelector(`.nav-item[data-page="${CSS.escape(target)}"]`);
+  if (!item) return false;
+  item.click();
+  return true;
+}
+// Trocar o #pagina no endereço (link direto, botões voltar/avançar) abre a página
+window.addEventListener('hashchange', () => {
+  if (!appInitialized) return;
+  const target = decodeURIComponent(location.hash.slice(1)) || 'dashboard';
+  const item = document.querySelector(`.nav-item[data-page="${CSS.escape(target)}"]`);
+  if (item && !item.classList.contains('active')) item.click();
+});
 const navItems = document.querySelectorAll('.nav-item');
 const pages = document.querySelectorAll('.page');
 navItems.forEach(item => {
@@ -5788,6 +5804,9 @@ navItems.forEach(item => {
     item.classList.add('active');
     pages.forEach(p => p.classList.remove('active'));
     document.getElementById('page-' + target).classList.add('active');
+    // Lembra a página atual (endereço #pagina + navegador) para voltar nela ao recarregar
+    try { localStorage.setItem(LAST_PAGE_KEY, target); } catch {}
+    try { history.replaceState(null, '', target === 'dashboard' ? location.pathname + location.search : '#' + target); } catch {}
     if (target === 'dashboard') renderDashboard();
     if (target === 'schedule') renderSchedule();
     if (target === 'tasks') renderTasks();
@@ -11994,7 +12013,11 @@ const renderTrip = (() => {
     ext: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>',
   };
 
-  let tab = 'checklists';
+  const TAB_KEY = 'orbita_trip_tab';
+  let tab = (() => {
+    try { const v = localStorage.getItem(TAB_KEY); return ['checklists', 'roteiro', 'docs'].includes(v) ? v : 'checklists'; }
+    catch { return 'checklists'; }
+  })();
   let hideDone = false;
   let mapFilter = 'all';
   let lastTarget = null;
@@ -13476,7 +13499,12 @@ const renderTrip = (() => {
   // ---------- eventos ----------
   page.addEventListener('click', e => {
     const tabBtn = e.target.closest('[data-tp-tab]');
-    if (tabBtn) { tab = tabBtn.dataset.tpTab; render(); return; }
+    if (tabBtn) {
+      tab = tabBtn.dataset.tpTab;
+      try { localStorage.setItem(TAB_KEY, tab); } catch {}
+      render();
+      return;
+    }
     const el = e.target.closest('[data-tp]');
     if (!el) return;
     const t = T();
