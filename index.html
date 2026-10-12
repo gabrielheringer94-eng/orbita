@@ -3985,6 +3985,14 @@
   .tp-map-col { position: sticky; top: 16px; min-width: 0; }
   .tp-search { position: relative; display: flex; gap: 8px; margin-bottom: 10px; }
   .tp-search .input { min-width: 0; padding-left: 38px; }
+  .tp-suggest { position: absolute; left: 0; right: 0; top: calc(100% + 4px); z-index: 1100; background: var(--bg-elevated); border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.14); max-height: 340px; overflow-y: auto; }
+  .tp-suggest[hidden] { display: none; }
+  .tp-suggest-item { display: block; width: 100%; text-align: left; background: none; border: none; border-bottom: 1px solid var(--line-soft); padding: 10px 14px; cursor: pointer; font-family: 'DM Sans', sans-serif; color: var(--ink); }
+  .tp-suggest-item:last-child { border-bottom: none; }
+  .tp-suggest-item:hover, .tp-suggest-item.is-active { background: var(--bg-card); }
+  .tp-suggest-name { font-size: 14px; font-weight: 600; }
+  .tp-suggest-sub { font-size: 12px; color: var(--ink-faint); margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tp-suggest-msg { padding: 12px 14px; font-size: 13px; color: var(--ink-faint); }
   .tp-search-icon { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: var(--ink-faint); pointer-events: none; }
   .tp-cats { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 4px; scrollbar-width: none; }
   .tp-cats::-webkit-scrollbar { display: none; }
@@ -4531,6 +4539,7 @@
               <svg class="tp-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
               <input type="search" class="input" id="tp-search-input" placeholder="Pesquisar no mapa: Torre Eiffel, Louvre, um endereço…" autocomplete="off" enterkeyhint="search" />
               <button class="btn btn-ghost" id="tp-search-clear" data-tp="clear-results" hidden>Limpar</button>
+              <div class="tp-suggest" id="tp-suggest" role="listbox" hidden></div>
             </div>
             <div class="tp-cats" id="tp-cats"></div>
             <div class="tp-map-wrap">
@@ -11807,7 +11816,7 @@ const renderTrip = (() => {
   let map = null, planLayer = null, resultsLayer = null;
   const stopMarkers = new Map();
   let results = [], resultsLabel = '', activeCat = null, catBounds = null;
-  let searchTimer = null, searchSeq = 0;
+  let searchTimer = null, searchSeq = 0, suggestIdx = -1;
   let needsFit = true;
 
   const page = document.getElementById('page-trip');
@@ -12239,35 +12248,46 @@ const renderTrip = (() => {
     if (!name) return null;
     return { name, lat: parseFloat(h.lat), lng: parseFloat(h.lon), address: parts.slice(1, 4).join(', '), category: typeLabel(h.type) };
   }
+  async function fetchJSON(url, opts, ms) {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), ms);
+    try {
+      const res = await fetch(url, { ...opts, signal: ctrl.signal });
+      if (!res.ok) throw new Error(url.split('?')[0] + ' ' + res.status);
+      return await res.json();
+    } finally {
+      clearTimeout(timer);
+    }
+  }
   async function geocode(q, near, limit) {
+    let list = [];
     try {
       let u = `${PHOTON_URL}?q=${encodeURIComponent(q)}&limit=${limit}`;
       if (near) u += `&lat=${near.lat.toFixed(4)}&lon=${near.lng.toFixed(4)}`;
-      const res = await fetch(u);
-      if (!res.ok) throw new Error('Photon ' + res.status);
-      const data = await res.json();
-      return (data.features || []).map(fromPhoton).filter(Boolean);
+      const data = await fetchJSON(u, {}, 8000);
+      list = (data.features || []).map(fromPhoton).filter(Boolean);
     } catch (err) {
       console.warn('Photon falhou, tentando Nominatim:', err);
-      const res = await fetch(`${NOMINATIM_URL}?format=jsonv2&limit=${limit}&q=${encodeURIComponent(q)}`, { headers: { 'Accept': 'application/json' } });
-      if (!res.ok) throw new Error('Nominatim ' + res.status);
-      const data = await res.json();
-      return (Array.isArray(data) ? data : []).map(fromNominatim).filter(Boolean);
     }
+    if (list.length) return list;
+    const data = await fetchJSON(`${NOMINATIM_URL}?format=jsonv2&limit=${limit}&q=${encodeURIComponent(q)}`, { headers: { 'Accept': 'application/json' } }, 10000);
+    return (Array.isArray(data) ? data : []).map(fromNominatim).filter(Boolean);
   }
 
-  async function searchPlaces(q) {
+  // Busca por texto. Mostra sugestões sob o campo; com go=true leva o mapa
+  // direto ao primeiro resultado (Enter), como no Google Maps.
+  async function searchPlaces(q, go) {
     const seq = ++searchSeq;
     activeCat = null; catBounds = null;
     renderCats();
-    setStatus('Buscando…');
+    setStatus('');
+    renderSuggest(null, 'Buscando…');
     let list = [];
     try {
-      const near = map && map.getZoom() >= 5 ? map.getCenter() : null;
-      list = await geocode(q, near, 10);
+      list = await geocode(q, map ? map.getCenter() : { lat: EUROPE[0], lng: EUROPE[1] }, 10);
     } catch (err) {
       console.warn('Busca falhou:', err);
-      if (seq === searchSeq) setStatus('Não foi possível buscar agora. Confira a conexão e tente de novo.');
+      if (seq === searchSeq) renderSuggest(null, 'Não foi possível buscar agora. Confira a conexão e tente de novo.');
       return;
     }
     if (seq !== searchSeq) return;
@@ -12278,9 +12298,34 @@ const renderTrip = (() => {
       seen.add(k); return true;
     });
     resultsLabel = `Resultados para “${q}”`;
-    setStatus(results.length ? '' : 'Nada encontrado. Tente outro nome ou mova o mapa até a cidade.');
     renderResults();
-    renderMap(true);
+    renderMap(false);
+    if (!results.length) { renderSuggest(null, `Nada encontrado para “${q}”. Tente o nome com a cidade (ex: Coliseu, Roma).`); return; }
+    if (go) goToResult(0);
+    else renderSuggest(results);
+  }
+
+  function renderSuggest(list, msg) {
+    const box = $('tp-suggest');
+    suggestIdx = -1;
+    if (!list && !msg) { box.hidden = true; box.innerHTML = ''; return; }
+    box.hidden = false;
+    box.innerHTML = msg
+      ? `<div class="tp-suggest-msg">${escapeHTML(msg)}</div>`
+      : list.map((r, i) => `
+          <button type="button" class="tp-suggest-item" data-tp-suggest="${i}" role="option">
+            <div class="tp-suggest-name">${escapeHTML(r.name)}</div>
+            <div class="tp-suggest-sub">${escapeHTML([r.category, r.address].filter(Boolean).join(' · ')) || '&nbsp;'}</div>
+          </button>`).join('');
+  }
+
+  function goToResult(i) {
+    const r = results[i];
+    renderSuggest(null);
+    if (!r || !ensureMap()) return;
+    showMapOnMobile();
+    map.setView([r.lat, r.lng], 16);
+    if (r.marker) r.marker.openPopup();
   }
 
   async function exploreCategory(cat) {
@@ -12539,14 +12584,7 @@ const renderTrip = (() => {
         break;
       }
       case 'clear-results': clearResults(); break;
-      case 'focus-result': {
-        const r = results[Number(el.dataset.i)];
-        if (!r || !r.marker) return;
-        showMapOnMobile();
-        map.setView([r.lat, r.lng], Math.max(map.getZoom(), 15));
-        r.marker.openPopup();
-        break;
-      }
+      case 'focus-result': goToResult(Number(el.dataset.i)); break;
       case 'add-result': {
         const r = results[Number(el.dataset.i)];
         const sel = page.querySelector('[data-tp-target]');
@@ -12565,6 +12603,7 @@ const renderTrip = (() => {
     results = []; activeCat = null; catBounds = null;
     $('tp-search-input').value = '';
     setStatus('');
+    renderSuggest(null);
     renderCats(); renderResults(); renderMap(false);
   }
 
@@ -12600,15 +12639,30 @@ const renderTrip = (() => {
   });
 
   page.addEventListener('keydown', e => {
-    if (e.key !== 'Enter' || e.isComposing) return;
     const el = e.target;
-    if (el.id === 'tp-search-input') {
+    if (el.id === 'tp-search-input' && !e.isComposing) {
+      const items = [...document.querySelectorAll('#tp-suggest [data-tp-suggest]')];
+      if ((e.key === 'ArrowDown' || e.key === 'ArrowUp') && items.length) {
+        e.preventDefault();
+        suggestIdx = (suggestIdx + (e.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length;
+        items.forEach((b, i) => b.classList.toggle('is-active', i === suggestIdx));
+        return;
+      }
+      if (e.key === 'Escape') { renderSuggest(null); return; }
+      if (e.key !== 'Enter') return;
       e.preventDefault();
       clearTimeout(searchTimer);
+      if (suggestIdx >= 0 && items[suggestIdx]) { goToResult(suggestIdx); el.blur(); return; }
       const q = el.value.trim();
-      if (q.length >= 2) searchPlaces(q);
+      if (q.length >= 2) {
+        // Mesma busca já respondida: só leva ao primeiro resultado
+        if (results.length && resultsLabel === `Resultados para “${q}”`) goToResult(0);
+        else searchPlaces(q, true);
+        el.blur();
+      }
       return;
     }
+    if (e.key !== 'Enter' || e.isComposing) return;
     if (el.matches('[data-tp-add-item]')) {
       const c = T().checklists.find(x => x.id === el.dataset.tpAddItem);
       const text = el.value.trim();
@@ -12636,9 +12690,23 @@ const renderTrip = (() => {
     clearTimeout(searchTimer);
     const q = e.target.value.trim();
     $('tp-search-clear').hidden = !q && !results.length;
-    if (q.length < 3) return;
-    searchTimer = setTimeout(() => searchPlaces(q), 450);
+    if (q.length < 3) { renderSuggest(null); return; }
+    searchTimer = setTimeout(() => searchPlaces(q, false), 400);
   });
+
+  // Toque/clique numa sugestão (pointerdown: antes do blur do campo)
+  $('tp-suggest').addEventListener('pointerdown', e => {
+    const b = e.target.closest('[data-tp-suggest]');
+    if (!b) return;
+    e.preventDefault();
+    goToResult(Number(b.dataset.tpSuggest));
+    $('tp-search-input').blur();
+  });
+  $('tp-search-input').addEventListener('focus', () => {
+    const q = $('tp-search-input').value.trim();
+    if (results.length && !activeCat && resultsLabel === `Resultados para “${q}”`) renderSuggest(results);
+  });
+  $('tp-search-input').addEventListener('blur', () => setTimeout(() => renderSuggest(null), 150));
 
   return render;
 })();
