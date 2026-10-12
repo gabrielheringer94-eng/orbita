@@ -3976,6 +3976,32 @@
   .tp-item.done .tp-item-text { text-decoration: line-through; color: var(--ink-faint); }
   .tp-item .tp-icon-btn { opacity: 0; padding: 2px; }
   .tp-item:hover .tp-icon-btn, .tp-item .tp-icon-btn:focus-visible { opacity: 1; }
+  .tp-ai { background: var(--bg-elevated); border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; margin-bottom: 20px; box-shadow: var(--shadow-sm); }
+  .tp-ai[hidden] { display: none; }
+  .tp-ai-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+  .tp-ai-badge { font: 700 10px 'DM Sans', sans-serif; text-transform: uppercase; letter-spacing: 0.12em; background: var(--ink); color: var(--bg); padding: 4px 8px; border-radius: 6px; }
+  .tp-ai-title { font-weight: 600; font-size: 15px; }
+  .tp-ai-input { width: 100%; resize: vertical; min-height: 70px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); color: var(--ink); font: 14px/1.45 'DM Sans', sans-serif; padding: 10px 12px; outline: none; box-sizing: border-box; }
+  .tp-ai-input:focus { border-color: var(--ink); }
+  .tp-ai-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 10px; }
+  .tp-ai-actions .btn, .tp-ai-actions .btn-ghost { padding: 9px 16px; font-size: 13px; }
+  .tp-ai-actions .btn[disabled] { opacity: 0.5; cursor: wait; }
+  .tp-ai-hint { font-size: 12px; color: var(--ink-faint); flex: 1; min-width: 200px; }
+  .tp-ai-msg { margin-top: 14px; padding: 12px 14px; background: var(--bg-card); border-radius: 10px; font-size: 14px; line-height: 1.5; white-space: pre-line; }
+  .tp-ai-msg.is-error { color: #b91c1c; }
+  .tp-ai-loading { margin-top: 14px; font-size: 13px; color: var(--ink-faint); }
+  .tp-ai-list { margin-top: 12px; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+  .tp-ai-row { display: grid; grid-template-columns: 20px minmax(0, 1fr) auto; gap: 10px; align-items: start; padding: 10px 12px; border-bottom: 1px solid var(--line-soft); }
+  .tp-ai-row:last-child { border-bottom: none; }
+  .tp-ai-row.is-off { opacity: 0.45; }
+  .tp-ai-row-text { font-size: 14px; font-weight: 600; overflow-wrap: anywhere; }
+  .tp-ai-row-tip { font-size: 12px; color: var(--ink-faint); margin-top: 2px; }
+  .tp-ai-row select { border: 1px solid var(--line); background: var(--bg); color: var(--ink); border-radius: 6px; font: 12px 'DM Sans', sans-serif; padding: 4px 6px; max-width: 170px; }
+  .tp-ai-done { margin-top: 10px; font-size: 13px; color: var(--ink-soft); }
+  .tp-ai-foot { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+  .tp-ai-foot .btn, .tp-ai-foot .btn-ghost { padding: 8px 14px; font-size: 13px; }
+  .tp-urgent { display: inline-block; font: 700 10px 'DM Sans', sans-serif; text-transform: uppercase; letter-spacing: 0.06em; color: #b45309; background: #fef3c7; border-radius: 4px; padding: 1px 5px; margin-left: 6px; vertical-align: 1px; }
+  .tp-item-tip { display: block; font-size: 12px; color: var(--ink-faint); margin-top: 2px; text-decoration: none; }
   .tp-items-done { font-size: 12px; color: var(--ink-faint); padding: 6px 0; }
   .tp-add-input { width: 100%; border: none; border-top: 1px dashed var(--line); background: transparent; color: var(--ink); font: 14px 'DM Sans', sans-serif; padding: 10px 0 4px; outline: none; margin-top: 4px; }
   .tp-add-input::placeholder { color: var(--ink-faint); }
@@ -4539,6 +4565,20 @@
       <div class="tr-tabs tp-tabs">
         <button class="tr-tab active" data-tp-tab="checklists">Checklists</button>
         <button class="tr-tab" data-tp-tab="roteiro">Roteiro e mapa</button>
+      </div>
+
+      <div class="tp-ai" id="tp-ai">
+        <div class="tp-ai-head">
+          <span class="tp-ai-badge">✦ Assistente</span>
+          <span class="tp-ai-title">O que você precisa fazer ou levar?</span>
+        </div>
+        <textarea class="tp-ai-input" id="tp-ai-input" rows="3" placeholder="Escreva do seu jeito, várias coisas de uma vez. Ex: comprar adaptador, reservar trem Paris–Roma, levar remédio de rinite, já fiz o check-in…"></textarea>
+        <div class="tp-ai-actions">
+          <button class="btn" id="tp-ai-route">Organizar com IA</button>
+          <button class="btn btn-ghost" id="tp-ai-next">O que falta?</button>
+          <span class="tp-ai-hint">A IA separa os itens, coloca cada um na checklist certa e dá dicas. Você confirma antes de salvar.</span>
+        </div>
+        <div id="tp-ai-result"></div>
       </div>
 
       <div id="tp-view-checklists"></div>
@@ -11953,6 +11993,7 @@ const renderTrip = (() => {
     renderHeader();
     page.querySelectorAll('[data-tp-tab]').forEach(b => b.classList.toggle('active', b.dataset.tpTab === tab));
     $('tp-view-checklists').hidden = tab !== 'checklists';
+    $('tp-ai').hidden = tab !== 'checklists';
     $('tp-view-roteiro').hidden = tab !== 'roteiro';
     if (tab === 'checklists') renderChecklists();
     else {
@@ -12036,7 +12077,7 @@ const renderTrip = (() => {
           ${items.map(i => `
             <div class="tp-item ${i.done ? 'done' : ''}">
               <div class="checkbox ${i.done ? 'checked' : ''}" data-tp="toggle-item" data-list="${c.id}" data-id="${i.id}" role="checkbox" aria-checked="${i.done}"></div>
-              <span class="tp-item-text" data-tp="toggle-item" data-list="${c.id}" data-id="${i.id}">${escapeHTML(i.text)}</span>
+              <span class="tp-item-text" data-tp="toggle-item" data-list="${c.id}" data-id="${i.id}">${escapeHTML(i.text)}${i.urgent && !i.done ? '<span class="tp-urgent">urgente</span>' : ''}${i.tip ? `<span class="tp-item-tip">${escapeHTML(i.tip)}</span>` : ''}</span>
               <button class="tp-icon-btn" data-tp="del-item" data-list="${c.id}" data-id="${i.id}" aria-label="Excluir item">${ICON.x}</button>
             </div>`).join('')}
           ${hideDone && complete ? '<div class="tp-items-done">Tudo pronto ✓</div>' : ''}
@@ -12573,6 +12614,146 @@ const renderTrip = (() => {
     saveState();
     if (tab === 'roteiro') { renderDays(); renderMap(false); }
   }
+
+  // ---------- assistente (Claude via Edge Function trip-assistant) ----------
+  let aiBusy = false;
+  let aiResult = null; // { message, items: [{...,on, target}], completed: [ids], mode }
+
+  function tripPayload(mode, text) {
+    const t = T();
+    return {
+      mode, text,
+      trip: {
+        name: t.name || '', cities: t.cities || '', start: t.start || '', end: t.end || '',
+        today: localISO(new Date()),
+        lists: t.checklists.slice(0, 30).map(c => ({
+          id: c.id, name: c.name.slice(0, 120),
+          items: c.items.slice(0, 150).map(i => ({ id: i.id, text: i.text.slice(0, 300), done: !!i.done })),
+        })),
+        days: t.days.slice(0, 60).map(d => ({
+          date: d.date || '', title: (d.title || '').slice(0, 200),
+          stops: d.stops.slice(0, 40).map(x => x.name.slice(0, 200)),
+        })),
+      },
+    };
+  }
+
+  async function askAssistant(mode) {
+    if (aiBusy) return;
+    const text = $('tp-ai-input').value.trim();
+    if (mode === 'route' && !text) { $('tp-ai-input').focus(); return; }
+    aiBusy = true;
+    aiResult = null;
+    $('tp-ai-route').disabled = $('tp-ai-next').disabled = true;
+    $('tp-ai-result').innerHTML = `<div class="tp-ai-loading">${mode === 'route' ? 'Organizando seus itens…' : 'Analisando o que falta…'}</div>`;
+    try {
+      const { data, error } = await sb.functions.invoke('trip-assistant', { body: tripPayload(mode, text.slice(0, 2000)) });
+      if (error) {
+        let msg = error.message || 'Falha ao falar com o assistente';
+        if (error.context && error.context.status === 404) msg = 'A função trip-assistant ainda não foi publicada no Supabase.';
+        else { try { const b = await error.context.json(); if (b && b.error) msg = b.error; } catch {} }
+        throw new Error(msg);
+      }
+      if (data && data.error) throw new Error(data.error);
+      aiResult = {
+        mode,
+        message: data.message || '',
+        completed: data.completed_item_ids || [],
+        items: (data.items || []).map(i => ({
+          ...i,
+          on: true,
+          target: i.list_id ? i.list_id : 'new:' + (i.new_list_name || 'Outros'),
+        })),
+      };
+      renderAI();
+    } catch (err) {
+      console.error('Assistente da viagem:', err);
+      $('tp-ai-result').innerHTML = `<div class="tp-ai-msg is-error">Não consegui falar com o assistente agora. ${escapeHTML(err.message || '')}</div>`;
+    } finally {
+      aiBusy = false;
+      $('tp-ai-route').disabled = $('tp-ai-next').disabled = false;
+    }
+  }
+
+  function renderAI() {
+    const el = $('tp-ai-result');
+    if (!aiResult) { el.innerHTML = ''; return; }
+    const t = T();
+    const newNames = [...new Set(aiResult.items.filter(i => i.target.startsWith('new:')).map(i => i.target.slice(4)))];
+    const options = sel => t.checklists.map(c => `<option value="${c.id}" ${sel === c.id ? 'selected' : ''}>${escapeHTML((c.emoji || '📋') + ' ' + c.name)}</option>`).join('')
+      + newNames.map(n => `<option value="new:${escapeHTML(n)}" ${sel === 'new:' + n ? 'selected' : ''}>+ Nova: ${escapeHTML(n)}</option>`).join('');
+    const doneItems = aiResult.completed.map(id => {
+      for (const c of t.checklists) { const it = c.items.find(i => i.id === id); if (it) return it.text; }
+      return null;
+    }).filter(Boolean);
+    const anyOn = aiResult.items.some(i => i.on) || doneItems.length;
+    el.innerHTML = `
+      ${aiResult.message ? `<div class="tp-ai-msg">${escapeHTML(aiResult.message)}</div>` : ''}
+      ${aiResult.items.length ? `<div class="tp-ai-list">${aiResult.items.map((it, k) => `
+        <div class="tp-ai-row ${it.on ? '' : 'is-off'}">
+          <div class="checkbox ${it.on ? 'checked' : ''}" data-ai-toggle="${k}" role="checkbox" aria-checked="${it.on}"></div>
+          <div>
+            <div class="tp-ai-row-text">${escapeHTML(it.text)}${it.urgent ? '<span class="tp-urgent">urgente</span>' : ''}</div>
+            ${it.tip ? `<div class="tp-ai-row-tip">${escapeHTML(it.tip)}</div>` : ''}
+          </div>
+          <select data-ai-target="${k}" aria-label="Checklist de destino">${options(it.target)}</select>
+        </div>`).join('')}</div>` : ''}
+      ${doneItems.length ? `<div class="tp-ai-done">✓ Vou marcar como feito: ${doneItems.map(escapeHTML).join(' · ')}</div>` : ''}
+      <div class="tp-ai-foot">
+        ${anyOn ? `<button class="btn" id="tp-ai-apply">${aiResult.items.filter(i => i.on).length ? `Adicionar ${aiResult.items.filter(i => i.on).length} ${aiResult.items.filter(i => i.on).length === 1 ? 'item' : 'itens'}` : 'Confirmar'}</button>` : ''}
+        <button class="btn btn-ghost" id="tp-ai-dismiss">${anyOn ? 'Descartar' : 'Fechar'}</button>
+      </div>`;
+  }
+
+  function applyAI() {
+    if (!aiResult) return;
+    const t = T();
+    let added = 0;
+    aiResult.items.filter(i => i.on).forEach(it => {
+      let list = null;
+      if (it.target.startsWith('new:')) {
+        const name = it.target.slice(4);
+        list = t.checklists.find(c => c.name.toLowerCase() === name.toLowerCase());
+        if (!list) {
+          const src = aiResult.items.find(x => x.new_list_name === name && x.new_list_emoji);
+          list = { id: uid(), emoji: (src && src.new_list_emoji) || '📋', name, items: [] };
+          t.checklists.push(list);
+        }
+      } else {
+        list = t.checklists.find(c => c.id === it.target);
+      }
+      if (!list) return;
+      list.items.push({ id: uid(), text: it.text, done: false, tip: it.tip || '', urgent: !!it.urgent });
+      added++;
+    });
+    let marked = 0;
+    aiResult.completed.forEach(id => t.checklists.forEach(c => c.items.forEach(i => { if (i.id === id && !i.done) { i.done = true; marked++; } })));
+    saveState();
+    if (aiResult.mode === 'route') $('tp-ai-input').value = '';
+    aiResult = null;
+    renderAI();
+    render();
+    const parts = [];
+    if (added) parts.push(`${added} ${added === 1 ? 'item adicionado' : 'itens adicionados'}`);
+    if (marked) parts.push(`${marked} ${marked === 1 ? 'marcado' : 'marcados'} como feito`);
+    if (parts.length) $('tp-ai-result').innerHTML = `<div class="tp-ai-msg">✓ ${escapeHTML(parts.join(' · '))}</div>`;
+  }
+
+  $('tp-ai-route').onclick = () => askAssistant('route');
+  $('tp-ai-next').onclick = () => askAssistant('next');
+  $('tp-ai-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); askAssistant('route'); }
+  });
+  $('tp-ai-result').addEventListener('click', e => {
+    const tg = e.target.closest('[data-ai-toggle]');
+    if (tg && aiResult) { const it = aiResult.items[Number(tg.dataset.aiToggle)]; it.on = !it.on; renderAI(); return; }
+    if (e.target.id === 'tp-ai-apply') applyAI();
+    if (e.target.id === 'tp-ai-dismiss') { aiResult = null; renderAI(); }
+  });
+  $('tp-ai-result').addEventListener('change', e => {
+    const sel = e.target.closest('[data-ai-target]');
+    if (sel && aiResult) aiResult.items[Number(sel.dataset.aiTarget)].target = sel.value;
+  });
 
   // ---------- modal da viagem ----------
   $('tp-edit-btn').onclick = () => {
