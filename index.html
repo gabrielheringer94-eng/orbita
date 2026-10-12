@@ -4005,7 +4005,16 @@
   .tp-map-status[hidden] { display: none; }
   .tp-map-status button { background: #111; color: #fff; border: none; border-radius: 999px; padding: 4px 10px; font: 600 12px 'DM Sans', sans-serif; cursor: pointer; white-space: nowrap; }
   .tp-pin { background: transparent; border: none; }
-  .tp-pin svg { display: block; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3)); }
+  .tp-pin svg { display: block; overflow: visible; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3)); transform-origin: 50% 100%; transition: transform 0.15s ease; }
+  .tp-pin.is-selected svg { transform: scale(1.35); filter: drop-shadow(0 3px 6px rgba(0,0,0,0.35)); }
+  .tp-pin.is-selected::after { content: ''; position: absolute; left: 50%; bottom: -6px; width: 26px; height: 12px; margin-left: -13px; border-radius: 50%; border: 2px solid var(--tp-pin-color, #111); animation: tpPulse 1.4s ease-out infinite; pointer-events: none; }
+  @keyframes tpPulse { from { transform: scale(0.6); opacity: 0.9; } to { transform: scale(1.8); opacity: 0; } }
+  .tp-map-resize { height: 16px; display: flex; align-items: center; justify-content: center; cursor: ns-resize; background: var(--bg-elevated); border-top: 1px solid var(--line); touch-action: none; user-select: none; outline: none; }
+  .tp-map-resize span { width: 42px; height: 4px; border-radius: 4px; background: var(--line); transition: background 0.15s; }
+  .tp-map-resize:hover span, .tp-map-resize:focus-visible span, .tp-map-resize.is-dragging span { background: var(--ink-faint); }
+  .tp-fav-btn.is-on { color: #e11d48; }
+  .tp-fav-mark { color: #e11d48; margin-right: 4px; }
+  .tp-stop.is-selected { background: var(--bg-card); box-shadow: inset 3px 0 0 var(--tp-sel-color, var(--ink)); margin: 0 -16px; padding-left: 16px; padding-right: 16px; }
   .tp-popup { font-family: 'DM Sans', sans-serif; color: #111; min-width: 190px; max-width: 240px; }
   .tp-popup-name { font-weight: 700; font-size: 14px; line-height: 1.3; }
   .tp-popup-sub { font-size: 11px; color: #666; margin: 3px 0 8px; line-height: 1.4; }
@@ -4013,6 +4022,8 @@
   .tp-popup-actions { display: flex; gap: 6px; align-items: center; }
   .tp-popup-actions button { background: #111; color: #fff; border: none; border-radius: 6px; padding: 6px 12px; font: 600 12px 'DM Sans', sans-serif; cursor: pointer; }
   .tp-popup-actions a { font-size: 12px; color: #111; }
+  .tp-popup-actions button.tp-popup-fav { background: #fff; color: #e11d48; border: 1px solid #f3c2cd; }
+  .tp-popup-actions button.tp-popup-fav.is-on { background: #e11d48; color: #fff; border-color: #e11d48; }
 
   .tp-results { margin-top: 12px; }
   .tp-results:empty { display: none; }
@@ -4545,6 +4556,7 @@
             <div class="tp-map-wrap">
               <div id="tp-map"></div>
               <div class="tp-map-status" id="tp-map-status" hidden></div>
+              <div class="tp-map-resize" id="tp-map-resize" role="separator" aria-orientation="horizontal" aria-label="Arraste para aumentar ou diminuir o mapa" title="Arraste para aumentar ou diminuir o mapa (duplo clique volta ao tamanho padrão)" tabindex="0"><span></span></div>
             </div>
             <div class="tp-results" id="tp-results"></div>
           </div>
@@ -11817,6 +11829,10 @@ const renderTrip = (() => {
   const stopMarkers = new Map();
   let results = [], resultsLabel = '', activeCat = null, catBounds = null;
   let searchTimer = null, searchSeq = 0, suggestIdx = -1;
+  let selectedKey = null;            // 's:<stopId>' ou 'r:<índice do resultado>'
+  const markerByKey = new Map();     // key -> { m, icon(selected) }
+  const HEART = '<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.5"><path d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 4.5 6.8 4.5c2.1 0 3.6 1.1 5.2 3 1.6-1.9 3.1-3 5.2-3 3.8 0 5.9 3.9 4.4 7.3C19.5 16.4 12 21 12 21z"/></svg>';
+  const HEART_O = HEART.replace('fill="currentColor"', 'fill="none"');
   let needsFit = true;
 
   const page = document.getElementById('page-trip');
@@ -11862,6 +11878,13 @@ const renderTrip = (() => {
     t.days.forEach(d => { d.stops = d.stops || []; });
     return t;
   }
+  function allStops() {
+    const t = T();
+    return t.ideas.concat(...t.days.map(d => d.stops));
+  }
+  function findStop(id) {
+    return allStops().find(x => x.id === id) || null;
+  }
   function stopsOf(target) {
     const t = T();
     if (target === 'ideas') return t.ideas;
@@ -11880,7 +11903,7 @@ const renderTrip = (() => {
   function validTarget() {
     const t = T();
     if (lastTarget === 'ideas' || t.days.some(d => d.id === lastTarget)) return lastTarget;
-    if (mapFilter !== 'all') return mapFilter;
+    if (mapFilter === 'ideas' || t.days.some(d => d.id === mapFilter)) return mapFilter;
     const today = localISO(new Date());
     const d = t.days.find(x => x.date >= today) || t.days[0];
     return d ? d.id : 'ideas';
@@ -12030,16 +12053,17 @@ const renderTrip = (() => {
       + (target === 'ideas' ? '' : '<option value="ideas">Ideias</option>');
     const sub = [s.category, s.address].filter(Boolean).join(' · ') || (located ? '' : 'Sem localização no mapa');
     return `
-      <div class="tp-stop">
+      <div class="tp-stop ${selectedKey === 's:' + s.id ? 'is-selected' : ''}" id="tp-stop-${s.id}" style="--tp-sel-color:${color}">
         <span class="tp-stop-num" style="background:${color}">${target === 'ideas' ? '★' : idx + 1}</span>
         <div>
-          <div class="tp-stop-name" ${located ? `data-tp="focus-stop" data-target="${target}" data-id="${s.id}" title="Ver no mapa"` : ''}>${escapeHTML(s.name)}</div>
+          <div class="tp-stop-name" ${located ? `data-tp="focus-stop" data-target="${target}" data-id="${s.id}" title="Ver no mapa"` : ''}>${s.fav ? `<span class="tp-fav-mark" title="Favorito">${HEART}</span>` : ''}${escapeHTML(s.name)}</div>
           ${sub ? `<div class="tp-stop-sub">${escapeHTML(sub)}</div>` : ''}
           <input type="text" class="tp-stop-note" data-tp-note data-target="${target}" data-id="${s.id}" value="${escapeHTML(s.note || '')}" placeholder="Anotação: ingresso, reserva, horário…" />
         </div>
         <div class="tp-stop-side">
           ${target === 'ideas' ? '' : `<input type="time" class="tp-time" data-tp-time data-target="${target}" data-id="${s.id}" value="${escapeHTML(s.time || '')}" aria-label="Horário" />`}
           <div class="tp-stop-actions">
+            <button class="tp-icon-btn tp-fav-btn ${s.fav ? 'is-on' : ''}" data-tp="stop-fav" data-target="${target}" data-id="${s.id}" aria-pressed="${!!s.fav}" title="${s.fav ? 'Tirar dos favoritos' : 'Favoritar'}" aria-label="Favoritar">${s.fav ? HEART : HEART_O}</button>
             <button class="tp-icon-btn" data-tp="stop-up" data-target="${target}" data-id="${s.id}" aria-label="Subir">${ICON.up}</button>
             <button class="tp-icon-btn" data-tp="stop-down" data-target="${target}" data-id="${s.id}" aria-label="Descer">${ICON.down}</button>
             <a class="tp-icon-btn" href="${gmapsPlaceURL(s)}" target="_blank" rel="noopener" title="Abrir no Google Maps" aria-label="Abrir no Google Maps">${ICON.ext}</a>
@@ -12081,7 +12105,8 @@ const renderTrip = (() => {
     const t = T();
     const chips = [`<button class="btn btn-ghost ${mapFilter === 'all' ? 'active' : ''}" data-tp="map-filter" data-id="all">Tudo no mapa</button>`]
       .concat(t.days.map((d, i) => `<button class="btn btn-ghost ${mapFilter === d.id ? 'active' : ''}" data-tp="map-filter" data-id="${d.id}"><span class="tp-chip-dot" style="background:${COLORS[i % COLORS.length]}"></span>Dia ${i + 1}</button>`))
-      .concat(t.ideas.length ? [`<button class="btn btn-ghost ${mapFilter === 'ideas' ? 'active' : ''}" data-tp="map-filter" data-id="ideas"><span class="tp-chip-dot" style="background:${IDEA_COLOR}"></span>Ideias</button>`] : []);
+      .concat(t.ideas.length ? [`<button class="btn btn-ghost ${mapFilter === 'ideas' ? 'active' : ''}" data-tp="map-filter" data-id="ideas"><span class="tp-chip-dot" style="background:${IDEA_COLOR}"></span>Ideias</button>`] : [])
+      .concat(allStops().some(x => x.fav) ? [`<button class="btn btn-ghost ${mapFilter === 'fav' ? 'active' : ''}" data-tp="map-filter" data-id="fav"><span class="tp-fav-mark">${HEART}</span>Favoritos</button>`] : []);
     $('tp-days').innerHTML = `
       <div class="tp-days-head">
         <div class="filter-row">${chips.join('')}</div>
@@ -12106,13 +12131,46 @@ const renderTrip = (() => {
   }
 
   // ---------- mapa ----------
-  function pinIcon(color, label, hollow) {
+  function pinIcon(color, label, hollow, fav, selected) {
     const fill = hollow ? '#ffffff' : color;
     const text = hollow ? color : '#ffffff';
+    const heart = fav
+      ? '<g transform="translate(17 -5)"><circle cx="6" cy="6" r="7" fill="#fff"/><path d="M6 10.6S1.8 8 .9 5.5C.2 3.6 1.4 1.5 3.4 1.5c1.1 0 1.9.6 2.6 1.6.7-1 1.5-1.6 2.6-1.6 2 0 3.2 2.1 2.5 4C10.2 8 6 10.6 6 10.6z" fill="#e11d48"/></g>'
+      : '';
     return L.divIcon({
-      className: 'tp-pin', iconSize: [28, 38], iconAnchor: [14, 37], popupAnchor: [0, -32],
-      html: `<svg width="28" height="38" viewBox="0 0 28 38"><path d="M14 1.5C7 1.5 1.5 7 1.5 13.8 1.5 23 14 36.5 14 36.5S26.5 23 26.5 13.8C26.5 7 21 1.5 14 1.5z" fill="${fill}" stroke="${color}" stroke-width="2"/><text x="14" y="18" text-anchor="middle" font-size="11" font-weight="700" fill="${text}" font-family="DM Sans, sans-serif">${escapeHTML(label)}</text></svg>`,
+      className: 'tp-pin' + (selected ? ' is-selected' : ''), iconSize: [28, 38], iconAnchor: [14, 37], popupAnchor: [0, -32],
+      html: `<svg width="28" height="38" viewBox="0 0 28 38" style="--tp-pin-color:${color}"><path d="M14 1.5C7 1.5 1.5 7 1.5 13.8 1.5 23 14 36.5 14 36.5S26.5 23 26.5 13.8C26.5 7 21 1.5 14 1.5z" fill="${fill}" stroke="${color}" stroke-width="2"/><text x="14" y="18" text-anchor="middle" font-size="11" font-weight="700" fill="${text}" font-family="DM Sans, sans-serif">${escapeHTML(label)}</text>${heart}</svg>`,
     });
+  }
+
+  // Destaca o lugar selecionado (pino maior com anel) e a linha na lista
+  function selectKey(key) {
+    const prev = selectedKey && markerByKey.get(selectedKey);
+    if (prev) { prev.m.setIcon(prev.icon(false)); prev.m.setZIndexOffset(prev.z || 0); }
+    selectedKey = key;
+    const cur = key && markerByKey.get(key);
+    if (cur) {
+      cur.m.setIcon(cur.icon(true));
+      cur.m.setZIndexOffset(2000);
+      const el = cur.m.getElement();
+      if (el) el.style.setProperty('--tp-pin-color', cur.color);
+    }
+    page.querySelectorAll('.tp-stop.is-selected').forEach(r => r.classList.remove('is-selected'));
+    if (key && key.startsWith('s:')) {
+      const row = $('tp-stop-' + key.slice(2));
+      if (row) row.classList.add('is-selected');
+    }
+  }
+
+  function toggleFav(id) {
+    const st = findStop(id);
+    if (!st) return;
+    st.fav = !st.fav;
+    if (!st.fav && mapFilter === 'fav' && !allStops().some(x => x.fav)) mapFilter = 'all';
+    saveState();
+    renderDays();
+    renderMap(false);
+    flashStatus(st.fav ? `❤️ “${st.name}” nos favoritos` : `“${st.name}” saiu dos favoritos`);
   }
 
   function ensureMap() {
@@ -12129,6 +12187,8 @@ const renderTrip = (() => {
     map.on('focus', () => map.scrollWheelZoom.enable());
     map.on('blur', () => map.scrollWheelZoom.disable());
     map.on('popupopen', wirePopup);
+    map.on('click', () => selectKey(null));
+    setupMapResize();
     map.on('moveend', () => {
       if (!activeCat || !catBounds) return;
       if (!catBounds.contains(map.getBounds())) {
@@ -12142,10 +12202,14 @@ const renderTrip = (() => {
   function popupHTML(p, resultIdx) {
     const sub = [p.planned, p.time, p.category, p.address].filter(Boolean).join(' · ');
     const actions = resultIdx === null
-      ? `<div class="tp-popup-actions"><a href="${gmapsPlaceURL(p)}" target="_blank" rel="noopener">Abrir no Google Maps ↗</a></div>`
+      ? `<div class="tp-popup-actions">
+           <button class="tp-popup-fav ${p.fav ? 'is-on' : ''}" data-tp-popup-fav="${p.id}">${p.fav ? '♥ Favorito' : '♡ Favoritar'}</button>
+           <a href="${gmapsPlaceURL(p)}" target="_blank" rel="noopener">Google Maps ↗</a>
+         </div>`
       : `<select data-tp-popup-target>${targetOptions(validTarget())}</select>
          <div class="tp-popup-actions">
            <button data-tp-popup-add="${resultIdx}">${isPlanned(p) ? 'Adicionar de novo' : 'Adicionar ao roteiro'}</button>
+           <button class="tp-popup-fav" data-tp-popup-add="${resultIdx}" data-fav="1" title="Adicionar já como favorito">♡</button>
            <a href="${gmapsPlaceURL(p)}" target="_blank" rel="noopener">Google Maps ↗</a>
          </div>`;
     return `<div class="tp-popup"><div class="tp-popup-name">${escapeHTML(p.name)}</div>${sub ? `<div class="tp-popup-sub">${escapeHTML(sub)}</div>` : '<div style="height:8px"></div>'}${actions}</div>`;
@@ -12153,20 +12217,26 @@ const renderTrip = (() => {
 
   function wirePopup(e) {
     const el = e.popup.getElement();
-    const btn = el && el.querySelector('[data-tp-popup-add]');
-    if (!btn) return;
-    btn.onclick = () => {
-      const r = results[Number(btn.dataset.tpPopupAdd)];
-      const target = el.querySelector('[data-tp-popup-target]').value;
-      if (!r || !addStop(target, r)) return;
-      map.closePopup();
-      renderDays();
-      renderResults();
-      renderHeader();
-      renderMap(false);
-      const label = target === 'ideas' ? 'Ideias' : `Dia ${T().days.findIndex(d => d.id === target) + 1}`;
-      flashStatus(`“${r.name}” adicionado em ${label}`);
-    };
+    if (!el) return;
+    const favBtn = el.querySelector('[data-tp-popup-fav]');
+    if (favBtn) favBtn.onclick = () => { map.closePopup(); toggleFav(favBtn.dataset.tpPopupFav); };
+    el.querySelectorAll('[data-tp-popup-add]').forEach(btn => {
+      btn.onclick = () => {
+        const r = results[Number(btn.dataset.tpPopupAdd)];
+        const target = el.querySelector('[data-tp-popup-target]').value;
+        const stop = r && addStop(target, r);
+        if (!stop) return;
+        if (btn.dataset.fav) { stop.fav = true; saveState(); }
+        map.closePopup();
+        selectedKey = 's:' + stop.id;
+        renderDays();
+        renderResults();
+        renderHeader();
+        renderMap(false);
+        const label = target === 'ideas' ? 'Ideias' : `Dia ${T().days.findIndex(d => d.id === target) + 1}`;
+        flashStatus(`${stop.fav ? '❤️ ' : ''}“${r.name}” adicionado em ${label}`);
+      };
+    });
   }
 
   function renderMap(fit) {
@@ -12175,35 +12245,106 @@ const renderTrip = (() => {
     planLayer.clearLayers();
     resultsLayer.clearLayers();
     stopMarkers.clear();
+    markerByKey.clear();
     const pts = [];
+    const favOnly = mapFilter === 'fav';
+    const track = (key, m, color, icon, z) => {
+      markerByKey.set(key, { m, color, icon, z });
+      m.on('click', () => selectKey(key));
+    };
     const groups = t.days.map((d, i) => ({ id: d.id, stops: d.stops, color: COLORS[i % COLORS.length], label: `Dia ${i + 1}${d.title ? ' — ' + d.title : ''}` }));
     groups.push({ id: 'ideas', stops: t.ideas, color: IDEA_COLOR, label: 'Ideias', idea: true });
     groups.forEach(g => {
-      if (mapFilter !== 'all' && mapFilter !== g.id) return;
+      if (mapFilter !== 'all' && !favOnly && mapFilter !== g.id) return;
       const line = [];
       g.stops.forEach((s, j) => {
-        if (!hasCoords(s)) return;
-        const m = L.marker([s.lat, s.lng], { icon: pinIcon(g.color, g.idea ? '★' : String(j + 1)) });
+        if (!hasCoords(s) || (favOnly && !s.fav)) return;
+        const label = g.idea ? '★' : String(j + 1);
+        const icon = sel => pinIcon(g.color, label, false, s.fav, sel);
+        const z = s.fav ? 300 : 0;
+        const m = L.marker([s.lat, s.lng], { icon: icon(false), zIndexOffset: z });
+        track('s:' + s.id, m, g.color, icon, z);
         m.bindTooltip(escapeHTML(s.name), { direction: 'top', offset: [0, -30] });
         m.bindPopup(popupHTML({ ...s, planned: g.label }, null));
         planLayer.addLayer(m);
         stopMarkers.set(s.id, m);
         line.push([s.lat, s.lng]);
       });
-      if (!g.idea && line.length > 1) {
+      if (!g.idea && !favOnly && line.length > 1) {
         planLayer.addLayer(L.polyline(line, { color: g.color, weight: 3, opacity: 0.55, dashArray: '6 8' }));
       }
       pts.push(...line);
     });
     results.forEach((r, i) => {
-      const m = L.marker([r.lat, r.lng], { icon: pinIcon(RESULT_COLOR, '+', true), zIndexOffset: 500 });
+      const icon = sel => pinIcon(RESULT_COLOR, '+', true, false, sel);
+      const m = L.marker([r.lat, r.lng], { icon: icon(false), zIndexOffset: 500 });
+      track('r:' + i, m, RESULT_COLOR, icon, 500);
       m.bindTooltip(escapeHTML(r.name), { direction: 'top', offset: [0, -30] });
       m.bindPopup(popupHTML(r, i));
       resultsLayer.addLayer(m);
       r.marker = m;
     });
+    if (selectedKey && markerByKey.has(selectedKey)) selectKey(selectedKey);
+    else if (selectedKey && selectedKey.startsWith('r:')) selectedKey = null;
     if (fit) fitTo(results.length && !activeCat ? results.map(r => [r.lat, r.lng]) : pts);
     setTimeout(() => map.invalidateSize(), 60);
+  }
+
+  // Altura do mapa ajustável pela alça inferior, sempre dentro de limites
+  // (nunca menor que 240px nem maior que a área visível disponível).
+  const MAP_H_KEY = 'orbita_tp_map_h';
+  function mapHeightLimits() {
+    const mobile = window.innerWidth <= 900;
+    return { min: 240, max: Math.max(300, Math.round(window.innerHeight * (mobile ? 0.7 : 1) - (mobile ? 0 : 150))), def: mobile ? 360 : 480 };
+  }
+  function setMapHeight(h, persist) {
+    const el = $('tp-map');
+    const { min, max } = mapHeightLimits();
+    const v = Math.round(Math.min(max, Math.max(min, h)));
+    el.style.height = v + 'px';
+    if (map) map.invalidateSize();
+    if (persist) { try { localStorage.setItem(MAP_H_KEY, String(v)); } catch {} }
+    return v;
+  }
+  function setupMapResize() {
+    const handle = $('tp-map-resize');
+    let saved = null;
+    try { saved = Number(localStorage.getItem(MAP_H_KEY)) || null; } catch {}
+    if (saved) setMapHeight(saved, false);
+    let startY = 0, startH = 0;
+    const onMove = e => setMapHeight(startH + (e.clientY - startY), false);
+    const onUp = e => {
+      handle.classList.remove('is-dragging');
+      handle.releasePointerCapture && handle.releasePointerCapture(e.pointerId);
+      handle.removeEventListener('pointermove', onMove);
+      handle.removeEventListener('pointerup', onUp);
+      handle.removeEventListener('pointercancel', onUp);
+      setMapHeight($('tp-map').offsetHeight, true);
+    };
+    handle.addEventListener('pointerdown', e => {
+      e.preventDefault();
+      startY = e.clientY;
+      startH = $('tp-map').offsetHeight;
+      handle.classList.add('is-dragging');
+      handle.setPointerCapture && handle.setPointerCapture(e.pointerId);
+      handle.addEventListener('pointermove', onMove);
+      handle.addEventListener('pointerup', onUp);
+      handle.addEventListener('pointercancel', onUp);
+    });
+    handle.addEventListener('dblclick', () => {
+      $('tp-map').style.height = '';
+      try { localStorage.removeItem(MAP_H_KEY); } catch {}
+      map.invalidateSize();
+    });
+    handle.addEventListener('keydown', e => {
+      if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
+      e.preventDefault();
+      setMapHeight($('tp-map').offsetHeight + (e.key === 'ArrowDown' ? 40 : -40), true);
+    });
+    // Se a janela encolher, o mapa volta para dentro do limite
+    window.addEventListener('resize', () => {
+      if ($('tp-map').style.height) setMapHeight($('tp-map').offsetHeight, false);
+    });
   }
 
   function fitTo(points) {
@@ -12325,6 +12466,7 @@ const renderTrip = (() => {
     if (!r || !ensureMap()) return;
     showMapOnMobile();
     map.setView([r.lat, r.lng], 16);
+    selectKey('r:' + i);
     if (r.marker) r.marker.openPopup();
   }
 
@@ -12538,8 +12680,8 @@ const renderTrip = (() => {
       case 'map-filter': {
         mapFilter = id;
         renderDays(); renderMap(false);
-        const g = id === 'all' ? null : stopsOf(id);
-        const pts = (g || t.ideas.concat(...t.days.map(d => d.stops))).filter(hasCoords).map(s => [s.lat, s.lng]);
+        const g = id === 'all' ? allStops() : id === 'fav' ? allStops().filter(x => x.fav) : (stopsOf(id) || []);
+        const pts = g.filter(hasCoords).map(s => [s.lat, s.lng]);
         fitTo(pts);
         if (id !== 'all') showMapOnMobile();
         break;
@@ -12550,9 +12692,11 @@ const renderTrip = (() => {
         if (!m) return;
         showMapOnMobile();
         map.setView(m.getLatLng(), Math.max(map.getZoom(), 15));
+        selectKey('s:' + id);
         m.openPopup();
         break;
       }
+      case 'stop-fav': toggleFav(id); break;
       case 'stop-up':
       case 'stop-down': {
         const arr = stopsOf(target);
@@ -12589,7 +12733,9 @@ const renderTrip = (() => {
         const r = results[Number(el.dataset.i)];
         const sel = page.querySelector('[data-tp-target]');
         const tgt = sel ? sel.value : validTarget();
-        if (!r || !addStop(tgt, r)) return;
+        const added = r && addStop(tgt, r);
+        if (!added) return;
+        selectedKey = 's:' + added.id;
         renderDays(); renderHeader(); renderResults(); renderMap(false);
         const label = tgt === 'ideas' ? 'Ideias' : `Dia ${t.days.findIndex(d => d.id === tgt) + 1}`;
         flashStatus(`“${r.name}” adicionado em ${label}`);
