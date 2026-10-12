@@ -4002,6 +4002,56 @@
   .tp-file-read { border: 1px solid var(--line); background: var(--bg); color: var(--ink-soft); border-radius: 7px; padding: 4px 8px; font: 600 11px 'DM Sans', sans-serif; cursor: pointer; white-space: nowrap; }
   .tp-file-read:hover { border-color: var(--ink); color: var(--ink); }
   /* Documentos */
+  /* Pôsteres */
+  .tp-row { display: grid; grid-auto-flow: column; grid-auto-columns: 250px; gap: 14px; overflow-x: auto; padding: 4px 2px 14px; scroll-snap-type: x mandatory; scrollbar-width: thin; }
+  .tp-row.is-grid { grid-auto-flow: row; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); grid-auto-columns: unset; overflow: visible; }
+  .tp-poster { scroll-snap-align: start; cursor: pointer; border-radius: 12px; outline: none; min-width: 0; }
+  .tp-poster:focus-visible .tp-poster-cover, .tp-poster:hover .tp-poster-cover { transform: scale(1.03); box-shadow: 0 10px 26px rgba(0,0,0,0.22); }
+  .tp-poster-cover { position: relative; aspect-ratio: 16 / 10; border-radius: 12px; overflow: hidden; background: linear-gradient(135deg, var(--c1), var(--c2)) center / cover no-repeat; transition: transform 0.18s ease, box-shadow 0.18s ease; box-shadow: var(--shadow-sm); }
+  .tp-poster-cover.has-photo { background-size: cover; background-position: top center; }
+  .tp-poster-cover.has-photo .tp-poster-art { display: none; }
+  .tp-poster-cover.has-photo::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,0) 55%, rgba(0,0,0,0.35)); }
+  .tp-poster-art { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #fff; text-align: center; padding: 14px; }
+  .tp-art-big { font-size: 34px; font-weight: 300; letter-spacing: 0.02em; display: flex; align-items: center; gap: 10px; }
+  .tp-art-big span { font-size: 18px; opacity: 0.8; }
+  .tp-art-mid { font-size: 20px; font-weight: 600; line-height: 1.2; overflow-wrap: anywhere; }
+  .tp-art-kicker { font: 700 11px 'DM Sans', sans-serif; letter-spacing: 0.3em; opacity: 0.8; margin-bottom: 4px; }
+  .tp-art-file { font: 800 22px 'DM Sans', sans-serif; color: #b91c1c; }
+  .tp-poster-badge { position: absolute; left: 8px; top: 8px; z-index: 1; background: rgba(0,0,0,0.55); color: #fff; font: 600 10px 'DM Sans', sans-serif; letter-spacing: 0.04em; padding: 3px 7px; border-radius: 6px; backdrop-filter: blur(4px); }
+  .tp-poster-warn { position: absolute; right: 8px; top: 8px; z-index: 1; background: #dc2626; color: #fff; font: 700 10px 'DM Sans', sans-serif; padding: 3px 7px; border-radius: 6px; }
+  .tp-poster-clip { position: absolute; right: 8px; bottom: 8px; z-index: 1; font-size: 13px; background: rgba(255,255,255,0.85); border-radius: 6px; padding: 1px 5px; }
+  .tp-poster-cap { padding: 8px 2px 0; min-width: 0; }
+  .tp-poster-title { font-weight: 700; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tp-poster-line { font-size: 12px; color: var(--ink-faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 1px; }
+  .tp-poster-line.is-strong { color: var(--ink-soft); font-weight: 600; }
+  .tp-poster-copy { display: flex; gap: 6px; align-items: center; margin-top: 6px; }
+  /* Banner do próximo voo */
+  .tp-billboard { position: relative; border-radius: 16px; overflow: hidden; min-height: 260px; margin: 6px 0 8px; background: linear-gradient(120deg, var(--c1), var(--c2)) center / cover no-repeat; color: #fff; box-shadow: var(--shadow-md); }
+  .tp-billboard.has-photo { background-size: cover; background-position: center top; }
+  .tp-billboard-shade { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(0,0,0,0.78) 0%, rgba(0,0,0,0.45) 55%, rgba(0,0,0,0.15) 100%); }
+  .tp-billboard-body { position: relative; padding: 24px 28px; display: flex; flex-direction: column; gap: 12px; max-width: 640px; }
+  .tp-billboard-kicker { font: 700 11px 'DM Sans', sans-serif; letter-spacing: 0.2em; text-transform: uppercase; opacity: 0.85; }
+  .tp-billboard-route { display: flex; align-items: center; gap: 18px; }
+  .tp-bb-code { font-size: 52px; font-weight: 300; line-height: 1; }
+  .tp-bb-city { font-size: 12px; opacity: 0.8; margin-top: 4px; }
+  .tp-bb-plane { font-size: 24px; opacity: 0.8; }
+  .tp-billboard-when { font-size: 15px; font-weight: 600; }
+  .tp-billboard-actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .tp-bb-loc { display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.14); border: 1px solid rgba(255,255,255,0.25); border-radius: 10px; padding: 8px 12px; backdrop-filter: blur(6px); }
+  .tp-bb-loc span { font: 600 10px 'DM Sans', sans-serif; letter-spacing: 0.12em; text-transform: uppercase; opacity: 0.8; }
+  .tp-bb-loc b { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 22px; letter-spacing: 0.06em; }
+  .tp-bb-loc.is-small b { font-size: 15px; }
+  .tp-billboard .tp-copy { background: #fff; color: #111; border-color: #fff; }
+  .tp-bb-more { background: #fff; color: #111; border: none; border-radius: 10px; padding: 10px 16px; font: 700 13px 'DM Sans', sans-serif; cursor: pointer; }
+  .tp-doc-view .tp-pass, .tp-doc-view .tp-doc-card { box-shadow: none; border: none; padding: 0; }
+  @media (max-width: 900px) {
+    .tp-row { grid-auto-columns: 72vw; }
+    .tp-row.is-grid { grid-template-columns: 1fr 1fr; }
+    .tp-billboard-body { padding: 18px; }
+    .tp-bb-code { font-size: 40px; }
+    .tp-art-big { font-size: 28px; }
+  }
+  @media (max-width: 480px) { .tp-row.is-grid { grid-template-columns: 1fr; } }
   .tp-doc-filter { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 4px; }
   .tp-doc-filter .btn-ghost { padding: 7px 12px; font-size: 12px; }
   .tp-doc-filter .btn-ghost.is-empty:not(.active) { opacity: 0.6; }
@@ -4935,6 +4985,16 @@
     <div class="modal-actions">
       <button class="btn btn-ghost" data-close-modal>Cancelar</button>
       <button class="btn" id="trip-save">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Detalhes do documento -->
+<div class="modal-bg" id="trip-doc-view-modal">
+  <div class="modal tp-doc-view" style="max-width:560px;max-height:90vh;overflow-y:auto">
+    <div id="trip-doc-view-body"></div>
+    <div class="modal-actions" style="justify-content:flex-end">
+      <button class="btn btn-ghost" data-close-modal>Fechar</button>
     </div>
   </div>
 </div>
@@ -13191,6 +13251,205 @@ const renderTrip = (() => {
   }
 
   // ----- render -----
+  // ----- pôsteres (estilo Netflix): capa + legenda com os dados -----
+  const COVER_COLORS = {
+    flight: ['#1e3a8a', '#3b82f6'], transport: ['#065f46', '#10b981'], hotel: ['#9a3412', '#f59e0b'],
+    insurance: ['#4c1d95', '#a78bfa'], passport: ['#7f1d1d', '#ef4444'], contact: ['#1f2937', '#64748b'], other: ['#0f172a', '#475569'],
+  };
+  let viewingDocId = null;
+
+  function coverFile(c) {
+    const files = D().files.filter(f => f.cardId === c.id);
+    return files.find(f => (f.mime || '').startsWith('image/')) || files.find(f => f.mime === 'application/pdf') || null;
+  }
+  // Texto grande da capa gerada (quando não há print/PDF anexado)
+  function coverArt(c) {
+    const f = c.fields || {};
+    if (c.type === 'flight') {
+      const a = airport(f.from), b = airport(f.to);
+      return `<div class="tp-art-big">${escapeHTML(a.code || cityOf(f.from) || '—')}<span>✈</span>${escapeHTML(b.code || cityOf(f.to) || '—')}</div>`;
+    }
+    if (c.type === 'transport') return `<div class="tp-art-mid">${escapeHTML([cityOf(f.from), cityOf(f.to)].filter(Boolean).join(' → ') || f.company || 'Transporte')}</div>`;
+    if (c.type === 'passport') return `<div class="tp-art-kicker">PASSAPORTE</div><div class="tp-art-mid">${escapeHTML(f.country || '')}</div>`;
+    return `<div class="tp-art-mid">${escapeHTML(cardTitle(c))}</div>`;
+  }
+  // Até 3 linhas de dados embaixo da capa
+  function captionLines(c) {
+    const f = c.fields || {};
+    const d = v => v ? fmtDay(v) : '';
+    switch (c.type) {
+      case 'flight': return [[d(f.date), f.time].filter(Boolean).join(' · '), f.locator && `Localizador ${f.locator}`, f.seat && `Assento ${f.seat}`];
+      case 'transport': return [[d(f.date), f.time].filter(Boolean).join(' · '), f.code && `Reserva ${f.code}`, f.seat && `Assento ${f.seat}`];
+      case 'hotel': return [[d(f.checkin), d(f.checkout)].filter(Boolean).join(' → '), f.confirmation && `Reserva ${f.confirmation}`, f.address];
+      case 'insurance': return [f.policy && `Apólice ${f.policy}`, f.phone && `Emergência ${f.phone}`, f.coverage];
+      case 'passport': return [f.number && `Nº ${f.number}`, f.expiry && `Válido até ${fmtDate(f.expiry)}`];
+      case 'contact': return [f.phone, f.relation];
+      default: return [f.value, f.notes];
+    }
+  }
+  function copyKey(c) {
+    const f = c.fields || {};
+    return { flight: f.locator, transport: f.code, hotel: f.confirmation, insurance: f.policy, passport: f.number, contact: f.phone, other: f.value }[c.type] || '';
+  }
+  function passportWarn(c) {
+    const t = T(), f = c.fields || {};
+    if (c.type !== 'passport' || !f.expiry) return false;
+    return f.expiry < addDaysISO(t.end || t.start || localISO(new Date()), 90);
+  }
+  function coverAttrs(file) {
+    return file ? `data-cover-path="${escapeHTML(file.path)}" data-cover-mime="${escapeHTML(file.mime || '')}"` : '';
+  }
+  function posterHTML(c) {
+    const def = DOC_TYPES[c.type] || DOC_TYPES.other;
+    const [c1, c2] = COVER_COLORS[c.type] || COVER_COLORS.other;
+    const file = coverFile(c);
+    const lines = captionLines(c).filter(Boolean).slice(0, 3);
+    const key = copyKey(c);
+    return `
+      <div class="tp-poster" data-doc-view="${c.id}" tabindex="0" role="button" aria-label="Ver ${escapeHTML(cardTitle(c))}">
+        <div class="tp-poster-cover" style="--c1:${c1};--c2:${c2}" ${coverAttrs(file)}>
+          <div class="tp-poster-art">${coverArt(c)}</div>
+          <span class="tp-poster-badge">${def.emoji} ${escapeHTML(def.label)}</span>
+          ${passportWarn(c) ? '<span class="tp-poster-warn">Validade curta</span>' : ''}
+          ${file ? `<span class="tp-poster-clip" title="Tem arquivo anexado">📎</span>` : ''}
+        </div>
+        <div class="tp-poster-cap">
+          <div class="tp-poster-title">${escapeHTML(cardTitle(c))}</div>
+          ${lines.map((l, i) => `<div class="tp-poster-line ${i === 0 ? 'is-strong' : ''}">${escapeHTML(l)}</div>`).join('')}
+          ${key ? `<div class="tp-poster-copy">${copyBtn(key, 'código')}</div>` : ''}
+        </div>
+      </div>`;
+  }
+  // Destaque do topo (próximo voo), como o banner da Netflix
+  function billboardHTML(c) {
+    const f = c.fields || {};
+    const a = airport(f.from), b = airport(f.to);
+    const file = coverFile(c);
+    const [c1, c2] = COVER_COLORS.flight;
+    return `
+      <div class="tp-billboard" style="--c1:${c1};--c2:${c2}" ${coverAttrs(file)}>
+        <div class="tp-billboard-shade"></div>
+        <div class="tp-billboard-body">
+          <div class="tp-billboard-kicker">Próximo voo · ${escapeHTML(cardTitle(c))}</div>
+          <div class="tp-billboard-route">
+            <div><div class="tp-bb-code">${escapeHTML(a.code || cityOf(f.from) || '—')}</div><div class="tp-bb-city">${escapeHTML(a.name)}</div></div>
+            <div class="tp-bb-plane">✈</div>
+            <div><div class="tp-bb-code">${escapeHTML(b.code || cityOf(f.to) || '—')}</div><div class="tp-bb-city">${escapeHTML(b.name)}</div></div>
+          </div>
+          <div class="tp-billboard-when">${escapeHTML([fmtDate(f.date), f.time].filter(Boolean).join(' · '))}${f.seat ? ` · Assento ${escapeHTML(f.seat)}` : ''}${f.terminal ? ` · Terminal ${escapeHTML(f.terminal)}` : ''}</div>
+          <div class="tp-billboard-actions">
+            ${f.locator ? `<div class="tp-bb-loc"><span>Localizador</span><b>${escapeHTML(f.locator)}</b>${copyBtn(f.locator, 'localizador')}</div>` : ''}
+            ${f.ticket ? `<div class="tp-bb-loc is-small"><span>Bilhete</span><b>${escapeHTML(f.ticket)}</b>${copyBtn(f.ticket, 'nº do bilhete')}</div>` : ''}
+            <button class="tp-bb-more" data-doc-view="${c.id}">Ver detalhes</button>
+          </div>
+        </div>
+      </div>`;
+  }
+  function filePosterHTML(f) {
+    const isImg = (f.mime || '').startsWith('image/');
+    const off = offlineSet.has(f.path);
+    return `
+      <div class="tp-poster is-file" data-doc-open="${f.id}" tabindex="0" role="button" aria-label="Abrir ${escapeHTML(f.name)}">
+        <div class="tp-poster-cover" style="--c1:#e5e7eb;--c2:#f3f4f6" ${coverAttrs(f)}>
+          <div class="tp-poster-art"><div class="tp-art-file">${isImg ? '🖼️' : 'PDF'}</div></div>
+        </div>
+        <div class="tp-poster-cap">
+          <div class="tp-poster-title">${escapeHTML(f.name)}</div>
+          <div class="tp-poster-line">${fmtSize(f.size || 0)}${off ? ' · <span class="tp-file-off">✓ offline</span>' : ''}</div>
+          <div class="tp-poster-copy">
+            <button class="tp-file-read" data-doc-file-read="${f.id}" title="Ler com IA e preencher os dados">✨ Ler</button>
+            <button class="tp-icon-btn tp-file-del" data-doc-file-del="${f.id}" title="Excluir arquivo" aria-label="Excluir arquivo">${ICON.x}</button>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  // Detalhes completos do cartão (copiar, editar, anexos) num modal
+  function openDocView(id) {
+    const c = D().cards.find(x => x.id === id);
+    if (!c) return;
+    viewingDocId = id;
+    $('trip-doc-view-body').innerHTML = docCard(c, c.type === 'flight');
+    $('trip-doc-view-modal').classList.add('active');
+    hydrateThumbs($('trip-doc-view-body'));
+  }
+  function refreshDocView() {
+    if (!viewingDocId || !$('trip-doc-view-modal').classList.contains('active')) return;
+    const c = D().cards.find(x => x.id === viewingDocId);
+    if (!c) { $('trip-doc-view-modal').classList.remove('active'); viewingDocId = null; return; }
+    $('trip-doc-view-body').innerHTML = docCard(c, c.type === 'flight');
+    hydrateThumbs($('trip-doc-view-body'));
+  }
+
+  // ----- capas: print/foto anexado ou 1ª página do PDF (pdf.js) -----
+  const coverCache = new Map(); // path -> url (blob/data URL)
+  let pdfjsPromise = null;
+  function loadPdfJs() {
+    if (!pdfjsPromise) {
+      pdfjsPromise = new Promise((resolve, reject) => {
+        const base = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/';
+        const s = document.createElement('script');
+        s.src = base + 'pdf.min.js';
+        s.onload = async () => {
+          try {
+            // Worker via blob: o navegador não aceita Worker direto de outro domínio
+            const code = await (await fetch(base + 'pdf.worker.min.js')).text();
+            window.pdfjsLib.GlobalWorkerOptions.workerSrc = URL.createObjectURL(new Blob([code], { type: 'text/javascript' }));
+          } catch (e) { console.warn('pdf.js worker:', e); }
+          resolve(window.pdfjsLib);
+        };
+        s.onerror = () => { pdfjsPromise = null; reject(new Error('pdf.js não carregou')); };
+        document.head.appendChild(s);
+      });
+    }
+    return pdfjsPromise;
+  }
+  async function fileBlob(path) {
+    let blob = await idbGet(path);
+    if (blob) return blob;
+    const { data, error } = await sb.storage.from(DOC_BUCKET).download(path);
+    if (error || !data) throw error || new Error('download falhou');
+    idbPut(path, data); offlineSet.add(path);
+    return data;
+  }
+  async function coverUrl(path, mime) {
+    if (coverCache.has(path)) return coverCache.get(path);
+    let url = null;
+    if ((mime || '').startsWith('image/')) {
+      const blob = offlineSet.has(path) ? await idbGet(path) : null;
+      url = blob ? URL.createObjectURL(blob) : await signedUrl(path);
+    } else if (mime === 'application/pdf') {
+      const saved = await idbGet('thumb:' + path);
+      if (saved) url = saved;
+      else {
+        const lib = await loadPdfJs();
+        const buf = await (await fileBlob(path)).arrayBuffer();
+        const pdf = await lib.getDocument({ data: buf }).promise;
+        const pg = await pdf.getPage(1);
+        const vp0 = pg.getViewport({ scale: 1 });
+        const vp = pg.getViewport({ scale: 520 / vp0.width });
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.round(vp.width); canvas.height = Math.round(vp.height);
+        await pg.render({ canvasContext: canvas.getContext('2d'), viewport: vp }).promise;
+        url = canvas.toDataURL('image/jpeg', 0.8);
+        idbPut('thumb:' + path, url);
+        pdf.destroy();
+      }
+    }
+    if (url) coverCache.set(path, url);
+    return url;
+  }
+  async function hydrateCovers(root) {
+    for (const el of (root || $('tp-view-docs')).querySelectorAll('[data-cover-path]')) {
+      if (el.dataset.coverDone) continue;
+      el.dataset.coverDone = '1';
+      try {
+        const url = await coverUrl(el.dataset.coverPath, el.dataset.coverMime);
+        if (url) { el.style.backgroundImage = `url("${url}")`; el.classList.add('has-photo'); }
+      } catch (e) { console.warn('Capa não gerada:', e); }
+    }
+  }
+
   const DOC_FILTER_KEY = 'orbita_trip_doc_filter';
   let docFilter = (() => { try { const v = localStorage.getItem(DOC_FILTER_KEY); return v && (v === 'all' || DOC_TYPES[v]) ? v : 'all'; } catch { return 'all'; } })();
   // Título de seção com o botão "+ Adicionar" no canto direito
@@ -13226,15 +13485,15 @@ const renderTrip = (() => {
           <div class="tp-doc-empty-title">Guarde aqui tudo que você vai precisar mostrar ou digitar na viagem</div>
           <div>Use “✨ Ler print ou documento” para a IA preencher, ou toque num tipo acima e em “+ Adicionar”.</div>
         </div>` : ''}
-      ${docFilter === 'all' && nextFlight ? `${sectionHead('flight', 'Próximo voo', cards.some(c => c.type === 'flight' && c !== nextFlight))}${docCard(nextFlight, true)}` : ''}
+      ${(docFilter === 'all' || docFilter === 'flight') && nextFlight ? billboardHTML(nextFlight) : ''}
       ${(docFilter === 'all' ? DOC_ORDER : [docFilter]).map(type => {
         // No filtro de voos o próximo voo aparece em destaque, junto dos outros
         const inFilter = docFilter !== 'all';
-        const list = cards.filter(c => c.type === type && (inFilter || c !== nextFlight));
+        const list = cards.filter(c => c.type === type);
         if (!list.length && !inFilter) return '';
-        const title = `${DOC_TYPES[type].emoji} ${DOC_TYPES[type].label}${!inFilter && type === 'flight' && nextFlight ? ' · outros' : ''}`;
+        const title = `${DOC_TYPES[type].emoji} ${DOC_TYPES[type].label}`;
         return `${sectionHead(type, title)}
-          ${list.length ? `<div class="tp-doc-grid">${list.map(c => docCard(c, inFilter && c === nextFlight)).join('')}</div>`
+          ${list.length ? `<div class="tp-row ${inFilter ? 'is-grid' : ''}">${list.map(posterHTML).join('')}</div>`
             : `<div class="tp-doc-empty is-small">Nada em ${escapeHTML(DOC_TYPES[type].label.toLowerCase())} ainda. Leia um print ou documento com a IA, ou toque em “+ Adicionar”.</div>`}`;
       }).join('')}
       ${docFilter !== 'all' ? '' : `<div class="tp-doc-section-title tp-doc-files-head">
@@ -13245,10 +13504,12 @@ const renderTrip = (() => {
         </span>
       </div>
       ${uploadingCount ? `<div class="tp-doc-uploading">Enviando ${uploadingCount} ${uploadingCount === 1 ? 'arquivo' : 'arquivos'}…</div>` : ''}
-      ${generalFiles.length ? `<div class="tp-file-grid">${generalFiles.map(fileTile).join('')}</div>`
+      ${generalFiles.length ? `<div class="tp-row">${generalFiles.map(filePosterHTML).join('')}</div>`
         : `<div class="tp-doc-note">PDF ou foto de passaporte, cartões de embarque, apólice, reservas (até 10 MB cada). Ficam privados na sua conta.</div>`}`}`;
     hydrateThumbs();
+    hydrateCovers();
     renderScan();
+    refreshDocView();
   }
 
   function docCard(c, hero) {
@@ -13343,8 +13604,8 @@ const renderTrip = (() => {
   }
 
   // Miniaturas: usa a cópia offline se houver, senão link temporário
-  async function hydrateThumbs() {
-    for (const el of $('tp-view-docs').querySelectorAll('[data-thumb]')) {
+  async function hydrateThumbs(root) {
+    for (const el of (root || $('tp-view-docs')).querySelectorAll('[data-thumb]')) {
       const path = el.dataset.thumb;
       try {
         let url = null;
@@ -13826,9 +14087,11 @@ const renderTrip = (() => {
   $('tp-view-docs').addEventListener('change', e => {
     if (e.target.matches('[data-scan-link]') && scan) scan.link = e.target.checked;
   });
-  $('tp-view-docs').addEventListener('click', async e => {
-    const el = e.target.closest('[data-doc-filter],[data-doc-new],[data-doc-edit],[data-doc-del],[data-doc-attach],[data-doc-copy],[data-doc-file-del],[data-doc-file-read],[data-doc-open],[data-doc-offline-all],[data-doc-scan],[data-scan-toggle],[data-scan-apply],[data-scan-dismiss]');
+  async function onDocsClick(e) {
+    const el = e.target.closest('[data-doc-view],[data-doc-filter],[data-doc-new],[data-doc-edit],[data-doc-del],[data-doc-attach],[data-doc-copy],[data-doc-file-del],[data-doc-file-read],[data-doc-open],[data-doc-offline-all],[data-doc-scan],[data-scan-toggle],[data-scan-apply],[data-scan-dismiss]');
     if (!el) return;
+    // closest() já pega o alvo mais interno: botões dentro do pôster (copiar) não abrem detalhes
+    if (el.matches('[data-doc-view]')) { openDocView(el.dataset.docView); return; }
     if (el.matches('[data-doc-filter]')) {
       docFilter = el.dataset.docFilter;
       try { localStorage.setItem(DOC_FILTER_KEY, docFilter); } catch {}
@@ -13853,6 +14116,11 @@ const renderTrip = (() => {
       for (const f of docs.files) { try { await cacheOffline(f); } catch (err) { console.warn(err); } }
       renderDocs();
     }
+  }
+  $('tp-view-docs').addEventListener('click', onDocsClick);
+  $('trip-doc-view-body').addEventListener('click', onDocsClick);
+  $('tp-view-docs').addEventListener('keydown', e => {
+    if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('[data-doc-view],[data-doc-open]')) { e.preventDefault(); e.target.click(); }
   });
 
   // ---------- modal da viagem ----------
