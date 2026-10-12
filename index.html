@@ -18,6 +18,9 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="" defer></script>
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" integrity="sha384-MinO0mNliZ3vwppuPOUnGa+iq619pfMhLVUXfC4LHwSCvF9H+6P/KO4Q7qBOYV5V" crossorigin="" />
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js" integrity="sha384-SYKAG6cglRMN0RVvhNeBY0r3FYKNOJtznwA0v7B5Vp9tr31xAHsZC0DqkQ/pZDmj" crossorigin="" defer></script>
+<script src="https://unpkg.com/@maplibre/maplibre-gl-leaflet@0.0.22/leaflet-maplibre-gl.js" integrity="sha384-4CB9Vtol9LN6lGgBCvmPLbUEZwilrqIvPieSRurgAXAB7FVJaLS9n8WyAIA5wjQ+" crossorigin="" defer></script>
 <style>
   /* CRITICAL: estilos que precisam estar disponíveis ANTES do CSS principal */
   @keyframes spin { to { transform: rotate(360deg); } }
@@ -4025,12 +4028,16 @@
   .tp-cats .btn-ghost { padding: 6px 12px; font-size: 12px; white-space: nowrap; flex-shrink: 0; }
   .tp-map-wrap { position: relative; border: 1px solid var(--line); border-radius: 14px; overflow: hidden; box-shadow: var(--shadow-sm); }
   #tp-map { height: 480px; width: 100%; background: #f5f5f3; font-family: 'DM Sans', sans-serif; z-index: 0; }
-  .tp-map-wrap .leaflet-popup-content-wrapper { border-radius: 12px; box-shadow: 0 4px 16px rgba(0,0,0,0.15); }
-  .tp-map-wrap .leaflet-popup-content { margin: 12px 14px; }
+  .tp-map-wrap .maplibregl-popup { z-index: 4000; }
+  .tp-map-wrap .maplibregl-popup-content { border-radius: 12px; box-shadow: 0 4px 16px rgba(0,0,0,0.15); padding: 12px 14px; }
+  .tp-map-wrap .maplibregl-popup-close-button { font-size: 18px; padding: 2px 8px; color: #666; }
+  .tp-map-wrap .maplibregl-ctrl-group { border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.12); }
+  .tp-map-wrap .maplibregl-ctrl-group button { width: 32px; height: 32px; }
+  .tp-pin { cursor: pointer; }
   .tp-map-status { position: absolute; left: 50%; top: 12px; transform: translateX(-50%); z-index: 500; background: #fff; color: #111; border-radius: 999px; padding: 7px 14px; font-size: 12px; font-weight: 600; box-shadow: 0 2px 10px rgba(0,0,0,0.15); display: flex; gap: 8px; align-items: center; max-width: calc(100% - 24px); text-align: center; }
   .tp-map-status[hidden] { display: none; }
   .tp-map-status button { background: #111; color: #fff; border: none; border-radius: 999px; padding: 4px 10px; font: 600 12px 'DM Sans', sans-serif; cursor: pointer; white-space: nowrap; }
-  .tp-pin { background: transparent; border: none; }
+  .tp-pin { background: transparent; border: none; line-height: 0; }
   .tp-pin svg { display: block; overflow: visible; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3)); transform-origin: 50% 100%; transition: transform 0.15s ease; }
   .tp-pin.is-selected svg { transform: scale(1.35); filter: drop-shadow(0 3px 6px rgba(0,0,0,0.35)); }
   .tp-pin.is-selected::after { content: ''; position: absolute; left: 50%; bottom: -6px; width: 26px; height: 12px; margin-left: -13px; border-radius: 50%; border: 2px solid var(--tp-pin-color, #111); animation: tpPulse 1.4s ease-out infinite; pointer-events: none; }
@@ -7608,6 +7615,27 @@ const BASE_TILES = [
   },
 ];
 function addBaseTiles(leafletMap, idx = 0) {
+  // Preferência: mapa vetorial do OpenFreeMap (mesmo visual do mapa da Viagem)
+  if (idx === 0 && L.maplibreGL && typeof maplibregl !== 'undefined') {
+    let ok = false;
+    const dark = document.documentElement.classList.contains('theme-dark');
+    const vec = L.maplibreGL({
+      style: `https://tiles.openfreemap.org/styles/${dark ? 'dark' : 'liberty'}`,
+      attribution: '© <a href="https://openfreemap.org">OpenFreeMap</a> · © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    }).addTo(leafletMap);
+    const gl = vec.getMaplibreMap();
+    const fail = () => {
+      if (ok || !leafletMap.hasLayer(vec)) return;
+      console.warn('Mapa vetorial não carregou; usando tiles raster');
+      leafletMap.removeLayer(vec);
+      addBaseTiles(leafletMap, 0.5);
+    };
+    gl.once('load', () => { ok = true; });
+    gl.on('error', fail);
+    setTimeout(fail, 9000);
+    return vec;
+  }
+  idx = Math.floor(idx);
   const src = BASE_TILES[idx];
   const layer = L.tileLayer(src.url, src.options).addTo(leafletMap);
   if (idx + 1 < BASE_TILES.length) {
@@ -11893,10 +11921,10 @@ const renderTrip = (() => {
   let hideDone = false;
   let mapFilter = 'all';
   let lastTarget = null;
-  let map = null, planLayer = null, resultsLayer = null;
+  let map = null;
   const stopMarkers = new Map();
   let results = [], resultsLabel = '', activeCat = null, catBounds = null;
-  let searchTimer = null, searchSeq = 0, suggestIdx = -1;
+  let searchTimer = null, searchSeq = 0, suggestIdx = -1, searchCtrl = null;
   let selectedKey = null;            // 's:<stopId>' ou 'r:<índice do resultado>'
   const markerByKey = new Map();     // key -> { m, icon(selected) }
   const HEART = '<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.5"><path d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 4.5 6.8 4.5c2.1 0 3.6 1.1 5.2 3 1.6-1.9 3.1-3 5.2-3 3.8 0 5.9 3.9 4.4 7.3C19.5 16.4 12 21 12 21z"/></svg>';
@@ -12199,31 +12227,24 @@ const renderTrip = (() => {
       </div>`;
   }
 
-  // ---------- mapa ----------
-  function pinIcon(color, label, hollow, fav, selected) {
+  // ---------- mapa (MapLibre GL + OpenFreeMap, vetorial) ----------
+  // Pino em SVG; usado como elemento DOM dos marcadores do MapLibre.
+  function pinHTML(color, label, hollow, fav) {
     const fill = hollow ? '#ffffff' : color;
     const text = hollow ? color : '#ffffff';
     const heart = fav
       ? '<g transform="translate(17 -5)"><circle cx="6" cy="6" r="7" fill="#fff"/><path d="M6 10.6S1.8 8 .9 5.5C.2 3.6 1.4 1.5 3.4 1.5c1.1 0 1.9.6 2.6 1.6.7-1 1.5-1.6 2.6-1.6 2 0 3.2 2.1 2.5 4C10.2 8 6 10.6 6 10.6z" fill="#e11d48"/></g>'
       : '';
-    return L.divIcon({
-      className: 'tp-pin' + (selected ? ' is-selected' : ''), iconSize: [28, 38], iconAnchor: [14, 37], popupAnchor: [0, -32],
-      html: `<svg width="28" height="38" viewBox="0 0 28 38" style="--tp-pin-color:${color}"><path d="M14 1.5C7 1.5 1.5 7 1.5 13.8 1.5 23 14 36.5 14 36.5S26.5 23 26.5 13.8C26.5 7 21 1.5 14 1.5z" fill="${fill}" stroke="${color}" stroke-width="2"/><text x="14" y="18" text-anchor="middle" font-size="11" font-weight="700" fill="${text}" font-family="DM Sans, sans-serif">${escapeHTML(label)}</text>${heart}</svg>`,
-    });
+    return `<svg width="28" height="38" viewBox="0 0 28 38"><path d="M14 1.5C7 1.5 1.5 7 1.5 13.8 1.5 23 14 36.5 14 36.5S26.5 23 26.5 13.8C26.5 7 21 1.5 14 1.5z" fill="${fill}" stroke="${color}" stroke-width="2"/><text x="14" y="18" text-anchor="middle" font-size="11" font-weight="700" fill="${text}" font-family="DM Sans, sans-serif">${escapeHTML(label)}</text>${heart}</svg>`;
   }
 
   // Destaca o lugar selecionado (pino maior com anel) e a linha na lista
   function selectKey(key) {
     const prev = selectedKey && markerByKey.get(selectedKey);
-    if (prev) { prev.m.setIcon(prev.icon(false)); prev.m.setZIndexOffset(prev.z || 0); }
+    if (prev) { prev.el.classList.remove('is-selected'); prev.el.style.zIndex = prev.z; }
     selectedKey = key;
     const cur = key && markerByKey.get(key);
-    if (cur) {
-      cur.m.setIcon(cur.icon(true));
-      cur.m.setZIndexOffset(2000);
-      const el = cur.m.getElement();
-      if (el) el.style.setProperty('--tp-pin-color', cur.color);
-    }
+    if (cur) { cur.el.classList.add('is-selected'); cur.el.style.zIndex = 3000; }
     page.querySelectorAll('.tp-stop.is-selected').forEach(r => r.classList.remove('is-selected'));
     if (key && key.startsWith('s:')) {
       const row = $('tp-stop-' + key.slice(2));
@@ -12242,26 +12263,88 @@ const renderTrip = (() => {
     flashStatus(st.fav ? `❤️ “${st.name}” nos favoritos` : `“${st.name}” saiu dos favoritos`);
   }
 
+  // Estilo vetorial do OpenFreeMap (sem chave). Se não carregar, cai para
+  // tiles raster do OpenStreetMap para o mapa nunca ficar em branco.
+  const VECTOR_STYLE = () => `https://tiles.openfreemap.org/styles/${document.documentElement.classList.contains('theme-dark') ? 'dark' : 'liberty'}`;
+  const RASTER_STYLE = {
+    version: 8,
+    sources: { osm: { type: 'raster', tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'], tileSize: 256, maxzoom: 19, attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>' } },
+    layers: [{ id: 'osm', type: 'raster', source: 'osm' }],
+  };
+  let markers = [];          // marcadores atuais (para limpar a cada render)
+  let openPopup = null;
+  let styleReady = false;
+  let pendingRoutes = null;  // linhas a desenhar quando o estilo terminar de carregar
+
   function ensureMap() {
-    if (typeof L === 'undefined') { setTimeout(() => { if (tab === 'roteiro') renderMap(true); }, 200); return false; }
+    if (typeof maplibregl === 'undefined') { setTimeout(() => { if (tab === 'roteiro') renderMap(true); }, 200); return false; }
     if (map) return true;
-    map = L.map('tp-map', { zoomControl: true, scrollWheelZoom: false }).setView(EUROPE, 4);
-    addBaseTiles(map);
-    planLayer = L.layerGroup().addTo(map);
-    resultsLayer = L.layerGroup().addTo(map);
-    map.on('focus', () => map.scrollWheelZoom.enable());
-    map.on('blur', () => map.scrollWheelZoom.disable());
-    map.on('popupopen', wirePopup);
-    map.on('click', () => selectKey(null));
-    setupMapResize();
+    map = new maplibregl.Map({
+      container: 'tp-map',
+      style: VECTOR_STYLE(),
+      center: [EUROPE[1], EUROPE[0]],
+      zoom: 3,
+      attributionControl: { compact: true },
+      dragRotate: false,
+      pitchWithRotate: false,
+    });
+    map.touchZoomRotate.disableRotation();
+    map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-left');
+    // Scroll do mouse só dá zoom depois de clicar no mapa (não sequestra a rolagem da página)
+    map.scrollZoom.disable();
+    map.getCanvasContainer().addEventListener('mousedown', () => map.scrollZoom.enable());
+    map.getContainer().addEventListener('mouseleave', () => map.scrollZoom.disable());
+
+    let fellBack = false;
+    const fallback = () => {
+      if (fellBack || styleReady) return;
+      fellBack = true;
+      console.warn('Estilo vetorial não carregou; usando tiles raster do OpenStreetMap');
+      map.setStyle(RASTER_STYLE);
+    };
+    map.on('error', e => { if (!styleReady) fallback(e); });
+    setTimeout(fallback, 9000);
+    map.on('load', onStyleReady);
+    map.on('style.load', onStyleReady);
+
+    map.on('click', e => {
+      if (e.originalEvent && e.originalEvent.target.closest && e.originalEvent.target.closest('.tp-pin')) return;
+      selectKey(null);
+    });
     map.on('moveend', () => {
       if (!activeCat || !catBounds) return;
-      if (!catBounds.contains(map.getBounds())) {
+      const b = map.getBounds();
+      const inside = b.getSouth() >= catBounds.s && b.getNorth() <= catBounds.n && b.getWest() >= catBounds.w && b.getEast() <= catBounds.e;
+      if (!inside) {
         const cat = CATS.find(c => c.k === activeCat);
         setStatus('', cat ? { label: `Buscar ${cat.label.toLowerCase()} nesta área`, act: 'redo-cat' } : null);
       }
     });
+    setupMapResize();
     return true;
+  }
+
+  function onStyleReady() {
+    styleReady = true;
+    if (!map.getSource('tp-routes')) {
+      map.addSource('tp-routes', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
+      map.addLayer({
+        id: 'tp-routes', type: 'line', source: 'tp-routes',
+        layout: { 'line-cap': 'round', 'line-join': 'round' },
+        paint: { 'line-color': ['get', 'color'], 'line-width': 3, 'line-opacity': 0.6, 'line-dasharray': [1.5, 2] },
+      });
+    }
+    if (pendingRoutes) { map.getSource('tp-routes').setData(pendingRoutes); }
+  }
+
+  function setRoutes(features) {
+    pendingRoutes = { type: 'FeatureCollection', features };
+    const src = styleReady && map.getSource('tp-routes');
+    if (src) src.setData(pendingRoutes);
+  }
+
+  function closePopup() {
+    if (openPopup) { openPopup.remove(); openPopup = null; }
   }
 
   function popupHTML(p, resultIdx) {
@@ -12280,11 +12363,10 @@ const renderTrip = (() => {
     return `<div class="tp-popup"><div class="tp-popup-name">${escapeHTML(p.name)}</div>${sub ? `<div class="tp-popup-sub">${escapeHTML(sub)}</div>` : '<div style="height:8px"></div>'}${actions}</div>`;
   }
 
-  function wirePopup(e) {
-    const el = e.popup.getElement();
+  function wirePopup(el) {
     if (!el) return;
     const favBtn = el.querySelector('[data-tp-popup-fav]');
-    if (favBtn) favBtn.onclick = () => { map.closePopup(); toggleFav(favBtn.dataset.tpPopupFav); };
+    if (favBtn) favBtn.onclick = () => { closePopup(); toggleFav(favBtn.dataset.tpPopupFav); };
     el.querySelectorAll('[data-tp-popup-add]').forEach(btn => {
       btn.onclick = () => {
         const r = results[Number(btn.dataset.tpPopupAdd)];
@@ -12292,7 +12374,7 @@ const renderTrip = (() => {
         const stop = r && addStop(target, r);
         if (!stop) return;
         if (btn.dataset.fav) { stop.fav = true; saveState(); }
-        map.closePopup();
+        closePopup();
         selectedKey = 's:' + stop.id;
         renderDays();
         renderResults();
@@ -12304,19 +12386,47 @@ const renderTrip = (() => {
     });
   }
 
+  // Abre o popup de um marcador (fecha o anterior)
+  function openMarker(key) {
+    const m = markerByKey.get(key);
+    if (!m) return;
+    closePopup();
+    const popup = new maplibregl.Popup({ offset: 34, maxWidth: '260px', closeButton: true, focusAfterOpen: false })
+      .setLngLat(m.marker.getLngLat())
+      .setHTML(m.html())
+      .addTo(map);
+    popup.on('close', () => { if (openPopup === popup) openPopup = null; });
+    openPopup = popup;
+    wirePopup(popup.getElement());
+    selectKey(key);
+  }
+
+  function addMarker(key, lat, lng, color, label, hollow, fav, z, title, html) {
+    const el = document.createElement('div');
+    el.className = 'tp-pin';
+    el.style.setProperty('--tp-pin-color', color);
+    el.style.zIndex = z;
+    el.title = title;
+    el.innerHTML = pinHTML(color, label, hollow, fav);
+    el.addEventListener('click', ev => { ev.stopPropagation(); openMarker(key); });
+    const marker = new maplibregl.Marker({ element: el, anchor: 'bottom' }).setLngLat([lng, lat]).addTo(map);
+    markers.push(marker);
+    markerByKey.set(key, { marker, el, z, html });
+    return marker;
+  }
+
   function renderMap(fit) {
     if (!ensureMap()) return;
     const t = T();
-    planLayer.clearLayers();
-    resultsLayer.clearLayers();
+    const keepOpen = openPopup && selectedKey;
+    closePopup();
+    markers.forEach(m => m.remove());
+    markers = [];
     stopMarkers.clear();
     markerByKey.clear();
     const pts = [];
+    const routes = [];
     const favOnly = mapFilter === 'fav';
-    const track = (key, m, color, icon, z) => {
-      markerByKey.set(key, { m, color, icon, z });
-      m.on('click', () => selectKey(key));
-    };
     const groups = t.days.map((d, i) => ({ id: d.id, stops: d.stops, color: COLORS[i % COLORS.length], label: `Dia ${i + 1}${d.title ? ' — ' + d.title : ''}` }));
     groups.push({ id: 'ideas', stops: t.ideas, color: IDEA_COLOR, label: 'Ideias', idea: true });
     groups.forEach(g => {
@@ -12324,35 +12434,26 @@ const renderTrip = (() => {
       const line = [];
       g.stops.forEach((s, j) => {
         if (!hasCoords(s) || (favOnly && !s.fav)) return;
-        const label = g.idea ? '★' : String(j + 1);
-        const icon = sel => pinIcon(g.color, label, false, s.fav, sel);
-        const z = s.fav ? 300 : 0;
-        const m = L.marker([s.lat, s.lng], { icon: icon(false), zIndexOffset: z });
-        track('s:' + s.id, m, g.color, icon, z);
-        m.bindTooltip(escapeHTML(s.name), { direction: 'top', offset: [0, -30] });
-        m.bindPopup(popupHTML({ ...s, planned: g.label }, null));
-        planLayer.addLayer(m);
+        const m = addMarker('s:' + s.id, s.lat, s.lng, g.color, g.idea ? '★' : String(j + 1), false, s.fav, s.fav ? 300 : 100, s.name,
+          () => popupHTML({ ...findStop(s.id), planned: g.label }, null));
         stopMarkers.set(s.id, m);
-        line.push([s.lat, s.lng]);
+        line.push([s.lng, s.lat]);
       });
       if (!g.idea && !favOnly && line.length > 1) {
-        planLayer.addLayer(L.polyline(line, { color: g.color, weight: 3, opacity: 0.55, dashArray: '6 8' }));
+        routes.push({ type: 'Feature', properties: { color: g.color }, geometry: { type: 'LineString', coordinates: line } });
       }
-      pts.push(...line);
+      pts.push(...line.map(([lng, lat]) => [lat, lng]));
     });
+    setRoutes(routes);
     results.forEach((r, i) => {
-      const icon = sel => pinIcon(RESULT_COLOR, '+', true, false, sel);
-      const m = L.marker([r.lat, r.lng], { icon: icon(false), zIndexOffset: 500 });
-      track('r:' + i, m, RESULT_COLOR, icon, 500);
-      m.bindTooltip(escapeHTML(r.name), { direction: 'top', offset: [0, -30] });
-      m.bindPopup(popupHTML(r, i));
-      resultsLayer.addLayer(m);
-      r.marker = m;
+      r.marker = addMarker('r:' + i, r.lat, r.lng, RESULT_COLOR, '+', true, false, 500, r.name, () => popupHTML(r, i));
     });
-    if (selectedKey && markerByKey.has(selectedKey)) selectKey(selectedKey);
-    else if (selectedKey && selectedKey.startsWith('r:')) selectedKey = null;
+    if (selectedKey && markerByKey.has(selectedKey)) {
+      selectKey(selectedKey);
+      if (keepOpen) openMarker(selectedKey);
+    } else if (selectedKey && selectedKey.startsWith('r:')) selectedKey = null;
     if (fit) fitTo(results.length && !activeCat ? results.map(r => [r.lat, r.lng]) : pts);
-    setTimeout(() => map.invalidateSize(), 60);
+    requestAnimationFrame(() => map.resize());
   }
 
   // Altura do mapa ajustável pela alça inferior, sempre dentro de limites
@@ -12367,7 +12468,7 @@ const renderTrip = (() => {
     const { min, max } = mapHeightLimits();
     const v = Math.round(Math.min(max, Math.max(min, h)));
     el.style.height = v + 'px';
-    if (map) map.invalidateSize();
+    if (map) map.resize();
     if (persist) { try { localStorage.setItem(MAP_H_KEY, String(v)); } catch {} }
     return v;
   }
@@ -12399,7 +12500,7 @@ const renderTrip = (() => {
     handle.addEventListener('dblclick', () => {
       $('tp-map').style.height = '';
       try { localStorage.removeItem(MAP_H_KEY); } catch {}
-      map.invalidateSize();
+      map.resize();
     });
     handle.addEventListener('keydown', e => {
       if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
@@ -12412,11 +12513,16 @@ const renderTrip = (() => {
     });
   }
 
+  // points: [[lat, lng], ...]
   function fitTo(points) {
-    if (!map) return;
-    if (!points.length) return;
-    if (points.length === 1) map.setView(points[0], 15);
-    else map.fitBounds(L.latLngBounds(points), { padding: [40, 40], maxZoom: 16 });
+    if (!map || !points.length) return;
+    if (points.length === 1) { map.easeTo({ center: [points[0][1], points[0][0]], zoom: 14, duration: 700 }); return; }
+    const b = new maplibregl.LngLatBounds();
+    points.forEach(([lat, lng]) => b.extend([lng, lat]));
+    map.fitBounds(b, { padding: 50, maxZoom: 15, duration: 700 });
+  }
+  function flyToPlace(lat, lng, zoom) {
+    map.flyTo({ center: [lng, lat], zoom: Math.max(map.getZoom(), zoom), speed: 1.6, curve: 1.3, essential: true });
   }
 
   function setStatus(msg, action) {
@@ -12454,44 +12560,62 @@ const renderTrip = (() => {
     if (!name) return null;
     return { name, lat: parseFloat(h.lat), lng: parseFloat(h.lon), address: parts.slice(1, 4).join(', '), category: typeLabel(h.type) };
   }
-  async function fetchJSON(url, opts, ms) {
+  async function fetchJSON(url, opts, ms, outerSignal) {
     const ctrl = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), ms);
+    const onOuter = () => ctrl.abort();
+    if (outerSignal) outerSignal.addEventListener('abort', onOuter);
     try {
       const res = await fetch(url, { ...opts, signal: ctrl.signal });
       if (!res.ok) throw new Error(url.split('?')[0] + ' ' + res.status);
       return await res.json();
     } finally {
       clearTimeout(timer);
+      if (outerSignal) outerSignal.removeEventListener('abort', onOuter);
     }
   }
-  async function geocode(q, near, limit) {
+  // Photon (feito para busca enquanto digita) com cache; o Nominatim só entra
+  // em buscas confirmadas (Enter), como pede a política de uso dele.
+  const geoCache = new Map();
+  async function geocode(q, near, limit, opts = {}) {
+    const key = [q.toLowerCase(), limit, near ? near.lat.toFixed(1) + ',' + near.lng.toFixed(1) : ''].join('|');
+    if (geoCache.has(key)) return geoCache.get(key);
     let list = [];
+    let photonFailed = false;
     try {
       let u = `${PHOTON_URL}?q=${encodeURIComponent(q)}&limit=${limit}`;
       if (near) u += `&lat=${near.lat.toFixed(4)}&lon=${near.lng.toFixed(4)}`;
-      const data = await fetchJSON(u, {}, 8000);
+      const data = await fetchJSON(u, {}, 5000, opts.signal);
       list = (data.features || []).map(fromPhoton).filter(Boolean);
     } catch (err) {
-      console.warn('Photon falhou, tentando Nominatim:', err);
+      if (opts.signal && opts.signal.aborted) throw err;
+      photonFailed = true;
+      console.warn('Photon falhou:', err);
     }
-    if (list.length) return list;
-    const data = await fetchJSON(`${NOMINATIM_URL}?format=jsonv2&limit=${limit}&q=${encodeURIComponent(q)}`, { headers: { 'Accept': 'application/json' } }, 10000);
-    return (Array.isArray(data) ? data : []).map(fromNominatim).filter(Boolean);
+    if (!list.length && (opts.confirmed || photonFailed)) {
+      const data = await fetchJSON(`${NOMINATIM_URL}?format=jsonv2&limit=${limit}&accept-language=pt-BR&q=${encodeURIComponent(q)}`, { headers: { 'Accept': 'application/json' } }, 8000, opts.signal);
+      list = (Array.isArray(data) ? data : []).map(fromNominatim).filter(Boolean);
+    }
+    if (list.length) geoCache.set(key, list);
+    return list;
   }
 
   // Busca por texto. Mostra sugestões sob o campo; com go=true leva o mapa
   // direto ao primeiro resultado (Enter), como no Google Maps.
   async function searchPlaces(q, go) {
     const seq = ++searchSeq;
+    if (searchCtrl) searchCtrl.abort();
+    const ctrl = searchCtrl = new AbortController();
     activeCat = null; catBounds = null;
     renderCats();
     setStatus('');
-    renderSuggest(null, 'Buscando…');
+    // Mantém as sugestões anteriores visíveis enquanto a nova busca chega
+    if ($('tp-suggest').hidden || !$('tp-suggest').querySelector('[data-tp-suggest]')) renderSuggest(null, 'Buscando…', localMatches(q));
     let list = [];
     try {
-      list = await geocode(q, map ? map.getCenter() : { lat: EUROPE[0], lng: EUROPE[1] }, 10);
+      list = await geocode(q, map ? map.getCenter() : { lat: EUROPE[0], lng: EUROPE[1] }, 8, { signal: ctrl.signal, confirmed: go });
     } catch (err) {
+      if (ctrl.signal.aborted || seq !== searchSeq) return;
       console.warn('Busca falhou:', err);
       if (seq === searchSeq) renderSuggest(null, 'Não foi possível buscar agora. Confira a conexão e tente de novo.');
       return;
@@ -12506,23 +12630,42 @@ const renderTrip = (() => {
     resultsLabel = `Resultados para “${q}”`;
     renderResults();
     renderMap(false);
-    if (!results.length) { renderSuggest(null, `Nada encontrado para “${q}”. Tente o nome com a cidade (ex: Coliseu, Roma).`); return; }
+    const local = localMatches(q);
+    if (!results.length) {
+      renderSuggest(null, go
+        ? `Nada encontrado para “${q}”. Tente o nome com a cidade (ex: Coliseu, Roma).`
+        : `Nenhuma sugestão ainda. Aperte Enter para uma busca completa.`, local);
+      return;
+    }
     if (go) goToResult(0);
-    else renderSuggest(results);
+    else renderSuggest(results, null, local);
   }
 
-  function renderSuggest(list, msg) {
+  // Lugares do próprio roteiro que batem com o texto (aparecem na hora, sem rede)
+  function localMatches(q) {
+    const n = q.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    if (n.length < 2) return [];
+    return allStops().filter(x => hasCoords(x) && x.name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').includes(n)).slice(0, 3);
+  }
+
+  function renderSuggest(list, msg, local) {
     const box = $('tp-suggest');
     suggestIdx = -1;
-    if (!list && !msg) { box.hidden = true; box.innerHTML = ''; return; }
+    local = local || [];
+    if (!list && !msg && !local.length) { box.hidden = true; box.innerHTML = ''; return; }
     box.hidden = false;
-    box.innerHTML = msg
+    const localHTML = local.map(x => `
+          <button type="button" class="tp-suggest-item" data-tp-suggest-stop="${x.id}" role="option">
+            <div class="tp-suggest-name">${x.fav ? '<span class="tp-fav-mark">' + HEART + '</span>' : '📍 '}${escapeHTML(x.name)}</div>
+            <div class="tp-suggest-sub">No seu roteiro${x.address ? ' · ' + escapeHTML(x.address) : ''}</div>
+          </button>`).join('');
+    box.innerHTML = localHTML + (msg
       ? `<div class="tp-suggest-msg">${escapeHTML(msg)}</div>`
-      : list.map((r, i) => `
+      : (list || []).map((r, i) => `
           <button type="button" class="tp-suggest-item" data-tp-suggest="${i}" role="option">
             <div class="tp-suggest-name">${escapeHTML(r.name)}</div>
             <div class="tp-suggest-sub">${escapeHTML([r.category, r.address].filter(Boolean).join(' · ')) || '&nbsp;'}</div>
-          </button>`).join('');
+          </button>`).join(''));
   }
 
   function goToResult(i) {
@@ -12530,14 +12673,13 @@ const renderTrip = (() => {
     renderSuggest(null);
     if (!r || !ensureMap()) return;
     showMapOnMobile();
-    map.setView([r.lat, r.lng], 16);
-    selectKey('r:' + i);
-    if (r.marker) r.marker.openPopup();
+    flyToPlace(r.lat, r.lng, 15);
+    openMarker('r:' + i);
   }
 
   async function exploreCategory(cat) {
     if (!ensureMap()) return;
-    if (map.getZoom() < 12) {
+    if (map.getZoom() < 11) {
       setStatus(`Aproxime o mapa numa cidade ou bairro para ver ${cat.label.toLowerCase()}.`);
       return;
     }
@@ -12546,7 +12688,8 @@ const renderTrip = (() => {
     renderCats();
     setStatus(`Buscando ${cat.label.toLowerCase()} nesta área…`);
     const b = map.getBounds();
-    catBounds = b.pad(0.05);
+    const padLat = (b.getNorth() - b.getSouth()) * 0.05, padLng = (b.getEast() - b.getWest()) * 0.05;
+    catBounds = { s: b.getSouth() - padLat, n: b.getNorth() + padLat, w: b.getWest() - padLng, e: b.getEast() + padLng };
     const bb = [b.getSouth(), b.getWest(), b.getNorth(), b.getEast()].map(v => v.toFixed(5)).join(',');
     const query = `[out:json][timeout:25];(${cat.f.map(f => `nwr${f}["name"](${bb});`).join('')});out center tags 120;`;
     let els = [];
@@ -12627,7 +12770,7 @@ const renderTrip = (() => {
     const ref = (stopsOf(target) || []).filter(s => s !== stop && hasCoords(s));
     let near = null;
     if (ref.length) near = { lat: ref.reduce((a, s) => a + s.lat, 0) / ref.length, lng: ref.reduce((a, s) => a + s.lng, 0) / ref.length };
-    else if (map && map.getZoom() >= 10) near = map.getCenter();
+    else if (map && map.getZoom() >= 9) near = map.getCenter();
     let hit = null;
     try {
       const q = near || !t.cities ? text : `${text}, ${t.cities.split(',')[0]}`;
@@ -12896,9 +13039,9 @@ const renderTrip = (() => {
         const m = stopMarkers.get(id);
         if (!m) return;
         showMapOnMobile();
-        map.setView(m.getLatLng(), Math.max(map.getZoom(), 15));
-        selectKey('s:' + id);
-        m.openPopup();
+        const ll = m.getLngLat();
+        flyToPlace(ll.lat, ll.lng, 14);
+        openMarker('s:' + id);
         break;
       }
       case 'stop-fav': toggleFav(id); break;
@@ -13041,12 +13184,29 @@ const renderTrip = (() => {
     clearTimeout(searchTimer);
     const q = e.target.value.trim();
     $('tp-search-clear').hidden = !q && !results.length;
-    if (q.length < 3) { renderSuggest(null); return; }
-    searchTimer = setTimeout(() => searchPlaces(q, false), 400);
+    if (q.length < 2) { renderSuggest(null); return; }
+    const local = localMatches(q);
+    if (local.length) renderSuggest(null, null, local);
+    if (q.length < 3) return;
+    searchTimer = setTimeout(() => searchPlaces(q, false), 250);
   });
 
   // Toque/clique numa sugestão (pointerdown: antes do blur do campo)
   $('tp-suggest').addEventListener('pointerdown', e => {
+    const ls = e.target.closest('[data-tp-suggest-stop]');
+    if (ls) {
+      e.preventDefault();
+      renderSuggest(null);
+      $('tp-search-input').blur();
+      if (mapFilter !== 'all') { mapFilter = 'all'; renderDays(); renderMap(false); }
+      const m = stopMarkers.get(ls.dataset.tpSuggestStop);
+      if (!m) return;
+      showMapOnMobile();
+      const ll = m.getLngLat();
+      flyToPlace(ll.lat, ll.lng, 14);
+      openMarker('s:' + ls.dataset.tpSuggestStop);
+      return;
+    }
     const b = e.target.closest('[data-tp-suggest]');
     if (!b) return;
     e.preventDefault();
