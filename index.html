@@ -4007,6 +4007,10 @@
   .sync-col-title { font-weight: 700; font-size: 13px; margin-bottom: 6px; }
   .sync-row { display: flex; justify-content: space-between; gap: 8px; font-size: 13px; padding: 2px 0; color: var(--ink-soft); }
   .sync-row b { color: var(--ink); }
+  .sync-backups { margin-bottom: 10px; max-height: 240px; overflow-y: auto; }
+  .sync-backup { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 8px 0; border-top: 1px solid var(--line-soft); font-size: 13px; }
+  .sync-backup .btn-ghost { padding: 6px 12px; font-size: 12px; flex-shrink: 0; }
+  .sync-backup-sub { font-size: 11px; color: var(--ink-faint); margin-top: 2px; }
   .sync-msg { font-size: 13px; min-height: 18px; margin-bottom: 8px; color: var(--ink-soft); }
   /* Pôsteres */
   .tp-row { display: grid; grid-auto-flow: column; grid-auto-columns: 250px; gap: 14px; overflow-x: auto; padding: 4px 2px 14px; scroll-snap-type: x mandatory; scrollbar-width: thin; }
@@ -5005,6 +5009,7 @@
       <div class="sync-col"><div class="sync-col-title">📱💻 Este aparelho</div><div id="sync-local"></div></div>
       <div class="sync-col"><div class="sync-col-title">☁️ Nuvem</div><div id="sync-cloud"></div></div>
     </div>
+    <div id="sync-backups" class="sync-backups"></div>
     <div id="sync-msg" class="sync-msg"></div>
     <div class="modal-actions" style="flex-wrap:wrap">
       <button class="btn btn-ghost" data-close-modal>Fechar</button>
@@ -5585,6 +5590,35 @@ function stateScore(st) {
   if (st.treino && st.treino.log) n += Object.keys(st.treino.log).length;
   return n;
 }
+// Cópias de segurança neste aparelho: guarda as últimas 6 e nunca descarta
+// a mais completa já vista.
+const BACKUPS_KEY = STORAGE_KEY + '_backups';
+function listBackups() {
+  let list = [];
+  try { list = JSON.parse(localStorage.getItem(BACKUPS_KEY) || '[]'); } catch {}
+  // cópias antigas (versões anteriores do app)
+  [['_prev', 'Cópia antes de trocar pela nuvem'], ['_cloud_backup', 'Cópia da nuvem antes de enviar'], ['_backup', 'Cópia antiga'], ['_migrated', 'Cópia da migração']].forEach(([suf, label]) => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY + suf);
+      if (!raw) return;
+      const obj = JSON.parse(raw);
+      const data = obj && obj.data && obj.savedAt ? obj.data : obj;
+      list.push({ savedAt: (obj && obj.savedAt) || '', label, legacy: suf, data });
+    } catch {}
+  });
+  return list.map(b => ({ ...b, score: stateScore(b.data) })).filter(b => b.score > 0);
+}
+function pushBackup(label, data) {
+  if (stateScore(data) <= 0) return;
+  let list = [];
+  try { list = JSON.parse(localStorage.getItem(BACKUPS_KEY) || '[]'); } catch {}
+  list.unshift({ savedAt: new Date().toISOString(), label, data });
+  const best = list.reduce((a, b) => (stateScore(b.data) > stateScore(a.data) ? b : a), list[0]);
+  let keep = list.slice(0, 6);
+  if (!keep.includes(best)) keep = keep.slice(0, 5).concat(best);
+  try { localStorage.setItem(BACKUPS_KEY, JSON.stringify(keep)); }
+  catch { try { localStorage.setItem(BACKUPS_KEY, JSON.stringify([best])); } catch {} }
+}
 function readLocalState() {
   try { const raw = localStorage.getItem(STORAGE_KEY); return raw ? JSON.parse(raw) : null; } catch { return null; }
 }
@@ -5594,7 +5628,7 @@ function reconcile(cloudData, localData) {
   const cloudScore = stateScore(cloudData);
   const localScore = stateScore(localData);
   if (localData && localScore > 0) {
-    try { localStorage.setItem(STORAGE_KEY + '_prev', JSON.stringify({ savedAt: new Date().toISOString(), data: localData })); } catch {}
+    pushBackup('Este aparelho, ao abrir o app', localData);
   }
   if (localData && localScore > cloudScore) {
     const ok = confirm(
@@ -5699,6 +5733,7 @@ async function openSyncModal() {
   document.getElementById('sync-local').innerHTML = describeState(state);
   document.getElementById('sync-cloud').innerHTML = '<div class="sync-row"><span>Carregando…</span></div>';
   document.getElementById('sync-msg').textContent = '';
+  renderBackupList();
   m.classList.add('active');
   try {
     syncCloudRow = await fetchCloudRow();
@@ -5717,7 +5752,7 @@ async function pushLocalToCloud() {
   try {
     const cloudRow = await fetchCloudRow();
     if (cloudRow) {
-      try { localStorage.setItem(STORAGE_KEY + '_cloud_backup', JSON.stringify({ savedAt: new Date().toISOString(), data: cloudRow.data })); } catch {}
+      pushBackup('Nuvem, antes de enviar este aparelho', cloudRow.data);
       const cd = (cloudRow.data && cloudRow.data.trip && cloudRow.data.trip.docs) || {};
       if (!state.trip) state.trip = cloudRow.data.trip || state.trip;
       if (state.trip) {
@@ -5740,6 +5775,34 @@ async function pushLocalToCloud() {
     msg.textContent = 'Não consegui enviar: ' + (e.message || e);
   }
 }
+function renderBackupList() {
+  const el = document.getElementById('sync-backups');
+  if (!el) return;
+  const list = listBackups().sort((a, b) => b.score - a.score);
+  window.__backups = list;
+  el.innerHTML = list.length
+    ? `<div class="sync-col-title" style="margin-top:4px">🗂️ Cópias de segurança neste aparelho</div>` + list.map((b, i) => {
+        const t = (b.data && b.data.trip) || {}, d = t.docs || {};
+        const when = b.savedAt ? new Date(b.savedAt).toLocaleString('pt-BR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : 'data desconhecida';
+        return `<div class="sync-backup"><div><b>${escapeHTML(b.label)}</b><div class="sync-backup-sub">${escapeHTML(when)} · ${(d.cards || []).length} documentos · ${(d.files || []).length} arquivos · ${((b.data && b.data.tasks) || []).length} tarefas · ${((b.data && b.data.notes) || []).length} notas</div></div>
+          <button class="btn btn-ghost" data-restore-backup="${i}">Restaurar</button></div>`;
+      }).join('')
+    : '<div class="sync-backup-sub">Nenhuma cópia de segurança encontrada neste aparelho.</div>';
+}
+async function restoreBackup(i) {
+  const b = (window.__backups || [])[i];
+  if (!b) return;
+  if (!confirm(`Restaurar “${b.label}” (${b.score} itens) e enviar para a nuvem? Os arquivos que estão na nuvem continuam.`)) return;
+  pushBackup('Este aparelho, antes de restaurar uma cópia', state);
+  state = { ...defaultState, ...b.data };
+  await pushLocalToCloud();
+  openSyncModal();
+}
+document.addEventListener('click', e => {
+  const r = e.target.closest('[data-restore-backup]');
+  if (r) restoreBackup(Number(r.dataset.restoreBackup));
+});
+
 // Troca os dados deste aparelho pelos da nuvem (guardando cópia)
 async function pullCloudToLocal() {
   const msg = document.getElementById('sync-msg');
@@ -5747,7 +5810,7 @@ async function pullCloudToLocal() {
   try {
     const cloudRow = await fetchCloudRow();
     if (!cloudRow) { msg.textContent = 'Não há dados na nuvem.'; return; }
-    try { localStorage.setItem(STORAGE_KEY + '_prev', JSON.stringify({ savedAt: new Date().toISOString(), data: state })); } catch {}
+    pushBackup('Este aparelho, antes de usar os da nuvem', state);
     state = { ...defaultState, ...cloudRow.data };
     cloudVersion = cloudRow.updated_at;
     syncBlocked = null;
@@ -13680,7 +13743,7 @@ const renderTrip = (() => {
         saveState();
         renderDocs();
         const box = $('tp-doc-scan-result');
-        if (box && !scan) box.innerHTML = `<div class="tp-scan">📎 ${added} ${added === 1 ? 'arquivo guardado foi recuperado' : 'arquivos guardados foram recuperados'} em “Arquivos”. Use “✨ Ler” em cada um para recriar os cartões.</div>`;
+        if (box && !scan) box.innerHTML = `<div class="tp-scan">📎 ${added} ${added === 1 ? 'arquivo guardado foi recuperado' : 'arquivos guardados foram recuperados'} em “Arquivos”. <button class="tp-link-go" data-doc-read-all>✨ Ler todos e recriar os cartões</button></div>`;
       }
     } catch (e) { console.warn('Lista de arquivos falhou:', e); }
   }
@@ -13725,6 +13788,7 @@ const renderTrip = (() => {
       ${docFilter !== 'all' ? '' : `<div class="tp-doc-section-title tp-doc-files-head">
         <span>📎 Arquivos</span>
         <span class="tp-doc-files-actions">
+          ${generalFiles.length ? `<button class="btn" data-doc-read-all>✨ Ler todos (${generalFiles.length})</button>` : ''}
           ${docs.files.length ? `<button class="btn btn-ghost" data-doc-offline-all ${allCached ? 'disabled' : ''}>${allCached ? '✓ Tudo disponível offline' : 'Baixar tudo para usar offline'}</button>` : ''}
           <button class="btn" data-doc-attach="">+ Anexar arquivo</button>
         </span>
@@ -13961,6 +14025,80 @@ const renderTrip = (() => {
   }
 
   // files: File[]; opts.fileIds: ids já salvos (mesma ordem); opts.targetCardId: anexado num cartão
+  // Lê todos os arquivos que ainda não estão ligados a um cartão, em lotes,
+  // e junta tudo numa única revisão.
+  async function scanAllFiles() {
+    const docs = D();
+    const todo = docs.files.filter(f => !f.cardId || !docs.cards.some(c => c.id === f.cardId));
+    if (!todo.length) { alert('Todos os arquivos já estão ligados a um cartão.'); return; }
+    scan = { status: 'loading', n: todo.length, progress: `Preparando ${todo.length} arquivos…`, sources: [] };
+    renderScan();
+    // prepara (baixa + reduz imagens), pulando o que falhar
+    const prepared = [], failed = [];
+    for (const f of todo) {
+      try {
+        const blob = await fileBlob(f.path);
+        const file = new File([blob], f.name, { type: f.mime || blob.type });
+        prepared.push({ rec: f, file, payload: await prepForAI(file) });
+      } catch (e) { failed.push(f.name); }
+      scan.progress = `Preparando arquivos… ${prepared.length + failed.length}/${todo.length}`;
+      renderScan();
+    }
+    // lotes de até 6 arquivos / ~9 MB
+    const batches = [];
+    let cur = [], size = 0;
+    prepared.forEach(p => {
+      const sz = p.payload.data.length;
+      if (cur.length && (cur.length >= 6 || size + sz > 9_000_000)) { batches.push(cur); cur = []; size = 0; }
+      cur.push(p); size += sz;
+    });
+    if (cur.length) batches.push(cur);
+    const items = [], sources = [];
+    let unread = failed.length;
+    for (let b = 0; b < batches.length; b++) {
+      scan.progress = `Lendo com IA… lote ${b + 1} de ${batches.length}`;
+      renderScan();
+      const batch = batches[b];
+      const offset = sources.length;
+      batch.forEach(p => sources.push({ file: p.file, fileId: p.rec.id }));
+      try {
+        const { data, error } = await sb.functions.invoke('trip-assistant', { body: { mode: 'extract', today: localISO(new Date()), files: batch.map(p => p.payload) } });
+        if (error || (data && data.error)) throw new Error((data && data.error) || (error && error.message) || 'erro');
+        (data.cards || []).filter(c => DOC_TYPES[c.type]).forEach(c => {
+          const fields = {};
+          DOC_TYPES[c.type].fields.forEach(([k]) => { if (c.fields[k]) fields[k] = c.fields[k]; });
+          if (!Object.keys(fields).length) return;
+          // mesmo item em dois arquivos (ex.: PDF enviado duas vezes): junta
+          const dup = items.find(it => it.type === c.type && JSON.stringify(findKey(c.type, it.fields)) === JSON.stringify(findKey(c.type, fields)) && findKey(c.type, fields).some(Boolean));
+          if (dup) { Object.entries(fields).forEach(([k, v]) => { if (!dup.fields[k]) dup.fields[k] = v; }); return; }
+          const match = findMatch(c.type, fields, null);
+          items.push({ type: c.type, fields, source: offset + (c.source_index || 0), on: true, matchId: match ? match.id : null });
+        });
+      } catch (e) {
+        console.warn('Lote falhou:', e);
+        batch.forEach(p => failed.push(p.rec.name));
+        unread += batch.length;
+      }
+    }
+    scan = {
+      status: 'done', sources, items, targetCardId: null,
+      message: `Li ${todo.length - unread} de ${todo.length} arquivos e encontrei ${items.length} ${items.length === 1 ? 'item' : 'itens'}.${failed.length ? ` Não consegui ler: ${failed.join(', ')}.` : ''}`,
+    };
+    renderScan();
+  }
+  function findKey(type, f) {
+    const n = v => (v || '').toString().toUpperCase().replace(/\s+/g, '');
+    switch (type) {
+      case 'flight': return [n(f.flight), f.date || ''];
+      case 'transport': return [n(f.code), f.date || ''];
+      case 'hotel': return [n(f.confirmation || f.name), f.checkin || ''];
+      case 'insurance': return [n(f.policy)];
+      case 'passport': return [n(f.number)];
+      case 'contact': return [n(f.phone)];
+      default: return [n(f.title)];
+    }
+  }
+
   async function scanFiles(files, opts = {}) {
     files = [...files].slice(0, SCAN_MAX);
     if (!files.length) return;
@@ -13995,7 +14133,7 @@ const renderTrip = (() => {
     if (!el) return;
     if (!scan) { el.innerHTML = ''; return; }
     if (scan.status === 'loading') {
-      el.innerHTML = `<div class="tp-scan is-loading"><span class="tp-scan-spin"></span> Lendo ${scan.n === 1 ? 'o arquivo' : scan.n + ' arquivos'} com IA… isso leva alguns segundos.</div>`;
+      el.innerHTML = `<div class="tp-scan is-loading"><span class="tp-scan-spin"></span> ${escapeHTML(scan.progress || `Lendo ${scan.n === 1 ? 'o arquivo' : scan.n + ' arquivos'} com IA… isso leva alguns segundos.`)}</div>`;
       return;
     }
     if (scan.status === 'error') {
@@ -14314,7 +14452,7 @@ const renderTrip = (() => {
     if (e.target.matches('[data-scan-link]') && scan) scan.link = e.target.checked;
   });
   async function onDocsClick(e) {
-    const el = e.target.closest('[data-doc-view],[data-doc-filter],[data-doc-new],[data-doc-edit],[data-doc-del],[data-doc-attach],[data-doc-copy],[data-doc-file-del],[data-doc-file-read],[data-doc-open],[data-doc-offline-all],[data-doc-scan],[data-scan-toggle],[data-scan-apply],[data-scan-dismiss]');
+    const el = e.target.closest('[data-doc-read-all],[data-doc-view],[data-doc-filter],[data-doc-new],[data-doc-edit],[data-doc-del],[data-doc-attach],[data-doc-copy],[data-doc-file-del],[data-doc-file-read],[data-doc-open],[data-doc-offline-all],[data-doc-scan],[data-scan-toggle],[data-scan-apply],[data-scan-dismiss]');
     if (!el) return;
     // closest() já pega o alvo mais interno: botões dentro do pôster (copiar) não abrem detalhes
     if (el.matches('[data-doc-view]')) { openDocView(el.dataset.docView); return; }
@@ -14324,6 +14462,7 @@ const renderTrip = (() => {
       renderDocs();
       return;
     }
+    if (el.matches('[data-doc-read-all]')) { if (!scan || scan.status !== 'loading') scanAllFiles(); return; }
     if (el.matches('[data-doc-scan]')) { if (!scan || scan.status !== 'loading') $('tp-doc-scan').click(); return; }
     if (el.matches('[data-scan-toggle]')) { const it = scan && scan.items[Number(el.dataset.scanToggle)]; if (it) { it.on = !it.on; renderScan(); } return; }
     if (el.matches('[data-scan-apply]')) { applyScan(); return; }
