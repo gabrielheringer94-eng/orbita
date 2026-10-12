@@ -3954,7 +3954,7 @@
   .tp-bar { height: 4px; background: var(--line-soft); border-radius: 4px; overflow: hidden; margin-top: 10px; }
   .tp-bar span { display: block; height: 100%; background: var(--ink); border-radius: 4px; transition: width 0.3s ease; }
 
-  .tp-tabs { grid-template-columns: repeat(2, 1fr); max-width: 360px; }
+  .tp-tabs { grid-template-columns: repeat(3, 1fr); max-width: 520px; }
 
   .tp-toolbar { display: flex; gap: 8px; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-bottom: 16px; }
   .tp-toolbar .btn-ghost { padding: 8px 14px; font-size: 12px; }
@@ -3979,6 +3979,65 @@
   .tp-item.done .tp-item-text { text-decoration: line-through; color: var(--ink-faint); }
   .tp-item .tp-icon-btn { opacity: 0; padding: 2px; }
   .tp-item:hover .tp-icon-btn, .tp-item .tp-icon-btn:focus-visible { opacity: 1; }
+  /* Documentos */
+  .tp-doc-add { display: flex; gap: 6px; flex-wrap: wrap; }
+  .tp-doc-add .btn-ghost { padding: 7px 12px; font-size: 12px; }
+  .tp-doc-empty { background: var(--bg-card); border: 1px dashed var(--line); border-radius: 14px; padding: 20px; color: var(--ink-soft); font-size: 14px; line-height: 1.5; margin-bottom: 16px; }
+  .tp-doc-empty-title { font-weight: 600; color: var(--ink); margin-bottom: 4px; }
+  .tp-doc-section-title { font: 600 11px 'DM Sans', sans-serif; text-transform: uppercase; letter-spacing: 0.14em; color: var(--ink-faint); margin: 22px 0 10px; }
+  .tp-doc-files-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .tp-doc-files-actions { display: flex; gap: 8px; flex-wrap: wrap; text-transform: none; letter-spacing: 0; }
+  .tp-doc-files-actions .btn, .tp-doc-files-actions .btn-ghost { padding: 7px 14px; font-size: 12px; }
+  .tp-doc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; align-items: start; }
+  .tp-doc-card, .tp-pass { background: var(--bg-elevated); border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; box-shadow: var(--shadow-sm); min-width: 0; }
+  .tp-doc-card-top, .tp-pass-top { display: flex; align-items: center; gap: 8px; justify-content: space-between; }
+  .tp-doc-card-title, .tp-pass-airline { font-weight: 700; font-size: 15px; min-width: 0; overflow-wrap: anywhere; }
+  .tp-doc-actions { display: flex; gap: 2px; flex-shrink: 0; }
+  .tp-doc-rows { margin-top: 10px; display: grid; gap: 10px; }
+  .tp-doc-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 10px; align-items: end; }
+  .tp-doc-row .tp-label { grid-column: 1 / -1; }
+  .tp-label { font: 600 10px 'DM Sans', sans-serif; text-transform: uppercase; letter-spacing: 0.12em; color: var(--ink-faint); display: block; margin-bottom: 2px; }
+  .tp-doc-val { font-size: 14px; overflow-wrap: anywhere; }
+  .tp-mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 18px; font-weight: 700; letter-spacing: 0.06em; overflow-wrap: anywhere; user-select: all; }
+  .tp-mono.is-small { font-size: 15px; letter-spacing: 0.03em; }
+  .tp-copy { display: inline-flex; align-items: center; gap: 4px; border: 1px solid var(--line); background: var(--bg); color: var(--ink-soft); border-radius: 7px; padding: 5px 9px; font: 600 11px 'DM Sans', sans-serif; cursor: pointer; white-space: nowrap; }
+  .tp-copy:hover { border-color: var(--ink); color: var(--ink); }
+  .tp-copy.is-done { background: #16a34a; border-color: #16a34a; color: #fff; }
+  .tp-doc-notes { margin-top: 10px; font-size: 13px; color: var(--ink-soft); white-space: pre-line; background: var(--bg-card); border-radius: 8px; padding: 8px 10px; }
+  .tp-doc-warn { display: inline-block; margin-top: 8px; font-size: 12px; font-weight: 600; color: #b91c1c; background: #fee2e2; border-radius: 6px; padding: 3px 8px; }
+  .tp-doc-note { font-size: 13px; color: var(--ink-faint); }
+  .tp-doc-uploading { font-size: 13px; color: var(--ink-soft); margin-bottom: 10px; }
+  /* Cartão de embarque */
+  .tp-pass { position: relative; overflow: hidden; }
+  .tp-pass.is-hero { border: 2px solid var(--ink); }
+  .tp-doc-grid .tp-pass { margin: 0; }
+  .tp-pass-route { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 10px; margin-top: 14px; }
+  .tp-pass-code { font-size: 34px; font-weight: 300; letter-spacing: -0.01em; line-height: 1; }
+  .tp-pass.is-hero .tp-pass-code { font-size: 44px; }
+  .tp-pass-city { font-size: 12px; color: var(--ink-faint); margin-top: 4px; overflow-wrap: anywhere; }
+  .tp-pass-ap.is-right { text-align: right; }
+  .tp-pass-plane { font-size: 20px; color: var(--ink-faint); }
+  .tp-pass-when { margin-top: 12px; font-size: 14px; font-weight: 600; }
+  .tp-pass-codes { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 14px; padding-top: 14px; border-top: 1px dashed var(--line); }
+  .tp-pass-field { display: grid; grid-template-columns: auto auto; column-gap: 10px; align-items: center; background: var(--bg-card); border-radius: 10px; padding: 8px 12px; min-width: 0; }
+  .tp-pass-field .tp-label { grid-column: 1 / -1; }
+  .tp-pass-field.is-big .tp-mono { font-size: 24px; }
+  .tp-pass-mini { display: flex; gap: 18px; flex-wrap: wrap; margin-top: 12px; font-size: 14px; font-weight: 600; }
+  /* Arquivos */
+  .tp-file-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+  .tp-file-grid.is-compact { margin-top: 12px; grid-template-columns: 1fr; gap: 6px; }
+  .tp-file { display: flex; align-items: center; gap: 10px; border: 1px solid var(--line); background: var(--bg-elevated); border-radius: 10px; padding: 8px; cursor: pointer; min-width: 0; }
+  .tp-file:hover { border-color: var(--ink-faint); }
+  .tp-file-thumb { width: 44px; height: 44px; border-radius: 6px; background: var(--bg-card) center / cover no-repeat; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .tp-file-thumb span { font: 700 10px 'DM Sans', sans-serif; color: #b91c1c; letter-spacing: 0.05em; }
+  .tp-file-meta { flex: 1; min-width: 0; }
+  .tp-file-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tp-file-sub { font-size: 11px; color: var(--ink-faint); }
+  .tp-file-off { color: #16a34a; font-weight: 600; }
+  @media (max-width: 900px) {
+    .tp-doc-grid, .tp-file-grid { grid-template-columns: 1fr; }
+    .tp-pass.is-hero .tp-pass-code { font-size: 38px; }
+  }
   .tp-ai { background: var(--bg-elevated); border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; margin-bottom: 20px; box-shadow: var(--shadow-sm); }
   .tp-ai[hidden] { display: none; }
   .tp-ai-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
@@ -4572,6 +4631,7 @@
       <div class="tr-tabs tp-tabs">
         <button class="tr-tab active" data-tp-tab="checklists">Checklists</button>
         <button class="tr-tab" data-tp-tab="roteiro">Roteiro e mapa</button>
+        <button class="tr-tab" data-tp-tab="docs">Documentos</button>
       </div>
 
       <div class="tp-ai" id="tp-ai">
@@ -4589,6 +4649,9 @@
       </div>
 
       <div id="tp-view-checklists"></div>
+
+      <div id="tp-view-docs" hidden></div>
+      <input type="file" id="tp-doc-file" accept="application/pdf,image/*,.heic,.heif" multiple hidden />
 
       <div id="tp-view-roteiro" hidden>
         <div class="tp-plan">
@@ -4842,6 +4905,20 @@
     <div class="modal-actions">
       <button class="btn btn-ghost" data-close-modal>Cancelar</button>
       <button class="btn" id="trip-save">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Documento da viagem -->
+<div class="modal-bg" id="trip-doc-modal">
+  <div class="modal" style="max-width:520px;max-height:90vh;overflow-y:auto">
+    <div class="modal-title" id="trip-doc-title">Documento</div>
+    <div class="modal-sub">Preencha só o que tiver. Códigos ganham botão de copiar.</div>
+    <div id="trip-doc-fields"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="trip-doc-delete" style="display:none">Excluir</button>
+      <button class="btn btn-ghost" data-close-modal>Cancelar</button>
+      <button class="btn" id="trip-doc-save">Salvar</button>
     </div>
   </div>
 </div>
@@ -12051,7 +12128,9 @@ const renderTrip = (() => {
     $('tp-view-checklists').hidden = tab !== 'checklists';
     $('tp-ai').hidden = tab !== 'checklists';
     $('tp-view-roteiro').hidden = tab !== 'roteiro';
+    $('tp-view-docs').hidden = tab !== 'docs';
     if (tab === 'checklists') renderChecklists();
+    else if (tab === 'docs') renderDocs();
     else {
       sortDays();
       renderDays();
@@ -12920,6 +12999,444 @@ const renderTrip = (() => {
   $('tp-ai-result').addEventListener('change', e => {
     const sel = e.target.closest('[data-ai-target]');
     if (sel && aiResult) aiResult.items[Number(sel.dataset.aiTarget)].target = sel.value;
+  });
+
+  // ---------- documentos e informações importantes ----------
+  // Cartões de informação ficam em state.trip.docs.cards (sincronizam com o
+  // resto do app). Arquivos vão para o bucket privado "trip-docs" do Supabase
+  // (abertos por link temporário) e ficam guardados no aparelho (IndexedDB)
+  // para abrir sem internet no aeroporto.
+  const DOC_BUCKET = 'trip-docs';
+  const DOC_MAX_BYTES = 10 * 1024 * 1024;
+  const DOC_TYPES = {
+    flight: { label: 'Voo', emoji: '✈️', fields: [
+      ['airline', 'Companhia aérea', 'Ex: TAP, LATAM'], ['flight', 'Nº do voo', 'Ex: TP 82'],
+      ['date', 'Data', '', 'date'], ['time', 'Horário de partida', '', 'time'],
+      ['from', 'Origem', 'Ex: GRU · São Paulo'], ['to', 'Destino', 'Ex: LIS · Lisboa'],
+      ['locator', 'Localizador / código da reserva', 'Ex: ABC12D', 'copy'], ['ticket', 'Nº do bilhete (e-ticket)', 'Ex: 047 2112345678', 'copy'],
+      ['seat', 'Assento', 'Ex: 23C'], ['terminal', 'Terminal / portão', 'Ex: T3'], ['baggage', 'Bagagem', 'Ex: 1 mala de 23kg'],
+      ['notes', 'Observações', '', 'textarea'],
+    ] },
+    transport: { label: 'Trem / ônibus / carro', emoji: '🚆', fields: [
+      ['company', 'Empresa', 'Ex: Trenitalia, Hertz'], ['code', 'Localizador / reserva', '', 'copy'],
+      ['date', 'Data', '', 'date'], ['time', 'Horário', '', 'time'],
+      ['from', 'Saída', ''], ['to', 'Chegada', ''], ['seat', 'Assento / vagão', ''],
+      ['notes', 'Observações', '', 'textarea'],
+    ] },
+    hotel: { label: 'Hospedagem', emoji: '🏨', fields: [
+      ['name', 'Nome', 'Ex: Hotel Avenida'], ['address', 'Endereço', '', 'copy'],
+      ['checkin', 'Check-in', '', 'date'], ['checkout', 'Check-out', '', 'date'],
+      ['confirmation', 'Nº da reserva', '', 'copy'], ['phone', 'Telefone', '', 'copy'],
+      ['notes', 'Observações', 'Ex: check-in a partir das 15h', 'textarea'],
+    ] },
+    insurance: { label: 'Seguro viagem', emoji: '🛡️', fields: [
+      ['company', 'Seguradora', ''], ['policy', 'Nº da apólice', '', 'copy'],
+      ['phone', 'Telefone de emergência 24h', '', 'copy'], ['coverage', 'Cobertura', 'Ex: €60 mil, inclui COVID'],
+      ['notes', 'Observações', '', 'textarea'],
+    ] },
+    passport: { label: 'Passaporte / documento', emoji: '🛂', fields: [
+      ['holder', 'Titular', ''], ['number', 'Número', '', 'copy'],
+      ['expiry', 'Validade', '', 'date'], ['country', 'País emissor', 'Ex: Brasil'],
+      ['notes', 'Observações', '', 'textarea'],
+    ] },
+    contact: { label: 'Contato importante', emoji: '📞', fields: [
+      ['name', 'Nome', 'Ex: Consulado do Brasil em Paris'], ['phone', 'Telefone', '', 'copy'],
+      ['relation', 'Quem é', 'Ex: família, consulado, anfitrião'], ['notes', 'Observações', '', 'textarea'],
+    ] },
+    other: { label: 'Outra informação', emoji: '📌', fields: [
+      ['title', 'Título', 'Ex: Wi-Fi do hotel, PIN do chip'], ['value', 'Informação', '', 'copy'],
+      ['notes', 'Observações', '', 'textarea'],
+    ] },
+  };
+  const DOC_ORDER = ['flight', 'transport', 'hotel', 'insurance', 'passport', 'contact', 'other'];
+  const COPY_ICON = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>';
+  let editingDoc = null;      // { id|null, type }
+  let attachFor = null;       // cardId para o próximo upload (null = geral)
+  let uploadingCount = 0;
+  const signedCache = new Map(); // path -> { url, exp }
+  const offlineSet = new Set();  // paths guardados no aparelho
+
+  function D() {
+    const t = T();
+    if (!t.docs) t.docs = { cards: [], files: [] };
+    t.docs.cards = t.docs.cards || [];
+    t.docs.files = t.docs.files || [];
+    return t.docs;
+  }
+
+  // ----- IndexedDB (cópia offline dos arquivos) -----
+  let idbPromise = null;
+  function idb() {
+    if (!idbPromise) {
+      idbPromise = new Promise((resolve, reject) => {
+        try {
+          const req = indexedDB.open('orbita-trip-docs', 1);
+          req.onupgradeneeded = () => req.result.createObjectStore('files');
+          req.onsuccess = () => resolve(req.result);
+          req.onerror = () => reject(req.error);
+        } catch (e) { reject(e); }
+      });
+    }
+    return idbPromise;
+  }
+  async function idbOp(mode, fn) {
+    const db = await idb();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction('files', mode);
+      const req = fn(tx.objectStore('files'));
+      tx.oncomplete = () => resolve(req && req.result);
+      tx.onerror = () => reject(tx.error);
+    });
+  }
+  const idbPut = (k, v) => idbOp('readwrite', s => s.put(v, k)).catch(e => console.warn('IndexedDB:', e));
+  const idbGet = k => idbOp('readonly', s => s.get(k)).catch(() => null);
+  const idbDel = k => idbOp('readwrite', s => s.delete(k)).catch(() => null);
+  const idbKeys = () => idbOp('readonly', s => s.getAllKeys()).catch(() => []);
+  idbKeys().then(keys => { (keys || []).forEach(k => offlineSet.add(k)); if (tab === 'docs') renderDocs(); });
+
+  // ----- helpers -----
+  function fmtDate(iso) {
+    if (!iso) return '';
+    return parseISO(iso).toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' }).replace(/\./g, '');
+  }
+  function fmtSize(b) { return b > 1048576 ? (b / 1048576).toFixed(1) + ' MB' : Math.max(1, Math.round(b / 1024)) + ' KB'; }
+  function cardTitle(c) {
+    const f = c.fields || {};
+    switch (c.type) {
+      case 'flight': return [f.airline, f.flight].filter(Boolean).join(' · ') || 'Voo';
+      case 'transport': return f.company || 'Transporte';
+      case 'hotel': return f.name || 'Hospedagem';
+      case 'insurance': return f.company || 'Seguro viagem';
+      case 'passport': return f.holder ? `Passaporte · ${f.holder}` : 'Passaporte';
+      case 'contact': return f.name || 'Contato';
+      default: return f.title || 'Informação';
+    }
+  }
+  function sortKey(c) {
+    const f = c.fields || {};
+    return (f.date || f.checkin || '9999') + (f.time || '');
+  }
+  async function copyText(text, btn) {
+    try { await navigator.clipboard.writeText(text); }
+    catch {
+      const ta = document.createElement('textarea');
+      ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); } catch {}
+      ta.remove();
+    }
+    if (btn) { const old = btn.innerHTML; btn.innerHTML = '✓ Copiado'; btn.classList.add('is-done'); setTimeout(() => { btn.innerHTML = old; btn.classList.remove('is-done'); }, 1300); }
+  }
+  function copyBtn(value, label) {
+    return `<button class="tp-copy" data-doc-copy="${escapeHTML(value)}" title="Copiar ${escapeHTML(label)}">${COPY_ICON} Copiar</button>`;
+  }
+  // Separa "GRU · São Paulo" em código grande + nome
+  function airport(s) {
+    const v = (s || '').trim();
+    const m = v.match(/^([A-Za-z]{3})\b\s*[·\-–—,]?\s*(.*)$/);
+    return m ? { code: m[1].toUpperCase(), name: m[2] } : { code: '', name: v };
+  }
+
+  // ----- render -----
+  function renderDocs() {
+    const docs = D();
+    const el = $('tp-view-docs');
+    const today = localISO(new Date());
+    const cards = docs.cards.slice().sort((a, b) => DOC_ORDER.indexOf(a.type) - DOC_ORDER.indexOf(b.type) || sortKey(a).localeCompare(sortKey(b)));
+    const nextFlight = cards.filter(c => c.type === 'flight' && (c.fields.date || '') >= today).sort((a, b) => sortKey(a).localeCompare(sortKey(b)))[0];
+    const generalFiles = docs.files.filter(f => !f.cardId || !docs.cards.some(c => c.id === f.cardId));
+    const allCached = docs.files.length && docs.files.every(f => offlineSet.has(f.path));
+    el.innerHTML = `
+      <div class="tp-toolbar">
+        <div class="tp-doc-add">
+          ${DOC_ORDER.map(k => `<button class="btn btn-ghost" data-doc-new="${k}">${DOC_TYPES[k].emoji} ${escapeHTML(DOC_TYPES[k].label)}</button>`).join('')}
+        </div>
+      </div>
+      ${!cards.length ? `<div class="tp-doc-empty">
+          <div class="tp-doc-empty-title">Guarde aqui tudo que você vai precisar mostrar ou digitar na viagem</div>
+          <div>Voos com localizador e nº do bilhete, hospedagens, seguro, passaporte, contatos. Toque num tipo acima para começar, e anexe os PDFs e fotos.</div>
+        </div>` : ''}
+      ${nextFlight ? `<div class="tp-doc-section-title">Próximo voo</div>${docCard(nextFlight, true)}` : ''}
+      ${DOC_ORDER.map(type => {
+        const list = cards.filter(c => c.type === type && c !== nextFlight);
+        if (!list.length) return '';
+        return `<div class="tp-doc-section-title">${DOC_TYPES[type].emoji} ${escapeHTML(DOC_TYPES[type].label)}${type === 'flight' && nextFlight ? ' · outros' : ''}</div>
+          <div class="tp-doc-grid">${list.map(c => docCard(c, false)).join('')}</div>`;
+      }).join('')}
+      <div class="tp-doc-section-title tp-doc-files-head">
+        <span>📎 Arquivos</span>
+        <span class="tp-doc-files-actions">
+          ${docs.files.length ? `<button class="btn btn-ghost" data-doc-offline-all ${allCached ? 'disabled' : ''}>${allCached ? '✓ Tudo disponível offline' : 'Baixar tudo para usar offline'}</button>` : ''}
+          <button class="btn" data-doc-attach="">+ Anexar arquivo</button>
+        </span>
+      </div>
+      ${uploadingCount ? `<div class="tp-doc-uploading">Enviando ${uploadingCount} ${uploadingCount === 1 ? 'arquivo' : 'arquivos'}…</div>` : ''}
+      ${generalFiles.length ? `<div class="tp-file-grid">${generalFiles.map(fileTile).join('')}</div>`
+        : `<div class="tp-doc-note">PDF ou foto de passaporte, cartões de embarque, apólice, reservas (até 10 MB cada). Ficam privados na sua conta.</div>`}`;
+    hydrateThumbs();
+  }
+
+  function docCard(c, hero) {
+    const f = c.fields || {};
+    const def = DOC_TYPES[c.type] || DOC_TYPES.other;
+    const files = D().files.filter(x => x.cardId === c.id);
+    const actions = `
+      <div class="tp-doc-actions">
+        <button class="tp-icon-btn" data-doc-attach="${c.id}" title="Anexar arquivo">📎</button>
+        <button class="tp-icon-btn" data-doc-edit="${c.id}" title="Editar" aria-label="Editar">${ICON.edit}</button>
+        <button class="tp-icon-btn" data-doc-del="${c.id}" title="Excluir" aria-label="Excluir">${ICON.trash}</button>
+      </div>`;
+    const filesHTML = files.length ? `<div class="tp-file-grid is-compact">${files.map(fileTile).join('')}</div>` : '';
+    if (c.type === 'flight') {
+      const a = airport(f.from), b = airport(f.to);
+      return `
+        <div class="tp-pass ${hero ? 'is-hero' : ''}">
+          <div class="tp-pass-top">
+            <div class="tp-pass-airline">✈️ ${escapeHTML(cardTitle(c))}</div>
+            ${actions}
+          </div>
+          <div class="tp-pass-route">
+            <div class="tp-pass-ap"><div class="tp-pass-code">${escapeHTML(a.code || '—')}</div><div class="tp-pass-city">${escapeHTML(a.name)}</div></div>
+            <div class="tp-pass-plane">✈</div>
+            <div class="tp-pass-ap is-right"><div class="tp-pass-code">${escapeHTML(b.code || '—')}</div><div class="tp-pass-city">${escapeHTML(b.name)}</div></div>
+          </div>
+          <div class="tp-pass-when">${escapeHTML([fmtDate(f.date), f.time].filter(Boolean).join(' · ') || 'Data não informada')}</div>
+          <div class="tp-pass-codes">
+            ${f.locator ? `<div class="tp-pass-field is-big"><div class="tp-label">Localizador</div><div class="tp-mono">${escapeHTML(f.locator)}</div>${copyBtn(f.locator, 'localizador')}</div>` : ''}
+            ${f.ticket ? `<div class="tp-pass-field"><div class="tp-label">Nº do bilhete</div><div class="tp-mono is-small">${escapeHTML(f.ticket)}</div>${copyBtn(f.ticket, 'nº do bilhete')}</div>` : ''}
+          </div>
+          ${(f.seat || f.terminal || f.baggage) ? `<div class="tp-pass-mini">
+            ${f.seat ? `<div><span class="tp-label">Assento</span>${escapeHTML(f.seat)}</div>` : ''}
+            ${f.terminal ? `<div><span class="tp-label">Terminal</span>${escapeHTML(f.terminal)}</div>` : ''}
+            ${f.baggage ? `<div><span class="tp-label">Bagagem</span>${escapeHTML(f.baggage)}</div>` : ''}
+          </div>` : ''}
+          ${f.notes ? `<div class="tp-doc-notes">${escapeHTML(f.notes)}</div>` : ''}
+          ${filesHTML}
+        </div>`;
+    }
+    const t = T();
+    let warn = '';
+    if (c.type === 'passport' && f.expiry) {
+      const ref = t.end || t.start || localISO(new Date());
+      if (f.expiry < addDaysISO(ref, 90)) warn = `<span class="tp-doc-warn">Validade curta: a Europa exige 3 meses após a volta</span>`;
+    }
+    const titleKeys = { transport: 'company', hotel: 'name', insurance: 'company', contact: 'name', other: 'title' };
+    const rows = def.fields.filter(([k, , , kind]) => f[k] && kind !== 'textarea' && k !== titleKeys[c.type] && !(c.type === 'passport' && k === 'holder')).map(([k, label, , kind]) => {
+      const shown = kind === 'date' ? fmtDate(f[k]) : f[k];
+      const big = kind === 'copy';
+      return `<div class="tp-doc-row ${big ? 'is-copy' : ''}">
+        <div class="tp-label">${escapeHTML(label)}</div>
+        <div class="${big ? 'tp-mono' : 'tp-doc-val'}">${escapeHTML(shown)}</div>
+        ${big ? copyBtn(f[k], label) : ''}
+      </div>`;
+    }).join('');
+    return `
+      <div class="tp-doc-card">
+        <div class="tp-doc-card-top">
+          <div class="tp-doc-card-title">${def.emoji} ${escapeHTML(cardTitle(c))}</div>
+          ${actions}
+        </div>
+        ${warn}
+        <div class="tp-doc-rows">${rows || '<div class="tp-doc-note">Sem detalhes ainda. Toque em editar.</div>'}</div>
+        ${f.notes ? `<div class="tp-doc-notes">${escapeHTML(f.notes)}</div>` : ''}
+        ${filesHTML}
+      </div>`;
+  }
+
+  function fileTile(f) {
+    const isImg = (f.mime || '').startsWith('image/');
+    const off = offlineSet.has(f.path);
+    return `
+      <div class="tp-file" data-doc-open="${f.id}" title="Abrir ${escapeHTML(f.name)}">
+        <div class="tp-file-thumb ${isImg ? 'is-img' : ''}" ${isImg ? `data-thumb="${escapeHTML(f.path)}"` : ''}>${isImg ? '' : '<span>PDF</span>'}</div>
+        <div class="tp-file-meta">
+          <div class="tp-file-name">${escapeHTML(f.name)}</div>
+          <div class="tp-file-sub">${fmtSize(f.size || 0)}${off ? ' · <span class="tp-file-off">✓ offline</span>' : ''}</div>
+        </div>
+        <button class="tp-icon-btn tp-file-del" data-doc-file-del="${f.id}" title="Excluir arquivo" aria-label="Excluir arquivo">${ICON.x}</button>
+      </div>`;
+  }
+
+  async function signedUrl(path) {
+    const hit = signedCache.get(path);
+    if (hit && hit.exp > Date.now() + 60000) return hit.url;
+    const { data, error } = await sb.storage.from(DOC_BUCKET).createSignedUrl(path, 3600);
+    if (error) throw error;
+    signedCache.set(path, { url: data.signedUrl, exp: Date.now() + 3600 * 1000 });
+    return data.signedUrl;
+  }
+
+  // Miniaturas: usa a cópia offline se houver, senão link temporário
+  async function hydrateThumbs() {
+    for (const el of $('tp-view-docs').querySelectorAll('[data-thumb]')) {
+      const path = el.dataset.thumb;
+      try {
+        let url = null;
+        if (offlineSet.has(path)) {
+          const blob = await idbGet(path);
+          if (blob) url = URL.createObjectURL(blob);
+        }
+        if (!url) url = await signedUrl(path);
+        el.style.backgroundImage = `url("${url}")`;
+      } catch (e) { /* sem miniatura: fica o fundo neutro */ }
+    }
+  }
+
+  async function openFile(id) {
+    const f = D().files.find(x => x.id === id);
+    if (!f) return;
+    // Abre a aba antes do await para não ser bloqueada como pop-up
+    const win = window.open('', '_blank');
+    try {
+      let url = null;
+      const blob = await idbGet(f.path);
+      if (blob) url = URL.createObjectURL(blob);
+      else {
+        url = await signedUrl(f.path);
+        cacheOffline(f).then(() => { if (tab === 'docs') renderDocs(); });
+      }
+      if (win) win.location.href = url; else window.location.href = url;
+    } catch (err) {
+      if (win) win.close();
+      alert('Não consegui abrir o arquivo. Confira a conexão.\n' + (err.message || ''));
+    }
+  }
+
+  async function cacheOffline(f) {
+    if (offlineSet.has(f.path)) return;
+    const { data, error } = await sb.storage.from(DOC_BUCKET).download(f.path);
+    if (error || !data) return;
+    await idbPut(f.path, data);
+    offlineSet.add(f.path);
+  }
+
+  function guessMime(file) {
+    if (file.type) return file.type;
+    const ext = (file.name.split('.').pop() || '').toLowerCase();
+    return { pdf: 'application/pdf', jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', webp: 'image/webp', heic: 'image/heic', heif: 'image/heif' }[ext] || '';
+  }
+
+  async function uploadFiles(fileList, cardId) {
+    if (!currentUser) { alert('Faça login para anexar arquivos.'); return; }
+    const okTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'];
+    const files = [...fileList];
+    const bad = files.filter(f => f.size > DOC_MAX_BYTES || !okTypes.includes(guessMime(f)));
+    if (bad.length) alert(`Estes arquivos não foram enviados (só PDF ou foto, até 10 MB):\n${bad.map(f => '• ' + f.name).join('\n')}`);
+    const good = files.filter(f => !bad.includes(f));
+    if (!good.length) return;
+    uploadingCount += good.length;
+    renderDocs();
+    const failed = [];
+    await Promise.all(good.map(async file => {
+      const id = uid();
+      const safe = file.name.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^\w.\-]+/g, '_').slice(-80);
+      const path = `${currentUser.id}/trip/${id}-${safe}`;
+      const mime = guessMime(file);
+      try {
+        const { error } = await sb.storage.from(DOC_BUCKET).upload(path, file, { contentType: mime, upsert: false });
+        if (error) throw error;
+        D().files.push({ id, name: file.name, path, mime, size: file.size, cardId: cardId || null, createdAt: new Date().toISOString() });
+        saveState();
+        await idbPut(path, file);
+        offlineSet.add(path);
+      } catch (err) {
+        console.error('Upload do documento falhou:', err);
+        failed.push(file.name);
+      } finally {
+        uploadingCount--;
+      }
+    }));
+    renderDocs();
+    if (failed.length) alert(`Não consegui enviar:\n${failed.map(n => '• ' + n).join('\n')}\nConfira a conexão e tente de novo.`);
+  }
+
+  async function deleteFile(id) {
+    const docs = D();
+    const f = docs.files.find(x => x.id === id);
+    if (!f || !confirm(`Excluir o arquivo “${f.name}”?`)) return;
+    docs.files = docs.files.filter(x => x.id !== id);
+    saveState();
+    renderDocs();
+    idbDel(f.path); offlineSet.delete(f.path); signedCache.delete(f.path);
+    const { error } = await sb.storage.from(DOC_BUCKET).remove([f.path]);
+    if (error) console.warn('Remoção no storage falhou:', error);
+  }
+
+  // ----- modal -----
+  function openDocModal(type, card) {
+    editingDoc = { id: card ? card.id : null, type };
+    const def = DOC_TYPES[type];
+    $('trip-doc-title').textContent = card ? `Editar · ${def.label}` : `Novo · ${def.label}`;
+    $('trip-doc-delete').style.display = card ? '' : 'none';
+    const f = (card && card.fields) || {};
+    $('trip-doc-fields').innerHTML = def.fields.map(([k, label, ph, kind]) => `
+      <div class="form-group">
+        <label class="form-label" for="trip-doc-f-${k}">${escapeHTML(label)}</label>
+        ${kind === 'textarea'
+          ? `<textarea class="form-control" id="trip-doc-f-${k}" data-doc-field="${k}" placeholder="${escapeHTML(ph || '')}">${escapeHTML(f[k] || '')}</textarea>`
+          : `<input class="form-control" id="trip-doc-f-${k}" data-doc-field="${k}" type="${kind === 'date' ? 'date' : kind === 'time' ? 'time' : 'text'}" value="${escapeHTML(f[k] || '')}" placeholder="${escapeHTML(ph || '')}" ${kind === 'copy' ? 'autocapitalize="characters" spellcheck="false"' : ''} />`}
+      </div>`).join('');
+    $('trip-doc-modal').classList.add('active');
+    const first = $('trip-doc-fields').querySelector('input, textarea');
+    if (first) setTimeout(() => first.focus(), 50);
+  }
+
+  $('trip-doc-save').onclick = () => {
+    if (!editingDoc) return;
+    const docs = D();
+    const fields = {};
+    $('trip-doc-fields').querySelectorAll('[data-doc-field]').forEach(i => { const v = i.value.trim(); if (v) fields[i.dataset.docField] = v; });
+    if (!Object.keys(fields).length) { alert('Preencha pelo menos um campo.'); return; }
+    if (editingDoc.id) {
+      const c = docs.cards.find(x => x.id === editingDoc.id);
+      if (c) c.fields = fields;
+    } else {
+      docs.cards.push({ id: uid(), type: editingDoc.type, fields, createdAt: new Date().toISOString() });
+    }
+    saveState();
+    editingDoc = null;
+    closeAllModals();
+    renderDocs();
+  };
+  $('trip-doc-delete').onclick = () => {
+    if (!editingDoc || !editingDoc.id) return;
+    deleteCard(editingDoc.id);
+  };
+  function deleteCard(id) {
+    const docs = D();
+    const c = docs.cards.find(x => x.id === id);
+    if (!c) return;
+    const n = docs.files.filter(f => f.cardId === id).length;
+    if (!confirm(`Excluir “${cardTitle(c)}”?${n ? ` Os ${n} arquivo(s) anexados continuam em “Arquivos”.` : ''}`)) return;
+    docs.cards = docs.cards.filter(x => x.id !== id);
+    docs.files.forEach(f => { if (f.cardId === id) f.cardId = null; });
+    saveState();
+    closeAllModals();
+    renderDocs();
+  }
+
+  $('tp-doc-file').addEventListener('change', e => {
+    const files = e.target.files;
+    if (files && files.length) uploadFiles(files, attachFor);
+    e.target.value = '';
+  });
+
+  $('tp-view-docs').addEventListener('click', async e => {
+    const el = e.target.closest('[data-doc-new],[data-doc-edit],[data-doc-del],[data-doc-attach],[data-doc-copy],[data-doc-file-del],[data-doc-open],[data-doc-offline-all]');
+    if (!el) return;
+    const docs = D();
+    if (el.matches('[data-doc-copy]')) { e.stopPropagation(); copyText(el.dataset.docCopy, el); return; }
+    if (el.matches('[data-doc-file-del]')) { e.stopPropagation(); deleteFile(el.dataset.docFileDel); return; }
+    if (el.matches('[data-doc-new]')) openDocModal(el.dataset.docNew, null);
+    else if (el.matches('[data-doc-edit]')) { const c = docs.cards.find(x => x.id === el.dataset.docEdit); if (c) openDocModal(c.type, c); }
+    else if (el.matches('[data-doc-del]')) deleteCard(el.dataset.docDel);
+    else if (el.matches('[data-doc-attach]')) { attachFor = el.dataset.docAttach || null; $('tp-doc-file').click(); }
+    else if (el.matches('[data-doc-open]')) openFile(el.dataset.docOpen);
+    else if (el.matches('[data-doc-offline-all]')) {
+      el.disabled = true; el.textContent = 'Baixando…';
+      for (const f of docs.files) { try { await cacheOffline(f); } catch (err) { console.warn(err); } }
+      renderDocs();
+    }
   });
 
   // ---------- modal da viagem ----------
