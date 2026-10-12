@@ -3939,6 +3939,131 @@
   }
   .note-live-preview details[open] summary::before { transform: rotate(90deg); }
   .note-live-preview details > div { padding: 6px 0 2px; }
+
+  /* ============== VIAGEM ============== */
+  .tp-summary { display: grid; grid-template-columns: 1.2fr 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+  .tp-tile { background: var(--bg-elevated); border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; box-shadow: var(--shadow-sm); min-width: 0; }
+  .tp-tile-main { background: var(--ink); border-color: var(--ink); color: var(--bg); }
+  .tp-tile-label { font: 600 10px 'DM Sans', sans-serif; text-transform: uppercase; letter-spacing: 0.15em; color: var(--ink-faint); }
+  .tp-tile-main .tp-tile-label { color: inherit; opacity: 0.6; }
+  .tp-tile-value { font-size: 26px; font-weight: 300; letter-spacing: -0.02em; margin-top: 6px; line-height: 1.15; }
+  .tp-tile-sub { font-size: 12px; color: var(--ink-faint); margin-top: 6px; }
+  .tp-bar { height: 4px; background: var(--line-soft); border-radius: 4px; overflow: hidden; margin-top: 10px; }
+  .tp-bar span { display: block; height: 100%; background: var(--ink); border-radius: 4px; transition: width 0.3s ease; }
+
+  .tp-tabs { grid-template-columns: repeat(2, 1fr); max-width: 360px; }
+
+  .tp-toolbar { display: flex; gap: 8px; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-bottom: 16px; }
+  .tp-toolbar .btn-ghost { padding: 8px 14px; font-size: 12px; }
+
+  /* Checklists */
+  .tp-lists { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; align-items: start; }
+  .tp-list { background: var(--bg-elevated); border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px 12px; box-shadow: var(--shadow-sm); }
+  .tp-list.is-complete { border-color: var(--ink); }
+  .tp-list-head { display: flex; align-items: center; gap: 8px; }
+  .tp-list-emoji { font-size: 18px; line-height: 1; }
+  .tp-list-title { font-weight: 600; font-size: 15px; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .tp-list-count { font: 600 11px 'DM Sans', sans-serif; color: var(--ink-faint); letter-spacing: 0.05em; }
+  .tp-icon-btn { background: none; border: none; cursor: pointer; color: var(--ink-faint); padding: 4px; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; }
+  .tp-icon-btn:hover { color: var(--ink); background: var(--bg-card); }
+  .tp-list-head .tp-icon-btn { opacity: 0; transition: opacity 0.15s; }
+  .tp-list:hover .tp-list-head .tp-icon-btn, .tp-list-head .tp-icon-btn:focus-visible { opacity: 1; }
+  .tp-items { margin-top: 10px; }
+  .tp-item { display: grid; grid-template-columns: 20px 1fr auto; gap: 10px; align-items: start; padding: 7px 0; border-bottom: 1px solid var(--line-soft); }
+  .tp-item:last-child { border-bottom: none; }
+  .tp-item .checkbox { margin-top: 1px; }
+  .tp-item-text { font-size: 14px; line-height: 1.4; cursor: pointer; overflow-wrap: anywhere; }
+  .tp-item.done .tp-item-text { text-decoration: line-through; color: var(--ink-faint); }
+  .tp-item .tp-icon-btn { opacity: 0; padding: 2px; }
+  .tp-item:hover .tp-icon-btn, .tp-item .tp-icon-btn:focus-visible { opacity: 1; }
+  .tp-items-done { font-size: 12px; color: var(--ink-faint); padding: 6px 0; }
+  .tp-add-input { width: 100%; border: none; border-top: 1px dashed var(--line); background: transparent; color: var(--ink); font: 14px 'DM Sans', sans-serif; padding: 10px 0 4px; outline: none; margin-top: 4px; }
+  .tp-add-input::placeholder { color: var(--ink-faint); }
+
+  /* Roteiro + mapa */
+  .tp-plan { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+  .tp-map-col { position: sticky; top: 16px; min-width: 0; }
+  .tp-search { position: relative; display: flex; gap: 8px; margin-bottom: 10px; }
+  .tp-search .input { min-width: 0; padding-left: 38px; }
+  .tp-search-icon { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: var(--ink-faint); pointer-events: none; }
+  .tp-cats { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 4px; scrollbar-width: none; }
+  .tp-cats::-webkit-scrollbar { display: none; }
+  .tp-cats .btn-ghost { padding: 6px 12px; font-size: 12px; white-space: nowrap; flex-shrink: 0; }
+  .tp-map-wrap { position: relative; border: 1px solid var(--line); border-radius: 14px; overflow: hidden; box-shadow: var(--shadow-sm); }
+  #tp-map { height: 480px; width: 100%; background: #f5f5f3; font-family: 'DM Sans', sans-serif; z-index: 0; }
+  .tp-map-wrap .leaflet-popup-content-wrapper { border-radius: 12px; box-shadow: 0 4px 16px rgba(0,0,0,0.15); }
+  .tp-map-wrap .leaflet-popup-content { margin: 12px 14px; }
+  .tp-map-status { position: absolute; left: 50%; top: 12px; transform: translateX(-50%); z-index: 500; background: #fff; color: #111; border-radius: 999px; padding: 7px 14px; font-size: 12px; font-weight: 600; box-shadow: 0 2px 10px rgba(0,0,0,0.15); display: flex; gap: 8px; align-items: center; max-width: calc(100% - 24px); text-align: center; }
+  .tp-map-status[hidden] { display: none; }
+  .tp-map-status button { background: #111; color: #fff; border: none; border-radius: 999px; padding: 4px 10px; font: 600 12px 'DM Sans', sans-serif; cursor: pointer; white-space: nowrap; }
+  .tp-pin { background: transparent; border: none; }
+  .tp-pin svg { display: block; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3)); }
+  .tp-popup { font-family: 'DM Sans', sans-serif; color: #111; min-width: 190px; max-width: 240px; }
+  .tp-popup-name { font-weight: 700; font-size: 14px; line-height: 1.3; }
+  .tp-popup-sub { font-size: 11px; color: #666; margin: 3px 0 8px; line-height: 1.4; }
+  .tp-popup select { width: 100%; font: 12px 'DM Sans', sans-serif; padding: 6px; border: 1px solid #ddd; border-radius: 6px; margin-bottom: 6px; background: #fff; color: #111; }
+  .tp-popup-actions { display: flex; gap: 6px; align-items: center; }
+  .tp-popup-actions button { background: #111; color: #fff; border: none; border-radius: 6px; padding: 6px 12px; font: 600 12px 'DM Sans', sans-serif; cursor: pointer; }
+  .tp-popup-actions a { font-size: 12px; color: #111; }
+
+  .tp-results { margin-top: 12px; }
+  .tp-results:empty { display: none; }
+  .tp-results-head { display: flex; gap: 8px; align-items: center; justify-content: space-between; flex-wrap: wrap; margin-bottom: 8px; font: 600 11px 'DM Sans', sans-serif; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-faint); }
+  .tp-results-head label { display: inline-flex; gap: 6px; align-items: center; }
+  .tp-results-head .select { padding: 6px 10px; font-size: 12px; text-transform: none; letter-spacing: 0; max-width: 220px; min-width: 0; }
+  .tp-results-list { background: var(--bg-elevated); border: 1px solid var(--line); border-radius: 14px; max-height: 320px; overflow-y: auto; }
+  .tp-result { display: flex; gap: 10px; align-items: center; padding: 10px 14px; border-bottom: 1px solid var(--line-soft); }
+  .tp-result:last-child { border-bottom: none; }
+  .tp-result-body { flex: 1; min-width: 0; cursor: pointer; }
+  .tp-result-name { font-size: 14px; font-weight: 600; }
+  .tp-result-sub { font-size: 12px; color: var(--ink-faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tp-result .btn-ghost { padding: 6px 12px; font-size: 12px; white-space: nowrap; }
+
+  .tp-days-head { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
+  .tp-days-col { min-width: 0; }
+  .tp-days-head .filter-row { margin-bottom: 0; }
+  .tp-chip-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+  .tp-day { background: var(--bg-elevated); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; margin-bottom: 14px; box-shadow: var(--shadow-sm); }
+  .tp-day.is-focus { border-color: var(--ink); }
+  .tp-day-head { display: flex; gap: 10px; align-items: flex-start; }
+  .tp-day-dot { width: 10px; height: 10px; border-radius: 50%; margin-top: 4px; flex-shrink: 0; }
+  .tp-day-titles { flex: 1; min-width: 0; }
+  .tp-day-label { font: 600 10px 'DM Sans', sans-serif; text-transform: uppercase; letter-spacing: 0.15em; color: var(--ink-faint); }
+  .tp-day-title { width: 100%; border: none; background: transparent; color: var(--ink); font: 600 16px 'DM Sans', sans-serif; padding: 2px 0; outline: none; }
+  .tp-day-title::placeholder { color: var(--ink-faint); font-weight: 400; }
+  .tp-day-date { border: 1px solid var(--line); background: var(--bg); color: var(--ink-soft); border-radius: 6px; font: 12px 'DM Sans', sans-serif; padding: 4px 6px; }
+  .tp-stops { margin-top: 10px; }
+  .tp-empty-day { font-size: 13px; color: var(--ink-faint); padding: 6px 0 10px; }
+  .tp-stop { display: grid; grid-template-columns: 24px minmax(0, 1fr) auto; gap: 10px; padding: 10px 0; border-top: 1px solid var(--line-soft); }
+  .tp-stop-num { width: 22px; height: 22px; border-radius: 50%; color: #fff; font: 700 11px 'DM Sans', sans-serif; display: inline-flex; align-items: center; justify-content: center; margin-top: 1px; }
+  .tp-stop-name { font-size: 14px; font-weight: 600; line-height: 1.35; overflow-wrap: anywhere; }
+  .tp-stop-name[data-tp] { cursor: pointer; }
+  .tp-stop-name[data-tp]:hover { text-decoration: underline; text-underline-offset: 3px; }
+  .tp-stop-sub { font-size: 12px; color: var(--ink-faint); margin-top: 1px; overflow-wrap: anywhere; }
+  .tp-stop-note { width: 100%; border: none; background: transparent; color: var(--ink-soft); font: 12px 'DM Sans', sans-serif; padding: 4px 0 0; outline: none; }
+  .tp-stop-note::placeholder { color: var(--ink-faint); opacity: 0.7; }
+  .tp-stop-side { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+  .tp-time { border: 1px solid var(--line); background: var(--bg); color: var(--ink); border-radius: 6px; font: 12px 'DM Sans', sans-serif; padding: 3px 4px; width: 84px; }
+  .tp-stop-actions { display: flex; gap: 2px; align-items: center; }
+  .tp-move { border: 1px solid var(--line); background: var(--bg); color: var(--ink-soft); border-radius: 6px; font: 11px 'DM Sans', sans-serif; padding: 3px 2px; max-width: 74px; }
+  .tp-day-foot { margin-top: 2px; }
+  .tp-day-actions { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+  .tp-day-actions .btn-ghost { padding: 6px 12px; font-size: 12px; text-decoration: none; display: inline-flex; align-items: center; }
+
+  @media (hover: none) {
+    .tp-list-head .tp-icon-btn, .tp-item .tp-icon-btn { opacity: 1; }
+  }
+  @media (max-width: 1100px) {
+    .tp-plan { grid-template-columns: minmax(0, 1fr); }
+    .tp-map-col { position: static; }
+  }
+  @media (max-width: 900px) {
+    .tp-summary { grid-template-columns: 1fr 1fr; }
+    .tp-tile-main { grid-column: 1 / -1; }
+    #tp-map { height: 360px; }
+    .tp-lists { grid-template-columns: 1fr; }
+    .tp-tabs { max-width: none; }
+  }
 </style>
 </head>
 <body>
@@ -4050,6 +4175,10 @@
       <div class="nav-item" data-page="saude">
         <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 0 0 0-7.8z"/><path d="M3.5 12h4l2-3 3 6 2-3h6"/></svg>
         Saúde
+      </div>
+      <div class="nav-item" data-page="trip">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.8 19.2L16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg>
+        Viagem
       </div>
 
       <div class="nav-section">Execução</div>
@@ -4376,6 +4505,45 @@
       <div class="places-grid" id="places-grid"></div>
     </section>
 
+    <!-- VIAGEM -->
+    <section class="page" id="page-trip">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Via<em>gem</em></h1>
+          <div class="page-meta" id="tp-meta">—</div>
+        </div>
+        <button class="btn btn-ghost" id="tp-edit-btn">Editar viagem</button>
+      </div>
+
+      <div class="tp-summary" id="tp-summary"></div>
+
+      <div class="tr-tabs tp-tabs">
+        <button class="tr-tab active" data-tp-tab="checklists">Checklists</button>
+        <button class="tr-tab" data-tp-tab="roteiro">Roteiro e mapa</button>
+      </div>
+
+      <div id="tp-view-checklists"></div>
+
+      <div id="tp-view-roteiro" hidden>
+        <div class="tp-plan">
+          <div class="tp-map-col">
+            <div class="tp-search">
+              <svg class="tp-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="search" class="input" id="tp-search-input" placeholder="Pesquisar no mapa: Torre Eiffel, Louvre, um endereço…" autocomplete="off" enterkeyhint="search" />
+              <button class="btn btn-ghost" id="tp-search-clear" data-tp="clear-results" hidden>Limpar</button>
+            </div>
+            <div class="tp-cats" id="tp-cats"></div>
+            <div class="tp-map-wrap">
+              <div id="tp-map"></div>
+              <div class="tp-map-status" id="tp-map-status" hidden></div>
+            </div>
+            <div class="tp-results" id="tp-results"></div>
+          </div>
+          <div class="tp-days-col" id="tp-days"></div>
+        </div>
+      </div>
+    </section>
+
     <!-- BIRTHDAYS -->
     <section class="page" id="page-birthdays">
       <div class="page-header">
@@ -4576,6 +4744,36 @@
       <button class="btn btn-ghost" id="place-delete" style="display:none">Excluir</button>
       <button class="btn btn-ghost" data-close-modal>Cancelar</button>
       <button class="btn" id="place-save">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Viagem -->
+<div class="modal-bg" id="trip-modal">
+  <div class="modal">
+    <div class="modal-title">Sua viagem</div>
+    <div class="modal-sub">Com as datas preenchidas, os dias do roteiro são criados automaticamente</div>
+    <div class="form-group">
+      <label class="form-label">Nome</label>
+      <input type="text" class="form-control" id="trip-name" placeholder="Ex: Europa 2026" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">Destinos</label>
+      <input type="text" class="form-control" id="trip-cities" placeholder="Ex: Lisboa, Paris, Roma" />
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Ida</label>
+        <input type="date" class="form-control" id="trip-start" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Volta</label>
+        <input type="date" class="form-control" id="trip-end" />
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" data-close-modal>Cancelar</button>
+      <button class="btn" id="trip-save">Salvar</button>
     </div>
   </div>
 </div>
@@ -5453,6 +5651,7 @@ navItems.forEach(item => {
     if (target === 'treino') renderTreino(); if (target === 'saude') renderSaude();
     if (target === 'shopping') renderShopping();
     if (target === 'places') renderPlaces();
+    if (target === 'trip') renderTrip();
     if (target === 'birthdays') renderBirthdays();
     if (target === 'notes') renderNotes();
   });
@@ -11476,6 +11675,970 @@ const renderSaude = (() => {
       return {v: c || null, label: (i % 3 === 2 || i === 11) ? br(d) : "", tip: `Semana de ${br(d)} · ${c} ${c===1?"treino":"treinos"}`};
     }), {max: 7, ticks: [0, 3, 6], ref: 6, refLabel: "meta 6", aria: "Treinos por semana nas últimas 12 semanas"});
   }
+
+  return render;
+})();
+
+// ============== VIAGEM ==============
+// Checklists de viagem + roteiro por dia + mapa com busca de lugares.
+// Busca por nome/endereço: Photon (OSM, sem chave), fallback Nominatim.
+// "O que tem aqui": Overpass API na área visível do mapa.
+const renderTrip = (() => {
+  const COLORS = ['#2563eb', '#db2777', '#16a34a', '#ea580c', '#7c3aed', '#0891b2', '#ca8a04', '#dc2626'];
+  const IDEA_COLOR = '#71717a';
+  const RESULT_COLOR = '#111111';
+  const PHOTON_URL = 'https://photon.komoot.io/api/';
+  const OVERPASS_URL = 'https://overpass-api.de/api/interpreter';
+  const EUROPE = [48.5, 8];
+
+  const CATS = [
+    { k: 'atracoes', label: 'Atrações', f: ['["tourism"~"^(attraction|museum|gallery|viewpoint)$"]', '["historic"~"^(monument|castle|memorial|ruins)$"]'] },
+    { k: 'restaurantes', label: 'Restaurantes', f: ['["amenity"="restaurant"]'] },
+    { k: 'cafes', label: 'Cafés e padarias', f: ['["amenity"="cafe"]', '["shop"="bakery"]'] },
+    { k: 'bares', label: 'Bares', f: ['["amenity"~"^(bar|pub)$"]'] },
+    { k: 'mercados', label: 'Mercados', f: ['["shop"~"^(supermarket|convenience)$"]'] },
+    { k: 'farmacias', label: 'Farmácias', f: ['["amenity"="pharmacy"]'] },
+    { k: 'transporte', label: 'Metrô e trem', f: ['["railway"~"^(station|halt)$"]'] },
+  ];
+
+  const TYPE_LABELS = {
+    restaurant: 'Restaurante', cafe: 'Café', bakery: 'Padaria', bar: 'Bar', pub: 'Pub', fast_food: 'Lanchonete',
+    ice_cream: 'Sorveteria', museum: 'Museu', gallery: 'Galeria', attraction: 'Atração', viewpoint: 'Mirante',
+    monument: 'Monumento', castle: 'Castelo', memorial: 'Memorial', ruins: 'Ruínas', supermarket: 'Supermercado',
+    convenience: 'Conveniência', pharmacy: 'Farmácia', station: 'Estação', halt: 'Estação', hotel: 'Hotel',
+    hostel: 'Hostel', guest_house: 'Pousada', apartment: 'Apartamento', place_of_worship: 'Igreja / templo',
+    cathedral: 'Catedral', church: 'Igreja', park: 'Parque', garden: 'Jardim', square: 'Praça', city: 'Cidade',
+    town: 'Cidade', village: 'Vila', suburb: 'Bairro', neighbourhood: 'Bairro', aerodrome: 'Aeroporto',
+    airport: 'Aeroporto', theatre: 'Teatro', zoo: 'Zoológico', artwork: 'Arte pública', information: 'Info turística',
+    house: 'Endereço', residential: 'Rua', street: 'Rua', primary: 'Avenida', secondary: 'Rua', tertiary: 'Rua',
+    pedestrian: 'Rua de pedestres', bridge: 'Ponte', tower: 'Torre', palace: 'Palácio', beach: 'Praia',
+    marketplace: 'Mercado de rua', mall: 'Shopping', clothes: 'Loja de roupas', department_store: 'Loja de departamento',
+    bus_station: 'Rodoviária', subway: 'Metrô', stadium: 'Estádio', university: 'Universidade',
+  };
+
+  const SEED_LISTS = [
+    ['🛂', 'Documentos', [
+      'Passaporte (validade de pelo menos 3 meses após a volta)',
+      'Seguro viagem com cobertura mínima de €30 mil — apólice impressa e no celular',
+      'Passagens aéreas / cartões de embarque',
+      'Reservas de hospedagem (impressas ou offline)',
+      'Comprovante da passagem de volta',
+      'Comprovante financeiro (extrato ou fatura do cartão)',
+      'CNH + Permissão Internacional para Dirigir (se for alugar carro)',
+      'Cópias digitais de tudo no e-mail / nuvem',
+      'Conferir se o ETIAS já é exigido na data da viagem',
+    ]],
+    ['💶', 'Dinheiro e cartões', [
+      'Cartão internacional / conta global (Wise, Nomad etc.)',
+      'Avisar o banco sobre a viagem',
+      'Cartão de crédito reserva guardado separado',
+      'Alguns euros em espécie',
+      'Anotar os telefones de bloqueio dos cartões',
+    ]],
+    ['🔌', 'Eletrônicos', [
+      'Celular e carregador',
+      'Adaptador de tomada (tipo C/F na Europa · tipo G no Reino Unido)',
+      'Power bank (só na bagagem de mão)',
+      'Chip ou eSIM internacional ativado',
+      'Fones de ouvido',
+      'Baixar mapas offline das cidades',
+      'Baixar filmes, séries e playlists para o voo',
+    ]],
+    ['👕', 'Mala — roupas', [
+      'Casaco quente',
+      'Jaqueta corta-vento / impermeável',
+      'Blusas de manga longa',
+      'Camisetas',
+      'Calças',
+      'Roupa íntima (dias de viagem + 2)',
+      'Meias',
+      'Pijama',
+      'Tênis confortável para caminhar',
+      'Um sapato extra',
+      'Cachecol, gorro e luvas',
+      'Guarda-chuva compacto',
+    ]],
+    ['🧴', 'Higiene e saúde', [
+      'Escova e pasta de dente',
+      'Desodorante',
+      'Shampoo / condicionador (até 100 ml na bagagem de mão)',
+      'Saco transparente para os líquidos da bagagem de mão',
+      'Remédios de uso contínuo + receita',
+      'Kit básico: analgésico, antialérgico, enjoo e estômago',
+      'Hidratante labial e protetor solar',
+      'Barbeador / lâmina',
+    ]],
+    ['🎒', 'Bagagem de mão', [
+      'Passaporte e documentos',
+      'Carteira e cartões',
+      'Eletrônicos e carregadores',
+      'Remédios',
+      'Uma muda de roupa',
+      'Garrafa vazia (encher depois do raio-x)',
+      'Travesseiro de pescoço e máscara de dormir',
+      'Caneta (formulários de imigração)',
+    ]],
+    ['🏠', 'Antes de sair de casa', [
+      'Fazer o check-in online',
+      'Confirmar horário e terminal do voo',
+      'Combinar transporte para o aeroporto (chegar 3h antes)',
+      'Desligar aparelhos e tirar da tomada',
+      'Fechar gás, registro de água e janelas',
+      'Tirar o lixo e esvaziar a geladeira',
+      'Deixar chave reserva com alguém de confiança',
+      'Pesar a mala',
+    ]],
+  ];
+
+  const ICON = {
+    edit: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg>',
+    reset: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.5 15a9 9 0 102.1-9.4L1 10"/></svg>',
+    trash: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 01-2 2H9a2 2 0 01-2-2L5 6"/></svg>',
+    x: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
+    up: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18 15 12 9 6 15"/></svg>',
+    down: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>',
+    ext: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>',
+  };
+
+  let tab = 'checklists';
+  let hideDone = false;
+  let mapFilter = 'all';
+  let lastTarget = null;
+  let map = null, planLayer = null, resultsLayer = null;
+  const stopMarkers = new Map();
+  let results = [], resultsLabel = '', activeCat = null, catBounds = null;
+  let searchTimer = null, searchSeq = 0;
+  let needsFit = true;
+
+  const page = document.getElementById('page-trip');
+  const $ = id => document.getElementById(id);
+
+  // ---------- datas ----------
+  function localISO(d) {
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  }
+  function parseISO(s) { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); }
+  function fmtDay(s) {
+    if (!s) return 'Sem data';
+    return parseISO(s).toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: 'short' }).replace(/\./g, '');
+  }
+  function nextWeekday(wd) {
+    const d = new Date(); d.setHours(0, 0, 0, 0);
+    d.setDate(d.getDate() + (wd - d.getDay() + 7) % 7);
+    return localISO(d);
+  }
+  function addDaysISO(s, n) { const d = parseISO(s); d.setDate(d.getDate() + n); return localISO(d); }
+
+  // ---------- estado ----------
+  function T() {
+    if (!state.trip) {
+      const start = nextWeekday(3); // quarta-feira
+      state.trip = {
+        name: 'Europa',
+        cities: '',
+        start,
+        end: '',
+        checklists: SEED_LISTS.map(([emoji, name, items]) => ({
+          id: uid(), emoji, name, items: items.map(text => ({ id: uid(), text, done: false })),
+        })),
+        days: [{ id: uid(), date: start, title: 'Embarque', stops: [] }],
+        ideas: [],
+      };
+      saveState();
+    }
+    const t = state.trip;
+    t.checklists = t.checklists || [];
+    t.days = t.days || [];
+    t.ideas = t.ideas || [];
+    t.days.forEach(d => { d.stops = d.stops || []; });
+    return t;
+  }
+  function stopsOf(target) {
+    const t = T();
+    if (target === 'ideas') return t.ideas;
+    const d = t.days.find(x => x.id === target);
+    return d ? d.stops : null;
+  }
+  function sortDays() {
+    T().days.sort((a, b) => (a.date || '9999').localeCompare(b.date || '9999'));
+  }
+  const hasCoords = s => typeof s.lat === 'number' && typeof s.lng === 'number';
+  function dayColor(id) {
+    if (id === 'ideas') return IDEA_COLOR;
+    const i = T().days.findIndex(d => d.id === id);
+    return COLORS[Math.max(i, 0) % COLORS.length];
+  }
+  function validTarget() {
+    const t = T();
+    if (lastTarget === 'ideas' || t.days.some(d => d.id === lastTarget)) return lastTarget;
+    if (mapFilter !== 'all') return mapFilter;
+    const today = localISO(new Date());
+    const d = t.days.find(x => x.date >= today) || t.days[0];
+    return d ? d.id : 'ideas';
+  }
+  function targetOptions(selected) {
+    const t = T();
+    return t.days.map((d, i) => `<option value="${d.id}" ${d.id === selected ? 'selected' : ''}>Dia ${i + 1} · ${escapeHTML(fmtDay(d.date))}${d.title ? ' — ' + escapeHTML(d.title) : ''}</option>`).join('')
+      + `<option value="ideas" ${selected === 'ideas' ? 'selected' : ''}>Ideias (sem dia)</option>`;
+  }
+  function isPlanned(r) {
+    const t = T();
+    const all = t.ideas.concat(...t.days.map(d => d.stops));
+    return all.some(s => hasCoords(s) && s.name === r.name && Math.abs(s.lat - r.lat) < 0.0005 && Math.abs(s.lng - r.lng) < 0.0005);
+  }
+  function addStop(target, place) {
+    const list = stopsOf(target);
+    if (!list) return null;
+    const stop = {
+      id: uid(), name: place.name, lat: place.lat, lng: place.lng,
+      address: place.address || '', category: place.category || '', time: '', note: '',
+    };
+    list.push(stop);
+    lastTarget = target;
+    saveState();
+    return stop;
+  }
+
+  // ---------- links ----------
+  function gmapsPlaceURL(s) {
+    const q = s.address ? `${s.name}, ${s.address}` : hasCoords(s) ? `${s.lat},${s.lng}` : s.name;
+    return 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(q);
+  }
+  function gmapsRouteURL(stops) {
+    const pts = stops.filter(hasCoords).map(s => `${s.lat},${s.lng}`);
+    const u = new URL('https://www.google.com/maps/dir/');
+    u.searchParams.set('api', '1');
+    u.searchParams.set('origin', pts[0]);
+    u.searchParams.set('destination', pts[pts.length - 1]);
+    if (pts.length > 2) u.searchParams.set('waypoints', pts.slice(1, -1).join('|'));
+    u.searchParams.set('travelmode', 'walking');
+    return u.toString();
+  }
+
+  // ---------- render ----------
+  function render() {
+    const t = T();
+    renderHeader();
+    page.querySelectorAll('[data-tp-tab]').forEach(b => b.classList.toggle('active', b.dataset.tpTab === tab));
+    $('tp-view-checklists').hidden = tab !== 'checklists';
+    $('tp-view-roteiro').hidden = tab !== 'roteiro';
+    if (tab === 'checklists') renderChecklists();
+    else {
+      sortDays();
+      renderDays();
+      renderCats();
+      renderResults();
+      renderMap(needsFit);
+      needsFit = false;
+    }
+    return t;
+  }
+
+  function countdown(t) {
+    if (!t.start) return 'Defina a data de embarque';
+    const today = parseISO(localISO(new Date()));
+    const diff = Math.round((parseISO(t.start) - today) / 864e5);
+    if (diff > 1) return `Faltam ${diff} dias`;
+    if (diff === 1) return 'Embarque amanhã';
+    if (diff === 0) return 'Embarque hoje';
+    if (t.end && parseISO(t.end) < today) return 'Viagem concluída';
+    return `Dia ${1 - diff} da viagem`;
+  }
+
+  function renderHeader() {
+    const t = T();
+    const items = t.checklists.flatMap(c => c.items);
+    const done = items.filter(i => i.done).length;
+    const pct = items.length ? Math.round(done / items.length * 100) : 0;
+    const stops = t.days.reduce((n, d) => n + d.stops.length, 0);
+    const range = t.start ? fmtDay(t.start) + (t.end ? ' → ' + fmtDay(t.end) : '') : '';
+    $('tp-meta').textContent = [t.name, t.cities, range].filter(Boolean).join(' · ').toUpperCase() || '—';
+    $('tp-summary').innerHTML = `
+      <div class="tp-tile tp-tile-main">
+        <div class="tp-tile-label">Contagem</div>
+        <div class="tp-tile-value">${escapeHTML(countdown(t))}</div>
+        <div class="tp-tile-sub" style="color:inherit;opacity:.6">${t.start ? 'Embarque ' + escapeHTML(fmtDay(t.start)) : 'Toque em “Editar viagem”'}</div>
+      </div>
+      <div class="tp-tile">
+        <div class="tp-tile-label">Checklists</div>
+        <div class="tp-tile-value">${pct}%</div>
+        <div class="tp-bar"><span style="width:${pct}%"></span></div>
+        <div class="tp-tile-sub">${done} de ${items.length} itens prontos</div>
+      </div>
+      <div class="tp-tile">
+        <div class="tp-tile-label">Roteiro</div>
+        <div class="tp-tile-value">${t.days.length} ${t.days.length === 1 ? 'dia' : 'dias'}</div>
+        <div class="tp-tile-sub">${stops} ${stops === 1 ? 'parada' : 'paradas'} · ${t.ideas.length} ${t.ideas.length === 1 ? 'ideia' : 'ideias'}</div>
+      </div>`;
+  }
+
+  // ---------- checklists ----------
+  function renderChecklists() {
+    const t = T();
+    $('tp-view-checklists').innerHTML = `
+      <div class="tp-toolbar">
+        <button class="btn btn-ghost ${hideDone ? 'active' : ''}" data-tp="toggle-hide">${hideDone ? 'Mostrar itens prontos' : 'Ocultar itens prontos'}</button>
+        <button class="btn" data-tp="new-list">+ Nova checklist</button>
+      </div>
+      <div class="tp-lists">
+        ${t.checklists.map(listCard).join('') || '<div class="empty-state"><div class="empty-state-title">Nenhuma checklist</div><div>Crie uma em “+ Nova checklist”.</div></div>'}
+      </div>`;
+  }
+  function listCard(c) {
+    const done = c.items.filter(i => i.done).length;
+    const pct = c.items.length ? Math.round(done / c.items.length * 100) : 0;
+    const items = hideDone ? c.items.filter(i => !i.done) : c.items;
+    const complete = c.items.length > 0 && done === c.items.length;
+    return `
+      <div class="tp-list ${complete ? 'is-complete' : ''}">
+        <div class="tp-list-head">
+          <span class="tp-list-emoji">${escapeHTML(c.emoji || '📋')}</span>
+          <div class="tp-list-title" title="${escapeHTML(c.name)}">${escapeHTML(c.name)}</div>
+          <span class="tp-list-count">${done}/${c.items.length}</span>
+          <button class="tp-icon-btn" data-tp="rename-list" data-id="${c.id}" title="Renomear" aria-label="Renomear">${ICON.edit}</button>
+          <button class="tp-icon-btn" data-tp="reset-list" data-id="${c.id}" title="Desmarcar tudo" aria-label="Desmarcar tudo">${ICON.reset}</button>
+          <button class="tp-icon-btn" data-tp="del-list" data-id="${c.id}" title="Excluir checklist" aria-label="Excluir checklist">${ICON.trash}</button>
+        </div>
+        <div class="tp-bar"><span style="width:${pct}%"></span></div>
+        <div class="tp-items">
+          ${items.map(i => `
+            <div class="tp-item ${i.done ? 'done' : ''}">
+              <div class="checkbox ${i.done ? 'checked' : ''}" data-tp="toggle-item" data-list="${c.id}" data-id="${i.id}" role="checkbox" aria-checked="${i.done}"></div>
+              <span class="tp-item-text" data-tp="toggle-item" data-list="${c.id}" data-id="${i.id}">${escapeHTML(i.text)}</span>
+              <button class="tp-icon-btn" data-tp="del-item" data-list="${c.id}" data-id="${i.id}" aria-label="Excluir item">${ICON.x}</button>
+            </div>`).join('')}
+          ${hideDone && complete ? '<div class="tp-items-done">Tudo pronto ✓</div>' : ''}
+        </div>
+        <input type="text" class="tp-add-input" data-tp-add-item="${c.id}" placeholder="+ Adicionar item" enterkeyhint="done" />
+      </div>`;
+  }
+
+  // ---------- roteiro ----------
+  function stopRow(s, idx, target, color) {
+    const located = hasCoords(s);
+    const t = T();
+    const moveOpts = t.days.map((d, i) => d.id === target ? '' : `<option value="${d.id}">Dia ${i + 1}</option>`).join('')
+      + (target === 'ideas' ? '' : '<option value="ideas">Ideias</option>');
+    const sub = [s.category, s.address].filter(Boolean).join(' · ') || (located ? '' : 'Sem localização no mapa');
+    return `
+      <div class="tp-stop">
+        <span class="tp-stop-num" style="background:${color}">${target === 'ideas' ? '★' : idx + 1}</span>
+        <div>
+          <div class="tp-stop-name" ${located ? `data-tp="focus-stop" data-target="${target}" data-id="${s.id}" title="Ver no mapa"` : ''}>${escapeHTML(s.name)}</div>
+          ${sub ? `<div class="tp-stop-sub">${escapeHTML(sub)}</div>` : ''}
+          <input type="text" class="tp-stop-note" data-tp-note data-target="${target}" data-id="${s.id}" value="${escapeHTML(s.note || '')}" placeholder="Anotação: ingresso, reserva, horário…" />
+        </div>
+        <div class="tp-stop-side">
+          ${target === 'ideas' ? '' : `<input type="time" class="tp-time" data-tp-time data-target="${target}" data-id="${s.id}" value="${escapeHTML(s.time || '')}" aria-label="Horário" />`}
+          <div class="tp-stop-actions">
+            <button class="tp-icon-btn" data-tp="stop-up" data-target="${target}" data-id="${s.id}" aria-label="Subir">${ICON.up}</button>
+            <button class="tp-icon-btn" data-tp="stop-down" data-target="${target}" data-id="${s.id}" aria-label="Descer">${ICON.down}</button>
+            <a class="tp-icon-btn" href="${gmapsPlaceURL(s)}" target="_blank" rel="noopener" title="Abrir no Google Maps" aria-label="Abrir no Google Maps">${ICON.ext}</a>
+            <button class="tp-icon-btn" data-tp="stop-del" data-target="${target}" data-id="${s.id}" aria-label="Remover">${ICON.trash}</button>
+          </div>
+          ${moveOpts ? `<select class="tp-move" data-tp-move data-target="${target}" data-id="${s.id}" aria-label="Mover para"><option value="">Mover…</option>${moveOpts}</select>` : ''}
+        </div>
+      </div>`;
+  }
+
+  function dayCard(d, i) {
+    const color = COLORS[i % COLORS.length];
+    const located = d.stops.filter(hasCoords).length;
+    return `
+      <div class="tp-day ${mapFilter === d.id ? 'is-focus' : ''}" id="tp-day-${d.id}">
+        <div class="tp-day-head">
+          <span class="tp-day-dot" style="background:${color}"></span>
+          <div class="tp-day-titles">
+            <div class="tp-day-label">Dia ${i + 1} · ${escapeHTML(fmtDay(d.date))}</div>
+            <input type="text" class="tp-day-title" data-tp-day-title="${d.id}" value="${escapeHTML(d.title || '')}" placeholder="Título do dia (ex: Paris — Marais)" />
+          </div>
+          <input type="date" class="tp-day-date" data-tp-day-date="${d.id}" value="${escapeHTML(d.date || '')}" aria-label="Data do dia" />
+        </div>
+        <div class="tp-stops">
+          ${d.stops.map((s, j) => stopRow(s, j, d.id, color)).join('') || '<div class="tp-empty-day">Nenhuma parada ainda. Pesquise no mapa ou digite abaixo.</div>'}
+        </div>
+        <div class="tp-day-foot">
+          <input type="text" class="tp-add-input" data-tp-add-stop="${d.id}" placeholder="+ Adicionar lugar (localiza no mapa automaticamente)" enterkeyhint="done" />
+          <div class="tp-day-actions">
+            ${located ? `<button class="btn btn-ghost" data-tp="map-filter" data-id="${d.id}">Ver no mapa</button>` : ''}
+            ${located >= 2 ? `<a class="btn btn-ghost" href="${gmapsRouteURL(d.stops)}" target="_blank" rel="noopener">Rota a pé no Google Maps</a>` : ''}
+            <button class="btn btn-ghost" data-tp="del-day" data-id="${d.id}">Excluir dia</button>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  function renderDays() {
+    const t = T();
+    const chips = [`<button class="btn btn-ghost ${mapFilter === 'all' ? 'active' : ''}" data-tp="map-filter" data-id="all">Tudo no mapa</button>`]
+      .concat(t.days.map((d, i) => `<button class="btn btn-ghost ${mapFilter === d.id ? 'active' : ''}" data-tp="map-filter" data-id="${d.id}"><span class="tp-chip-dot" style="background:${COLORS[i % COLORS.length]}"></span>Dia ${i + 1}</button>`))
+      .concat(t.ideas.length ? [`<button class="btn btn-ghost ${mapFilter === 'ideas' ? 'active' : ''}" data-tp="map-filter" data-id="ideas"><span class="tp-chip-dot" style="background:${IDEA_COLOR}"></span>Ideias</button>`] : []);
+    $('tp-days').innerHTML = `
+      <div class="tp-days-head">
+        <div class="filter-row">${chips.join('')}</div>
+        <div><button class="btn" data-tp="add-day">+ Adicionar dia</button></div>
+      </div>
+      ${t.days.map(dayCard).join('')}
+      <div class="tp-day ${mapFilter === 'ideas' ? 'is-focus' : ''}" id="tp-day-ideas">
+        <div class="tp-day-head">
+          <span class="tp-day-dot" style="background:${IDEA_COLOR}"></span>
+          <div class="tp-day-titles">
+            <div class="tp-day-label">Sem dia definido</div>
+            <div class="tp-day-title" style="padding:2px 0">Ideias e lugares salvos</div>
+          </div>
+        </div>
+        <div class="tp-stops">
+          ${t.ideas.map((s, j) => stopRow(s, j, 'ideas', IDEA_COLOR)).join('') || '<div class="tp-empty-day">Guarde aqui o que você quer conhecer e encaixe num dia depois.</div>'}
+        </div>
+        <div class="tp-day-foot">
+          <input type="text" class="tp-add-input" data-tp-add-stop="ideas" placeholder="+ Adicionar ideia" enterkeyhint="done" />
+        </div>
+      </div>`;
+  }
+
+  // ---------- mapa ----------
+  function pinIcon(color, label, hollow) {
+    const fill = hollow ? '#ffffff' : color;
+    const text = hollow ? color : '#ffffff';
+    return L.divIcon({
+      className: 'tp-pin', iconSize: [28, 38], iconAnchor: [14, 37], popupAnchor: [0, -32],
+      html: `<svg width="28" height="38" viewBox="0 0 28 38"><path d="M14 1.5C7 1.5 1.5 7 1.5 13.8 1.5 23 14 36.5 14 36.5S26.5 23 26.5 13.8C26.5 7 21 1.5 14 1.5z" fill="${fill}" stroke="${color}" stroke-width="2"/><text x="14" y="18" text-anchor="middle" font-size="11" font-weight="700" fill="${text}" font-family="DM Sans, sans-serif">${escapeHTML(label)}</text></svg>`,
+    });
+  }
+
+  function ensureMap() {
+    if (typeof L === 'undefined') { setTimeout(() => { if (tab === 'roteiro') renderMap(true); }, 200); return false; }
+    if (map) return true;
+    map = L.map('tp-map', { zoomControl: true, scrollWheelZoom: false }).setView(EUROPE, 4);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+      maxZoom: 20,
+      subdomains: 'abcd',
+      attribution: '© <a href="https://www.openstreetmap.org/copyright">OSM</a> · © <a href="https://carto.com/attributions">CARTO</a>',
+    }).addTo(map);
+    planLayer = L.layerGroup().addTo(map);
+    resultsLayer = L.layerGroup().addTo(map);
+    map.on('focus', () => map.scrollWheelZoom.enable());
+    map.on('blur', () => map.scrollWheelZoom.disable());
+    map.on('popupopen', wirePopup);
+    map.on('moveend', () => {
+      if (!activeCat || !catBounds) return;
+      if (!catBounds.contains(map.getBounds())) {
+        const cat = CATS.find(c => c.k === activeCat);
+        setStatus('', cat ? { label: `Buscar ${cat.label.toLowerCase()} nesta área`, act: 'redo-cat' } : null);
+      }
+    });
+    return true;
+  }
+
+  function popupHTML(p, resultIdx) {
+    const sub = [p.planned, p.time, p.category, p.address].filter(Boolean).join(' · ');
+    const actions = resultIdx === null
+      ? `<div class="tp-popup-actions"><a href="${gmapsPlaceURL(p)}" target="_blank" rel="noopener">Abrir no Google Maps ↗</a></div>`
+      : `<select data-tp-popup-target>${targetOptions(validTarget())}</select>
+         <div class="tp-popup-actions">
+           <button data-tp-popup-add="${resultIdx}">${isPlanned(p) ? 'Adicionar de novo' : 'Adicionar ao roteiro'}</button>
+           <a href="${gmapsPlaceURL(p)}" target="_blank" rel="noopener">Google Maps ↗</a>
+         </div>`;
+    return `<div class="tp-popup"><div class="tp-popup-name">${escapeHTML(p.name)}</div>${sub ? `<div class="tp-popup-sub">${escapeHTML(sub)}</div>` : '<div style="height:8px"></div>'}${actions}</div>`;
+  }
+
+  function wirePopup(e) {
+    const el = e.popup.getElement();
+    const btn = el && el.querySelector('[data-tp-popup-add]');
+    if (!btn) return;
+    btn.onclick = () => {
+      const r = results[Number(btn.dataset.tpPopupAdd)];
+      const target = el.querySelector('[data-tp-popup-target]').value;
+      if (!r || !addStop(target, r)) return;
+      map.closePopup();
+      renderDays();
+      renderResults();
+      renderHeader();
+      renderMap(false);
+      const label = target === 'ideas' ? 'Ideias' : `Dia ${T().days.findIndex(d => d.id === target) + 1}`;
+      flashStatus(`“${r.name}” adicionado em ${label}`);
+    };
+  }
+
+  function renderMap(fit) {
+    if (!ensureMap()) return;
+    const t = T();
+    planLayer.clearLayers();
+    resultsLayer.clearLayers();
+    stopMarkers.clear();
+    const pts = [];
+    const groups = t.days.map((d, i) => ({ id: d.id, stops: d.stops, color: COLORS[i % COLORS.length], label: `Dia ${i + 1}${d.title ? ' — ' + d.title : ''}` }));
+    groups.push({ id: 'ideas', stops: t.ideas, color: IDEA_COLOR, label: 'Ideias', idea: true });
+    groups.forEach(g => {
+      if (mapFilter !== 'all' && mapFilter !== g.id) return;
+      const line = [];
+      g.stops.forEach((s, j) => {
+        if (!hasCoords(s)) return;
+        const m = L.marker([s.lat, s.lng], { icon: pinIcon(g.color, g.idea ? '★' : String(j + 1)) });
+        m.bindTooltip(escapeHTML(s.name), { direction: 'top', offset: [0, -30] });
+        m.bindPopup(popupHTML({ ...s, planned: g.label }, null));
+        planLayer.addLayer(m);
+        stopMarkers.set(s.id, m);
+        line.push([s.lat, s.lng]);
+      });
+      if (!g.idea && line.length > 1) {
+        planLayer.addLayer(L.polyline(line, { color: g.color, weight: 3, opacity: 0.55, dashArray: '6 8' }));
+      }
+      pts.push(...line);
+    });
+    results.forEach((r, i) => {
+      const m = L.marker([r.lat, r.lng], { icon: pinIcon(RESULT_COLOR, '+', true), zIndexOffset: 500 });
+      m.bindTooltip(escapeHTML(r.name), { direction: 'top', offset: [0, -30] });
+      m.bindPopup(popupHTML(r, i));
+      resultsLayer.addLayer(m);
+      r.marker = m;
+    });
+    if (fit) fitTo(results.length && !activeCat ? results.map(r => [r.lat, r.lng]) : pts);
+    setTimeout(() => map.invalidateSize(), 60);
+  }
+
+  function fitTo(points) {
+    if (!map) return;
+    if (!points.length) return;
+    if (points.length === 1) map.setView(points[0], 15);
+    else map.fitBounds(L.latLngBounds(points), { padding: [40, 40], maxZoom: 16 });
+  }
+
+  function setStatus(msg, action) {
+    const el = $('tp-map-status');
+    if (!msg && !action) { el.hidden = true; el.innerHTML = ''; return; }
+    el.hidden = false;
+    el.innerHTML = `${msg ? `<span>${escapeHTML(msg)}</span>` : ''}${action ? `<button data-tp="${action.act}">${escapeHTML(action.label)}</button>` : ''}`;
+  }
+  let flashTimer = null;
+  function flashStatus(msg) {
+    setStatus(msg);
+    clearTimeout(flashTimer);
+    flashTimer = setTimeout(() => setStatus(''), 2500);
+  }
+
+  // ---------- busca ----------
+  function typeLabel(v) {
+    if (!v) return '';
+    return TYPE_LABELS[v] || (v.charAt(0).toUpperCase() + v.slice(1).replace(/_/g, ' '));
+  }
+  function fromPhoton(f) {
+    const p = f.properties || {};
+    const c = f.geometry && f.geometry.coordinates;
+    if (!c) return null;
+    const street = [p.street, p.housenumber].filter(Boolean).join(', ');
+    const name = p.name || street || p.city;
+    if (!name) return null;
+    const address = [p.name ? street : '', p.district || p.locality, p.city !== name ? p.city : '', p.country]
+      .filter(Boolean).join(', ');
+    return { name, lat: c[1], lng: c[0], address, category: typeLabel(p.osm_value) };
+  }
+  function fromNominatim(h) {
+    const parts = String(h.display_name || '').split(',').map(x => x.trim());
+    const name = h.name || parts[0];
+    if (!name) return null;
+    return { name, lat: parseFloat(h.lat), lng: parseFloat(h.lon), address: parts.slice(1, 4).join(', '), category: typeLabel(h.type) };
+  }
+  async function geocode(q, near, limit) {
+    try {
+      let u = `${PHOTON_URL}?q=${encodeURIComponent(q)}&limit=${limit}`;
+      if (near) u += `&lat=${near.lat.toFixed(4)}&lon=${near.lng.toFixed(4)}`;
+      const res = await fetch(u);
+      if (!res.ok) throw new Error('Photon ' + res.status);
+      const data = await res.json();
+      return (data.features || []).map(fromPhoton).filter(Boolean);
+    } catch (err) {
+      console.warn('Photon falhou, tentando Nominatim:', err);
+      const res = await fetch(`${NOMINATIM_URL}?format=jsonv2&limit=${limit}&q=${encodeURIComponent(q)}`, { headers: { 'Accept': 'application/json' } });
+      if (!res.ok) throw new Error('Nominatim ' + res.status);
+      const data = await res.json();
+      return (Array.isArray(data) ? data : []).map(fromNominatim).filter(Boolean);
+    }
+  }
+
+  async function searchPlaces(q) {
+    const seq = ++searchSeq;
+    activeCat = null; catBounds = null;
+    renderCats();
+    setStatus('Buscando…');
+    let list = [];
+    try {
+      const near = map && map.getZoom() >= 5 ? map.getCenter() : null;
+      list = await geocode(q, near, 10);
+    } catch (err) {
+      console.warn('Busca falhou:', err);
+      if (seq === searchSeq) setStatus('Não foi possível buscar agora. Confira a conexão e tente de novo.');
+      return;
+    }
+    if (seq !== searchSeq) return;
+    const seen = new Set();
+    results = list.filter(r => {
+      const k = r.name + '|' + r.lat.toFixed(3) + '|' + r.lng.toFixed(3);
+      if (seen.has(k)) return false;
+      seen.add(k); return true;
+    });
+    resultsLabel = `Resultados para “${q}”`;
+    setStatus(results.length ? '' : 'Nada encontrado. Tente outro nome ou mova o mapa até a cidade.');
+    renderResults();
+    renderMap(true);
+  }
+
+  async function exploreCategory(cat) {
+    if (!ensureMap()) return;
+    if (map.getZoom() < 12) {
+      setStatus(`Aproxime o mapa numa cidade ou bairro para ver ${cat.label.toLowerCase()}.`);
+      return;
+    }
+    const seq = ++searchSeq;
+    activeCat = cat.k;
+    renderCats();
+    setStatus(`Buscando ${cat.label.toLowerCase()} nesta área…`);
+    const b = map.getBounds();
+    catBounds = b.pad(0.05);
+    const bb = [b.getSouth(), b.getWest(), b.getNorth(), b.getEast()].map(v => v.toFixed(5)).join(',');
+    const query = `[out:json][timeout:25];(${cat.f.map(f => `nwr${f}["name"](${bb});`).join('')});out center tags 120;`;
+    let els = [];
+    try {
+      const res = await fetch(OVERPASS_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'data=' + encodeURIComponent(query),
+      });
+      if (!res.ok) throw new Error('Overpass ' + res.status);
+      els = (await res.json()).elements || [];
+    } catch (err) {
+      console.warn('Overpass falhou:', err);
+      if (seq === searchSeq) setStatus('O serviço de lugares está ocupado. Tente de novo em instantes.', { label: 'Tentar de novo', act: 'redo-cat' });
+      return;
+    }
+    if (seq !== searchSeq) return;
+    const c = map.getCenter();
+    results = els.map(el => {
+      const tg = el.tags || {};
+      const lat = el.lat != null ? el.lat : el.center && el.center.lat;
+      const lng = el.lon != null ? el.lon : el.center && el.center.lon;
+      if (typeof lat !== 'number' || !tg.name) return null;
+      const kind = tg.tourism || tg.historic || tg.amenity || tg.shop || tg.railway;
+      const street = [tg['addr:street'], tg['addr:housenumber']].filter(Boolean).join(', ');
+      const cuisine = tg.cuisine ? tg.cuisine.split(';')[0].replace(/_/g, ' ') : '';
+      return {
+        name: tg['name:pt'] || tg.name, lat, lng,
+        address: [street, tg['addr:city']].filter(Boolean).join(', '),
+        category: [typeLabel(kind), cuisine].filter(Boolean).join(' · '),
+        dist: (lat - c.lat) ** 2 + (lng - c.lng) ** 2,
+      };
+    }).filter(Boolean).sort((a, b) => a.dist - b.dist).slice(0, 60);
+    resultsLabel = `${cat.label} nesta área`;
+    setStatus(results.length ? '' : `Nenhum resultado de ${cat.label.toLowerCase()} aqui. Mova ou afaste o mapa.`);
+    renderResults();
+    renderMap(false);
+  }
+
+  function renderCats() {
+    $('tp-cats').innerHTML = CATS.map(c => `<button class="btn btn-ghost ${activeCat === c.k ? 'active' : ''}" data-tp="cat" data-id="${c.k}">${escapeHTML(c.label)}</button>`).join('');
+  }
+
+  function renderResults() {
+    const el = $('tp-results');
+    $('tp-search-clear').hidden = !results.length && !$('tp-search-input').value;
+    if (!results.length) { el.innerHTML = ''; return; }
+    const target = validTarget();
+    el.innerHTML = `
+      <div class="tp-results-head">
+        <span>${escapeHTML(resultsLabel)} · ${results.length}</span>
+        <label>Adicionar em <select class="select" data-tp-target>${targetOptions(target)}</select></label>
+      </div>
+      <div class="tp-results-list">
+        ${results.map((r, i) => `
+          <div class="tp-result">
+            <div class="tp-result-body" data-tp="focus-result" data-i="${i}">
+              <div class="tp-result-name">${escapeHTML(r.name)}</div>
+              <div class="tp-result-sub">${escapeHTML([r.category, r.address].filter(Boolean).join(' · ')) || '&nbsp;'}</div>
+            </div>
+            <button class="btn btn-ghost" data-tp="add-result" data-i="${i}">${isPlanned(r) ? '✓ No roteiro' : '+ Adicionar'}</button>
+          </div>`).join('')}
+      </div>`;
+  }
+
+  function showMapOnMobile() {
+    const wrap = page.querySelector('.tp-map-wrap');
+    const r = wrap.getBoundingClientRect();
+    if (r.top < 0 || r.bottom > window.innerHeight) wrap.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  async function addManualStop(target, text) {
+    const t = T();
+    const stop = addStop(target, { name: text });
+    if (!stop) return;
+    renderDays(); renderHeader();
+    // Viés de localização: centro das paradas do dia, senão centro do mapa
+    const ref = (stopsOf(target) || []).filter(s => s !== stop && hasCoords(s));
+    let near = null;
+    if (ref.length) near = { lat: ref.reduce((a, s) => a + s.lat, 0) / ref.length, lng: ref.reduce((a, s) => a + s.lng, 0) / ref.length };
+    else if (map && map.getZoom() >= 10) near = map.getCenter();
+    let hit = null;
+    try {
+      const q = near || !t.cities ? text : `${text}, ${t.cities.split(',')[0]}`;
+      hit = (await geocode(q, near, 1))[0];
+    } catch (err) { console.warn('Geocoding da parada falhou:', err); }
+    if (!hit) return;
+    Object.assign(stop, { lat: hit.lat, lng: hit.lng, address: hit.address, category: hit.category });
+    saveState();
+    if (tab === 'roteiro') { renderDays(); renderMap(false); }
+  }
+
+  // ---------- modal da viagem ----------
+  $('tp-edit-btn').onclick = () => {
+    const t = T();
+    $('trip-name').value = t.name || '';
+    $('trip-cities').value = t.cities || '';
+    $('trip-start').value = t.start || '';
+    $('trip-end').value = t.end || '';
+    $('trip-modal').classList.add('active');
+  };
+  $('trip-save').onclick = () => {
+    const t = T();
+    const oldStart = t.start;
+    t.name = $('trip-name').value.trim();
+    t.cities = $('trip-cities').value.trim();
+    t.start = $('trip-start').value;
+    t.end = $('trip-end').value;
+    if (t.end && t.start && t.end < t.start) { alert('A volta precisa ser depois da ida.'); return; }
+    if (t.start && oldStart && t.start !== oldStart) {
+      // Desloca o roteiro inteiro junto com a nova data de ida
+      const shift = Math.round((parseISO(t.start) - parseISO(oldStart)) / 864e5);
+      t.days.forEach(d => { if (d.date) d.date = addDaysISO(d.date, shift); });
+    }
+    if (t.start && t.end) {
+      const have = new Set(t.days.map(d => d.date));
+      for (let d = t.start, n = 0; d <= t.end && n < 90; d = addDaysISO(d, 1), n++) {
+        if (!have.has(d)) t.days.push({ id: uid(), date: d, title: '', stops: [] });
+      }
+    }
+    sortDays();
+    saveState();
+    closeAllModals();
+    render();
+  };
+
+  // ---------- eventos ----------
+  page.addEventListener('click', e => {
+    const tabBtn = e.target.closest('[data-tp-tab]');
+    if (tabBtn) { tab = tabBtn.dataset.tpTab; render(); return; }
+    const el = e.target.closest('[data-tp]');
+    if (!el) return;
+    const t = T();
+    const { id, target } = el.dataset;
+    const list = el.dataset.list && t.checklists.find(c => c.id === el.dataset.list);
+    switch (el.dataset.tp) {
+      case 'toggle-hide': hideDone = !hideDone; renderChecklists(); break;
+      case 'new-list': {
+        const name = prompt('Nome da nova checklist (ex: Mala da praia, Presentes):');
+        if (!name || !name.trim()) return;
+        t.checklists.push({ id: uid(), emoji: '📋', name: name.trim(), items: [] });
+        saveState(); render();
+        break;
+      }
+      case 'rename-list': {
+        const c = t.checklists.find(x => x.id === id);
+        const name = c && prompt('Novo nome da checklist:', c.name);
+        if (!name || !name.trim()) return;
+        c.name = name.trim(); saveState(); renderChecklists();
+        break;
+      }
+      case 'reset-list': {
+        const c = t.checklists.find(x => x.id === id);
+        if (!c || !confirm(`Desmarcar todos os itens de “${c.name}”?`)) return;
+        c.items.forEach(i => { i.done = false; }); saveState(); render();
+        break;
+      }
+      case 'del-list': {
+        const c = t.checklists.find(x => x.id === id);
+        if (!c || !confirm(`Excluir a checklist “${c.name}” e seus ${c.items.length} itens?`)) return;
+        t.checklists = t.checklists.filter(x => x.id !== id); saveState(); render();
+        break;
+      }
+      case 'toggle-item': {
+        const it = list && list.items.find(i => i.id === id);
+        if (!it) return;
+        it.done = !it.done; saveState(); renderHeader(); renderChecklists();
+        break;
+      }
+      case 'del-item':
+        if (!list) return;
+        list.items = list.items.filter(i => i.id !== id); saveState(); renderHeader(); renderChecklists();
+        break;
+
+      case 'add-day': {
+        const last = t.days.filter(d => d.date).map(d => d.date).sort().pop();
+        const date = last ? addDaysISO(last, 1) : (t.start || localISO(new Date()));
+        const day = { id: uid(), date, title: '', stops: [] };
+        t.days.push(day); sortDays(); saveState();
+        lastTarget = day.id;
+        render();
+        const card = $('tp-day-' + day.id);
+        if (card) { card.scrollIntoView({ behavior: 'smooth', block: 'center' }); card.querySelector('.tp-day-title').focus({ preventScroll: true }); }
+        break;
+      }
+      case 'del-day': {
+        const d = t.days.find(x => x.id === id);
+        if (!d) return;
+        if (d.stops.length && !confirm(`Excluir este dia? As ${d.stops.length} paradas vão para “Ideias”.`)) return;
+        t.ideas.push(...d.stops);
+        t.days = t.days.filter(x => x.id !== id);
+        if (mapFilter === id) mapFilter = 'all';
+        saveState(); render();
+        break;
+      }
+      case 'map-filter': {
+        mapFilter = id;
+        renderDays(); renderMap(false);
+        const g = id === 'all' ? null : stopsOf(id);
+        const pts = (g || t.ideas.concat(...t.days.map(d => d.stops))).filter(hasCoords).map(s => [s.lat, s.lng]);
+        fitTo(pts);
+        if (id !== 'all') showMapOnMobile();
+        break;
+      }
+      case 'focus-stop': {
+        if (mapFilter !== 'all' && mapFilter !== target) { mapFilter = 'all'; renderDays(); renderMap(false); }
+        const m = stopMarkers.get(id);
+        if (!m) return;
+        showMapOnMobile();
+        map.setView(m.getLatLng(), Math.max(map.getZoom(), 15));
+        m.openPopup();
+        break;
+      }
+      case 'stop-up':
+      case 'stop-down': {
+        const arr = stopsOf(target);
+        const i = arr ? arr.findIndex(s => s.id === id) : -1;
+        const j = el.dataset.tp === 'stop-up' ? i - 1 : i + 1;
+        if (i < 0 || j < 0 || j >= arr.length) return;
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+        saveState(); renderDays(); renderMap(false);
+        break;
+      }
+      case 'stop-del': {
+        const arr = stopsOf(target);
+        const i = arr ? arr.findIndex(s => s.id === id) : -1;
+        if (i < 0) return;
+        arr.splice(i, 1);
+        saveState(); renderDays(); renderHeader(); renderResults(); renderMap(false);
+        break;
+      }
+
+      case 'cat': {
+        const cat = CATS.find(c => c.k === id);
+        if (activeCat === id) { el.blur(); clearResults(); return; }
+        if (cat) exploreCategory(cat);
+        break;
+      }
+      case 'redo-cat': {
+        const cat = CATS.find(c => c.k === activeCat);
+        if (cat) exploreCategory(cat);
+        break;
+      }
+      case 'clear-results': clearResults(); break;
+      case 'focus-result': {
+        const r = results[Number(el.dataset.i)];
+        if (!r || !r.marker) return;
+        showMapOnMobile();
+        map.setView([r.lat, r.lng], Math.max(map.getZoom(), 15));
+        r.marker.openPopup();
+        break;
+      }
+      case 'add-result': {
+        const r = results[Number(el.dataset.i)];
+        const sel = page.querySelector('[data-tp-target]');
+        const tgt = sel ? sel.value : validTarget();
+        if (!r || !addStop(tgt, r)) return;
+        renderDays(); renderHeader(); renderResults(); renderMap(false);
+        const label = tgt === 'ideas' ? 'Ideias' : `Dia ${t.days.findIndex(d => d.id === tgt) + 1}`;
+        flashStatus(`“${r.name}” adicionado em ${label}`);
+        break;
+      }
+    }
+  });
+
+  function clearResults() {
+    searchSeq++;
+    results = []; activeCat = null; catBounds = null;
+    $('tp-search-input').value = '';
+    setStatus('');
+    renderCats(); renderResults(); renderMap(false);
+  }
+
+  page.addEventListener('change', e => {
+    const el = e.target;
+    const t = T();
+    const { id, target } = el.dataset;
+    if (el.matches('[data-tp-day-title]')) {
+      const d = t.days.find(x => x.id === el.dataset.tpDayTitle);
+      if (d) { d.title = el.value.trim(); saveState(); }
+    } else if (el.matches('[data-tp-day-date]')) {
+      const d = t.days.find(x => x.id === el.dataset.tpDayDate);
+      if (d) { d.date = el.value; sortDays(); saveState(); renderDays(); renderMap(false); }
+    } else if (el.matches('[data-tp-note]') || el.matches('[data-tp-time]')) {
+      const s = (stopsOf(target) || []).find(x => x.id === id);
+      if (!s) return;
+      if (el.matches('[data-tp-note]')) { s.note = el.value.trim(); saveState(); return; }
+      s.time = el.value;
+      const arr = stopsOf(target);
+      // Paradas com horário ficam em ordem cronológica; sem horário mantêm a posição
+      if (arr.every(x => x.time)) arr.sort((a, b) => a.time.localeCompare(b.time));
+      saveState(); renderDays(); renderMap(false);
+    } else if (el.matches('[data-tp-move]')) {
+      const from = stopsOf(target), to = stopsOf(el.value);
+      const i = from ? from.findIndex(x => x.id === id) : -1;
+      if (i < 0 || !to) return;
+      to.push(from.splice(i, 1)[0]);
+      lastTarget = el.value;
+      saveState(); renderDays(); renderMap(false);
+    } else if (el.matches('[data-tp-target]')) {
+      lastTarget = el.value;
+    }
+  });
+
+  page.addEventListener('keydown', e => {
+    if (e.key !== 'Enter' || e.isComposing) return;
+    const el = e.target;
+    if (el.id === 'tp-search-input') {
+      e.preventDefault();
+      clearTimeout(searchTimer);
+      const q = el.value.trim();
+      if (q.length >= 2) searchPlaces(q);
+      return;
+    }
+    if (el.matches('[data-tp-add-item]')) {
+      const c = T().checklists.find(x => x.id === el.dataset.tpAddItem);
+      const text = el.value.trim();
+      if (!c || !text) return;
+      c.items.push({ id: uid(), text, done: false });
+      saveState(); renderHeader(); renderChecklists();
+      const again = page.querySelector(`[data-tp-add-item="${c.id}"]`);
+      if (again) again.focus();
+      return;
+    }
+    if (el.matches('[data-tp-add-stop]')) {
+      const text = el.value.trim();
+      if (!text) return;
+      const tgt = el.dataset.tpAddStop;
+      addManualStop(tgt, text);
+      const again = page.querySelector(`[data-tp-add-stop="${tgt}"]`);
+      if (again) again.focus();
+      return;
+    }
+    if (el.matches('.tp-day-title, .tp-stop-note')) el.blur();
+  });
+
+  page.addEventListener('input', e => {
+    if (e.target.id !== 'tp-search-input') return;
+    clearTimeout(searchTimer);
+    const q = e.target.value.trim();
+    $('tp-search-clear').hidden = !q && !results.length;
+    if (q.length < 3) return;
+    searchTimer = setTimeout(() => searchPlaces(q), 450);
+  });
 
   return render;
 })();
