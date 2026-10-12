@@ -5421,6 +5421,13 @@ let saveDebounceTimer = null;
 let isSyncing = false;
 let pendingSave = false;
 let appInitialized = false;
+// Proteção contra sobrescrever a nuvem com dados velhos/vazios:
+// cloudVersion = updated_at da versão da nuvem que este aparelho conhece.
+// Só salvamos se a nuvem ainda estiver nessa versão (senão, outro aparelho
+// salvou depois e pedimos para recarregar). syncBlocked: 'offline' | 'conflict'.
+let cloudVersion = null;
+let syncBlocked = null;
+let reconnectTimer = null;
 
 // ============== STATE ==============
 const STORAGE_KEY = 'orbita_v1';
@@ -5537,6 +5544,52 @@ document.getElementById('google-login-btn').addEventListener('click', async () =
 });
 
 // Após login: carrega dados da nuvem ou inicia migração
+// "Tamanho" dos dados: quantos itens de verdade existem (para comparar aparelho x nuvem)
+function stateScore(st) {
+  if (!st || typeof st !== 'object') return 0;
+  let n = 0;
+  ['tasks', 'goals', 'habits', 'shopping', 'places', 'notes'].forEach(k => { if (Array.isArray(st[k])) n += st[k].length; });
+  if (st.events && typeof st.events === 'object') Object.values(st.events).forEach(v => { if (Array.isArray(v)) n += v.length; });
+  const t = st.trip;
+  if (t) {
+    (t.days || []).forEach(d => { n += (d.stops || []).length; });
+    n += (t.ideas || []).length;
+    if (t.docs) n += (t.docs.cards || []).length * 3 + (t.docs.files || []).length;
+    (t.checklists || []).forEach(c => (c.items || []).forEach(i => { if (i.done) n += 1; }));
+  }
+  if (st.treino && st.treino.log) n += Object.keys(st.treino.log).length;
+  return n;
+}
+function readLocalState() {
+  try { const raw = localStorage.getItem(STORAGE_KEY); return raw ? JSON.parse(raw) : null; } catch { return null; }
+}
+// Decide entre os dados deste aparelho e os da nuvem. Nunca descarta os
+// dados locais sem antes guardar uma cópia, e pergunta se o aparelho tem mais.
+function reconcile(cloudData, localData) {
+  const cloudScore = stateScore(cloudData);
+  const localScore = stateScore(localData);
+  if (localData && localScore > 0) {
+    try { localStorage.setItem(STORAGE_KEY + '_prev', JSON.stringify({ savedAt: new Date().toISOString(), data: localData })); } catch {}
+  }
+  if (localData && localScore > cloudScore) {
+    const ok = confirm(
+      `Este aparelho tem dados mais completos do que a nuvem (${localScore} itens aqui x ${cloudScore} na nuvem).\n\n` +
+      `OK = usar os dados deste aparelho e enviar para a nuvem (recomendado).\nCancelar = usar os dados da nuvem.`);
+    if (ok) return { data: localData, upload: true };
+  }
+  return { data: cloudData, upload: false };
+}
+
+async function fetchCloudRow() {
+  const { data, error } = await sb
+    .from('orbita_state')
+    .select('data, updated_at')
+    .eq('user_id', currentUser.id)
+    .maybeSingle();
+  if (error) throw error;
+  return data;
+}
+
 async function afterLogin() {
   showLoadingScreen('Verificando seus dados...');
 
@@ -5545,47 +5598,65 @@ async function afterLogin() {
 
   try {
     // Tenta buscar dados da nuvem
-    const { data: cloudData, error } = await sb
-      .from('orbita_state')
-      .select('data')
-      .eq('user_id', currentUser.id)
-      .maybeSingle();
+    const cloudRow = await fetchCloudRow();
+    const localData = readLocalState();
+    const hasLocalData = stateScore(localData) > 0;
 
-    if (error) throw error;
-
-    // Verifica se existem dados locais (do localStorage da versão antiga)
-    const localRaw = localStorage.getItem(STORAGE_KEY);
-    const hasLocalData = localRaw && Object.keys(JSON.parse(localRaw)).some(k => {
-      const v = JSON.parse(localRaw)[k];
-      return Array.isArray(v) ? v.length > 0 : (typeof v === 'object' && v && Object.keys(v).length > 0);
-    });
-
-    if (!cloudData && hasLocalData) {
+    if (!cloudRow && hasLocalData) {
       // Primeira vez logando, tem dados locais → mostra tela de migração
-      showMigrationScreen(JSON.parse(localRaw));
-    } else if (cloudData) {
-      // Tem dados na nuvem → carrega
-      state = { ...defaultState, ...cloudData.data };
+      showMigrationScreen(localData);
+    } else if (cloudRow) {
+      cloudVersion = cloudRow.updated_at;
+      const pick = reconcile(cloudRow.data, localData);
+      state = { ...defaultState, ...pick.data };
       startApp();
+      if (pick.upload) saveState();
     } else {
       // Sem dados em lugar nenhum → começa do zero
       state = { ...defaultState };
       // Cria registro vazio na nuvem
-      await sb
+      const { data: ins } = await sb
         .from('orbita_state')
-        .insert({ user_id: currentUser.id, data: state });
+        .insert({ user_id: currentUser.id, data: state })
+        .select('updated_at')
+        .maybeSingle();
+      cloudVersion = ins ? ins.updated_at : null;
       startApp();
     }
   } catch (err) {
     console.error('Erro ao carregar dados:', err);
-    // Fallback offline: usa localStorage se existir
-    const localRaw = localStorage.getItem(STORAGE_KEY);
-    if (localRaw) {
-      state = { ...defaultState, ...JSON.parse(localRaw) };
-    }
-    showSyncError('Erro ao sincronizar. Trabalhando offline.');
+    // Sem nuvem: trabalha com a cópia local, mas NÃO envia nada até conseguir
+    // ler a nuvem de novo (senão uma cópia velha/vazia apagaria a nuvem).
+    const localData = readLocalState();
+    if (localData) state = { ...defaultState, ...localData };
+    syncBlocked = 'offline';
+    updateSyncStatus('offline');
     startApp();
+    scheduleReconnect();
   }
+}
+
+// Tenta voltar a falar com a nuvem depois de abrir offline
+function scheduleReconnect() {
+  clearTimeout(reconnectTimer);
+  reconnectTimer = setTimeout(async () => {
+    if (syncBlocked !== 'offline' || !currentUser) return;
+    try {
+      const cloudRow = await fetchCloudRow();
+      if (!cloudRow) { syncBlocked = null; saveState(); return; }
+      cloudVersion = cloudRow.updated_at;
+      const pick = reconcile(cloudRow.data, state);
+      syncBlocked = null;
+      if (pick.upload) { saveState(); updateSyncStatus('saving'); }
+      else { state = { ...defaultState, ...pick.data }; updateSyncStatus('synced'); refreshCurrentPage(); }
+    } catch {
+      scheduleReconnect();
+    }
+  }, 20000);
+}
+function refreshCurrentPage() {
+  const active = document.querySelector('.nav-item.active');
+  if (active) active.click();
 }
 
 function updateUserUI() {
@@ -5761,6 +5832,7 @@ function saveState() {
 }
 
 async function syncToCloud() {
+  if (syncBlocked) { updateSyncStatus(syncBlocked); return; }
   if (!currentUser || isSyncing) {
     if (isSyncing) pendingSave = true;
     return;
@@ -5770,10 +5842,18 @@ async function syncToCloud() {
   pendingSave = false;
 
   try {
-    const { error } = await sb
-      .from('orbita_state')
-      .upsert({ user_id: currentUser.id, data: state }, { onConflict: 'user_id' });
+    let q = sb.from('orbita_state').update({ data: state }).eq('user_id', currentUser.id);
+    // Só grava se a nuvem ainda estiver na versão que este aparelho carregou
+    if (cloudVersion) q = q.eq('updated_at', cloudVersion);
+    const { data, error } = await q.select('updated_at');
     if (error) throw error;
+    if (Array.isArray(data) && data.length === 0) {
+      // Outro aparelho salvou depois: não sobrescreve
+      syncBlocked = 'conflict';
+      updateSyncStatus('conflict');
+      return;
+    }
+    if (Array.isArray(data) && data[0] && data[0].updated_at) cloudVersion = data[0].updated_at;
     updateSyncStatus('synced');
   } catch (err) {
     console.error('Erro ao sincronizar:', err);
@@ -5781,7 +5861,7 @@ async function syncToCloud() {
   } finally {
     isSyncing = false;
     // Se chegou nova mudança enquanto sincronizava, agenda outro sync
-    if (pendingSave) {
+    if (pendingSave && !syncBlocked) {
       setTimeout(syncToCloud, 200);
     }
   }
@@ -5796,6 +5876,16 @@ function updateSyncStatus(status) {
     el.innerHTML = '<span style="color:#16a34a">●</span> Sincronizado';
   } else if (status === 'error') {
     el.innerHTML = '<span style="color:#dc2626">●</span> Erro de sync (offline)';
+  } else if (status === 'offline') {
+    el.innerHTML = '<span style="color:#ca8a04">●</span> Offline: salvando só neste aparelho';
+  } else if (status === 'conflict') {
+    el.innerHTML = '<span style="color:#dc2626">●</span> Alterado em outro aparelho · <a href="#" id="sync-reload" style="color:inherit;text-decoration:underline">recarregar</a>';
+    const a = document.getElementById('sync-reload');
+    if (a) a.onclick = e => { e.preventDefault(); location.reload(); };
+    if (!window.__conflictWarned) {
+      window.__conflictWarned = true;
+      setTimeout(() => alert('Seus dados foram alterados em outro aparelho.\n\nPara não apagar nada, este aparelho parou de enviar para a nuvem. Recarregue o app: ele vai comparar e te perguntar qual versão usar.'), 50);
+    }
   }
 }
 
@@ -5812,18 +5902,8 @@ document.getElementById('logout-btn').addEventListener('click', async () => {
   await sb.auth.signOut();
 });
 
-// Salva antes de fechar a aba
-window.addEventListener('beforeunload', () => {
-  if (pendingSave && currentUser) {
-    // Tenta um sync síncrono final
-    try {
-      navigator.sendBeacon && navigator.sendBeacon(
-        `${SUPABASE_URL}/rest/v1/orbita_state?on_conflict=user_id`,
-        JSON.stringify({ user_id: currentUser.id, data: state })
-      );
-    } catch {}
-  }
-});
+// Ao fechar a aba os dados já estão no localStorage; o envio à nuvem acontece
+// na próxima abertura (com checagem de versão), nunca às cegas.
 
 // loadState antigo (mantido pra compatibilidade interna do app)
 function loadState() {
@@ -12155,7 +12235,8 @@ const renderTrip = (() => {
         days: [{ id: uid(), date: start, title: 'Embarque', stops: [] }],
         ideas: [],
       };
-      saveState();
+      // Não salva aqui: abrir a aba não deve enviar nada para a nuvem.
+      // A viagem vai para a nuvem na primeira alteração de verdade.
     }
     const t = state.trip;
     t.checklists = t.checklists || [];
@@ -13460,7 +13541,40 @@ const renderTrip = (() => {
     </div>`;
   }
 
+  // Arquivos que estão guardados na nuvem mas sumiram do app (ex.: dados
+  // sobrescritos por outro aparelho) voltam para "Arquivos".
+  let storedFilesChecked = false;
+  async function syncStoredFiles() {
+    if (storedFilesChecked || !currentUser) return;
+    storedFilesChecked = true;
+    try {
+      const { data, error } = await sb.storage.from(DOC_BUCKET).list(`${currentUser.id}/trip`, { limit: 1000 });
+      if (error || !Array.isArray(data)) return;
+      const docs = D();
+      const known = new Set(docs.files.map(f => f.path));
+      let added = 0;
+      data.forEach(o => {
+        if (!o || !o.name || o.name.startsWith('.')) return;
+        const path = `${currentUser.id}/trip/${o.name}`;
+        if (known.has(path)) return;
+        const m = o.name.match(/^([a-z0-9]+)-(.+)$/i);
+        const name = m ? m[2].replace(/_/g, ' ') : o.name;
+        const ext = (o.name.split('.').pop() || '').toLowerCase();
+        const mime = (o.metadata && o.metadata.mimetype) || { pdf: 'application/pdf', jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', webp: 'image/webp', heic: 'image/heic' }[ext] || '';
+        docs.files.push({ id: m ? m[1] : uid(), name, path, mime, size: (o.metadata && o.metadata.size) || 0, cardId: null, createdAt: o.created_at || new Date().toISOString(), recovered: true });
+        added++;
+      });
+      if (added) {
+        saveState();
+        renderDocs();
+        const box = $('tp-doc-scan-result');
+        if (box && !scan) box.innerHTML = `<div class="tp-scan">📎 ${added} ${added === 1 ? 'arquivo guardado foi recuperado' : 'arquivos guardados foram recuperados'} em “Arquivos”. Use “✨ Ler” em cada um para recriar os cartões.</div>`;
+      }
+    } catch (e) { console.warn('Lista de arquivos falhou:', e); }
+  }
+
   function renderDocs() {
+    syncStoredFiles();
     const docs = D();
     const el = $('tp-view-docs');
     const today = localISO(new Date());
