@@ -3979,6 +3979,10 @@
   .tp-item.done .tp-item-text { text-decoration: line-through; color: var(--ink-faint); }
   .tp-item .tp-icon-btn { opacity: 0; padding: 2px; }
   .tp-item:hover .tp-icon-btn, .tp-item .tp-icon-btn:focus-visible { opacity: 1; }
+  .tp-link-opt { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--ink-soft); cursor: pointer; }
+  .tp-link-box { margin-top: 10px; display: grid; gap: 6px; font-size: 13px; color: var(--ink-soft); }
+  .tp-link-row b { color: var(--ink); margin-right: 4px; }
+  .tp-link-go { margin-left: 6px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); border-radius: 6px; padding: 2px 8px; font: 600 11px 'DM Sans', sans-serif; cursor: pointer; }
   /* Leitura com IA */
   .tp-scan-cta { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; }
   .tp-scan { background: var(--bg-elevated); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; margin-bottom: 16px; box-shadow: var(--shadow-sm); font-size: 14px; }
@@ -13512,15 +13516,137 @@ const renderTrip = (() => {
         <div class="tp-ai-foot">
           ${on ? `<button class="btn" data-scan-apply>Salvar ${on} ${on === 1 ? 'cartão' : 'cartões'}</button>` : ''}
           <button class="btn btn-ghost" data-scan-dismiss>${on ? 'Descartar' : 'Fechar'}</button>
+          ${on ? `<label class="tp-link-opt"><input type="checkbox" data-scan-link ${scan.link !== false ? 'checked' : ''}> Atualizar também o roteiro e as checklists</label>` : ''}
           ${scan.sources.some(s => !s.fileId) && on ? '<span class="tp-ai-hint">O arquivo será anexado ao cartão.</span>' : ''}
         </div>
       </div>`;
+  }
+
+  // ----- integração com as outras abas (Roteiro e Checklists) -----
+  // Cada cartão vira paradas no roteiro (ligadas pelo docRef, sem duplicar
+  // ao reler) e marca na checklist o que o documento comprova.
+  function cityOf(v) { const a = airport(v); return (a.name || a.code || '').split(/[,·]/)[0].trim(); }
+  function ensureDay(date) {
+    const t = T();
+    let d = t.days.find(x => x.date === date);
+    if (!d) { d = { id: uid(), date, title: '', stops: [] }; t.days.push(d); }
+    return d;
+  }
+  function upsertDocStop(day, ref, data) {
+    const t = T();
+    // Se já existe (mesmo docRef) em qualquer dia, atualiza e move para o dia certo
+    let found = null, from = null;
+    for (const d of t.days) { const s = d.stops.find(x => x.docRef === ref); if (s) { found = s; from = d; break; } }
+    if (found) {
+      Object.assign(found, { name: data.name, time: data.time || found.time || '', note: found.note || data.note || '', address: data.address || found.address || '' });
+      if (from !== day) { from.stops.splice(from.stops.indexOf(found), 1); day.stops.push(found); }
+      return { stop: found, isNew: false };
+    }
+    const stop = { id: uid(), docRef: ref, name: data.name, address: data.address || '', category: data.category || '', time: data.time || '', note: data.note || '' };
+    day.stops.push(stop);
+    // Ordena por horário quando todas as paradas do dia têm horário
+    if (day.stops.every(x => x.time)) day.stops.sort((a, b) => a.time.localeCompare(b.time));
+    return { stop, isNew: true };
+  }
+  function geocodeStops(list) {
+    // Em segundo plano: coloca no mapa o que tem endereço/cidade
+    (async () => {
+      let changed = false;
+      for (const { stop, query } of list) {
+        if (!query || hasCoords(stop)) continue;
+        try {
+          const hit = (await geocode(query, null, 1, { confirmed: true }))[0];
+          if (hit) { stop.lat = hit.lat; stop.lng = hit.lng; changed = true; }
+        } catch (err) { console.warn('Geocoding do documento falhou:', query, err); }
+      }
+      if (changed) { saveState(); if (tab === 'roteiro') { renderDays(); renderMap(false); } }
+    })();
+  }
+  function markChecklist(regex, log, label) {
+    const t = T();
+    let hit = false;
+    t.checklists.forEach(c => {
+      if (/bagagem|mala|antes de sair/i.test(c.name)) return; // itens de "levar", não de "ter"
+      c.items.forEach(i => { if (!i.done && regex.test(i.text)) { i.done = true; hit = true; log.push(`✓ “${i.text.length > 48 ? i.text.slice(0, 46) + '…' : i.text}”`); } });
+    });
+    return hit;
+  }
+  function linkTripTabs(cards) {
+    const t = T();
+    const log = { roteiro: [], checklist: [], viagem: [] };
+    const toGeocode = [];
+    const flights = cards.filter(c => c.type === 'flight' && c.fields.date);
+    cards.forEach(c => {
+      const f = c.fields || {};
+      if (c.type === 'flight' && f.date) {
+        const day = ensureDay(f.date);
+        const a = airport(f.from), b = airport(f.to);
+        const route = [a.code || cityOf(f.from), b.code || cityOf(f.to)].filter(Boolean).join(' → ');
+        if (!day.title && route) day.title = `✈️ ${route}`;
+        const r = upsertDocStop(day, c.id, {
+          name: `✈️ Voo ${[f.airline, f.flight].filter(Boolean).join(' ')}${route ? ' · ' + route : ''}`.trim(),
+          time: f.time, category: 'Voo',
+          note: [f.locator && 'Localizador ' + f.locator, f.seat && 'Assento ' + f.seat, f.terminal && 'Terminal ' + f.terminal].filter(Boolean).join(' · '),
+        });
+        if (r.isNew) log.roteiro.push(`Voo em ${fmtDay(f.date)}`);
+        const city = cityOf(f.from);
+        toGeocode.push({ stop: r.stop, query: a.code ? `${a.code} airport${city ? ' ' + city : ''}` : (city ? `${city} airport` : '') });
+      }
+      if (c.type === 'transport' && f.date) {
+        const day = ensureDay(f.date);
+        const route = [cityOf(f.from), cityOf(f.to)].filter(Boolean).join(' → ');
+        const r = upsertDocStop(day, c.id, {
+          name: `🚆 ${f.company || 'Transporte'}${route ? ' · ' + route : ''}`, time: f.time, category: 'Transporte',
+          note: [f.code && 'Reserva ' + f.code, f.seat && 'Assento ' + f.seat].filter(Boolean).join(' · '),
+        });
+        if (r.isNew) log.roteiro.push(`Transporte em ${fmtDay(f.date)}`);
+        toGeocode.push({ stop: r.stop, query: f.from || '' });
+      }
+      if (c.type === 'hotel' && (f.checkin || f.checkout)) {
+        const name = f.name || 'Hospedagem';
+        const note = f.confirmation ? 'Reserva ' + f.confirmation : '';
+        [['checkin', 'Check-in', '15:00'], ['checkout', 'Check-out', '11:00']].forEach(([k, label, time]) => {
+          if (!f[k]) return;
+          const r = upsertDocStop(ensureDay(f[k]), c.id + ':' + k, { name: `🏨 ${label} · ${name}`, address: f.address || '', category: 'Hospedagem', time, note });
+          if (r.isNew) log.roteiro.push(`${label} ${name} em ${fmtDay(f[k])}`);
+          toGeocode.push({ stop: r.stop, query: f.address || name });
+        });
+      }
+      // Checklists: o documento comprova o item
+      if (c.type === 'flight') markChecklist(/passag(em|ens) a[ée]rea|cart(ão|ões) de embarque/i, log.checklist);
+      if (c.type === 'hotel') markChecklist(/reservas? de hospedagem|hospedagem/i, log.checklist);
+      if (c.type === 'insurance') markChecklist(/seguro viagem/i, log.checklist);
+      if (c.type === 'passport') markChecklist(/^passaporte\b/i, log.checklist);
+    });
+    // Voo de volta = voo que chega na cidade de onde saiu o primeiro voo
+    const allFlights = D().cards.filter(c => c.type === 'flight' && c.fields.date).sort((x, y) => x.fields.date.localeCompare(y.fields.date));
+    if (allFlights.length >= 2) {
+      const home = cityOf(allFlights[0].fields.from).toLowerCase();
+      if (home && allFlights.slice(1).some(x => cityOf(x.fields.to).toLowerCase() === home)) markChecklist(/passagem de volta/i, log.checklist);
+    }
+    // Dados da viagem: só preenche o que está vazio
+    if (flights.length || cards.some(c => c.type === 'hotel')) {
+      const lastFlight = allFlights[allFlights.length - 1];
+      if (!t.end && lastFlight && allFlights.length >= 2 && lastFlight.fields.date > (t.start || '')) {
+        t.end = lastFlight.fields.date; log.viagem.push(`volta em ${fmtDay(t.end)}`);
+      }
+      if (!t.cities) {
+        const home = allFlights[0] ? cityOf(allFlights[0].fields.from).toLowerCase() : '';
+        const cities = [...new Set(allFlights.map(x => cityOf(x.fields.to)).concat(D().cards.filter(c => c.type === 'hotel' && c.fields.address).map(c => { const p = c.fields.address.split(',').map(x => x.replace(/\d[\d-]*/g, '').trim()).filter(Boolean); return p.length >= 2 ? p[p.length - 2] : ''; })).filter(x => x && x.toLowerCase() !== home && !/\d/.test(x)))];
+        if (cities.length) { t.cities = cities.slice(0, 6).join(', '); log.viagem.push(`destinos: ${t.cities}`); }
+      }
+    }
+    sortDays();
+    saveState();
+    geocodeStops(toGeocode);
+    return log;
   }
 
   async function applyScan() {
     if (!scan || scan.status !== 'done') return;
     const docs = D();
     const firstCardBySource = {};
+    const touched = [];
     let created = 0, updated = 0;
     scan.items.filter(i => i.on).forEach(it => {
       let card = it.matchId && docs.cards.find(c => c.id === it.matchId);
@@ -13534,8 +13660,10 @@ const renderTrip = (() => {
         created++;
       }
       if (!(it.source in firstCardBySource)) firstCardBySource[it.source] = card.id;
+      touched.push(card);
     });
     saveState();
+    const link = scan.link !== false ? linkTripTabs(touched) : null;
     const sources = scan.sources;
     scan = null;
     renderScan();
@@ -13557,7 +13685,14 @@ const renderTrip = (() => {
     const parts = [];
     if (created) parts.push(`${created} ${created === 1 ? 'cartão criado' : 'cartões criados'}`);
     if (updated) parts.push(`${updated} ${updated === 1 ? 'cartão completado' : 'cartões completados'}`);
-    if (parts.length) $('tp-doc-scan-result').innerHTML = `<div class="tp-scan">✓ ${escapeHTML(parts.join(' · '))}</div>`;
+    if (!parts.length) return;
+    const linkHTML = link ? [
+      link.roteiro.length ? `<div class="tp-link-row"><b>🗺️ Roteiro</b> ${escapeHTML(link.roteiro.join(' · '))} <button class="tp-link-go" data-tp-tab="roteiro">Ver</button></div>` : '',
+      link.checklist.length ? `<div class="tp-link-row"><b>☑️ Checklists</b> ${escapeHTML(link.checklist.join(' · '))} <button class="tp-link-go" data-tp-tab="checklists">Ver</button></div>` : '',
+      link.viagem.length ? `<div class="tp-link-row"><b>🧳 Viagem</b> ${escapeHTML(link.viagem.join(' · '))}</div>` : '',
+    ].join('') : '';
+    $('tp-doc-scan-result').innerHTML = `<div class="tp-scan">✓ ${escapeHTML(parts.join(' · '))}${linkHTML ? `<div class="tp-link-box">${linkHTML}</div>` : ''}</div>`;
+    renderHeader();
   }
 
   async function scanStoredFile(id) {
@@ -13665,6 +13800,9 @@ const renderTrip = (() => {
     scanFiles(files.map((f, i) => new File([f], f.name && f.name !== 'image.png' ? f.name : `print-${stamp}${i ? '-' + i : ''}.png`, { type: f.type })));
   });
 
+  $('tp-view-docs').addEventListener('change', e => {
+    if (e.target.matches('[data-scan-link]') && scan) scan.link = e.target.checked;
+  });
   $('tp-view-docs').addEventListener('click', async e => {
     const el = e.target.closest('[data-doc-new],[data-doc-edit],[data-doc-del],[data-doc-attach],[data-doc-copy],[data-doc-file-del],[data-doc-file-read],[data-doc-open],[data-doc-offline-all],[data-doc-scan],[data-scan-toggle],[data-scan-apply],[data-scan-dismiss]');
     if (!el) return;
