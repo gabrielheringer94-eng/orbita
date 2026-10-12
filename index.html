@@ -3979,6 +3979,24 @@
   .tp-item.done .tp-item-text { text-decoration: line-through; color: var(--ink-faint); }
   .tp-item .tp-icon-btn { opacity: 0; padding: 2px; }
   .tp-item:hover .tp-icon-btn, .tp-item .tp-icon-btn:focus-visible { opacity: 1; }
+  /* Leitura com IA */
+  .tp-scan-cta { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; }
+  .tp-scan { background: var(--bg-elevated); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; margin-bottom: 16px; box-shadow: var(--shadow-sm); font-size: 14px; }
+  .tp-scan.is-loading { display: flex; align-items: center; gap: 10px; color: var(--ink-soft); }
+  .tp-scan.is-error { color: #b91c1c; }
+  .tp-scan-spin { width: 16px; height: 16px; border: 2px solid var(--line); border-top-color: var(--ink); border-radius: 50%; animation: tpSpin 0.8s linear infinite; flex-shrink: 0; }
+  @keyframes tpSpin { to { transform: rotate(360deg); } }
+  .tp-scan-head { font-weight: 600; margin-bottom: 10px; }
+  .tp-scan-list { border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+  .tp-scan-item { display: grid; grid-template-columns: 20px minmax(0, 1fr); gap: 10px; padding: 12px; border-bottom: 1px solid var(--line-soft); }
+  .tp-scan-item:last-child { border-bottom: none; }
+  .tp-scan-item.is-off { opacity: 0.45; }
+  .tp-scan-title { font-weight: 700; font-size: 14px; overflow-wrap: anywhere; }
+  .tp-scan-tag { display: inline-block; margin-left: 6px; font: 600 10px 'DM Sans', sans-serif; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-faint); background: var(--bg-card); border-radius: 4px; padding: 2px 6px; vertical-align: 1px; }
+  .tp-scan-kvs { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-top: 6px; font-size: 13px; }
+  .tp-scan-kv { min-width: 0; overflow-wrap: anywhere; }
+  .tp-file-read { border: 1px solid var(--line); background: var(--bg); color: var(--ink-soft); border-radius: 7px; padding: 4px 8px; font: 600 11px 'DM Sans', sans-serif; cursor: pointer; white-space: nowrap; }
+  .tp-file-read:hover { border-color: var(--ink); color: var(--ink); }
   /* Documentos */
   .tp-doc-add { display: flex; gap: 6px; flex-wrap: wrap; }
   .tp-doc-add .btn-ghost { padding: 7px 12px; font-size: 12px; }
@@ -4652,6 +4670,7 @@
 
       <div id="tp-view-docs" hidden></div>
       <input type="file" id="tp-doc-file" accept="application/pdf,image/*,.heic,.heif" multiple hidden />
+      <input type="file" id="tp-doc-scan" accept="application/pdf,image/*,.heic,.heif" multiple hidden />
 
       <div id="tp-view-roteiro" hidden>
         <div class="tp-plan">
@@ -13170,6 +13189,11 @@ const renderTrip = (() => {
     const generalFiles = docs.files.filter(f => !f.cardId || !docs.cards.some(c => c.id === f.cardId));
     const allCached = docs.files.length && docs.files.every(f => offlineSet.has(f.path));
     el.innerHTML = `
+      <div class="tp-scan-cta">
+        <button class="btn" data-doc-scan>✨ Ler print ou documento</button>
+        <span class="tp-ai-hint">Envie prints, fotos ou PDFs (cartão de embarque, reserva, apólice, passaporte) e a IA preenche os cartões. No computador, você também pode colar um print aqui com ${/Mac|iPhone|iPad/.test(navigator.platform) ? '⌘' : 'Ctrl'}+V.</span>
+      </div>
+      <div id="tp-doc-scan-result"></div>
       <div class="tp-toolbar">
         <div class="tp-doc-add">
           ${DOC_ORDER.map(k => `<button class="btn btn-ghost" data-doc-new="${k}">${DOC_TYPES[k].emoji} ${escapeHTML(DOC_TYPES[k].label)}</button>`).join('')}
@@ -13197,6 +13221,7 @@ const renderTrip = (() => {
       ${generalFiles.length ? `<div class="tp-file-grid">${generalFiles.map(fileTile).join('')}</div>`
         : `<div class="tp-doc-note">PDF ou foto de passaporte, cartões de embarque, apólice, reservas (até 10 MB cada). Ficam privados na sua conta.</div>`}`;
     hydrateThumbs();
+    renderScan();
   }
 
   function docCard(c, hero) {
@@ -13276,6 +13301,7 @@ const renderTrip = (() => {
           <div class="tp-file-name">${escapeHTML(f.name)}</div>
           <div class="tp-file-sub">${fmtSize(f.size || 0)}${off ? ' · <span class="tp-file-off">✓ offline</span>' : ''}</div>
         </div>
+        <button class="tp-file-read" data-doc-file-read="${f.id}" title="Ler com IA e preencher os dados">✨ Ler</button>
         <button class="tp-icon-btn tp-file-del" data-doc-file-del="${f.id}" title="Excluir arquivo" aria-label="Excluir arquivo">${ICON.x}</button>
       </div>`;
   }
@@ -13346,10 +13372,11 @@ const renderTrip = (() => {
     const bad = files.filter(f => f.size > DOC_MAX_BYTES || !okTypes.includes(guessMime(f)));
     if (bad.length) alert(`Estes arquivos não foram enviados (só PDF ou foto, até 10 MB):\n${bad.map(f => '• ' + f.name).join('\n')}`);
     const good = files.filter(f => !bad.includes(f));
-    if (!good.length) return;
+    if (!good.length) return [];
     uploadingCount += good.length;
     renderDocs();
     const failed = [];
+    const created = [];
     await Promise.all(good.map(async file => {
       const id = uid();
       const safe = file.name.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^\w.\-]+/g, '_').slice(-80);
@@ -13358,7 +13385,9 @@ const renderTrip = (() => {
       try {
         const { error } = await sb.storage.from(DOC_BUCKET).upload(path, file, { contentType: mime, upsert: false });
         if (error) throw error;
-        D().files.push({ id, name: file.name, path, mime, size: file.size, cardId: cardId || null, createdAt: new Date().toISOString() });
+        const record = { id, name: file.name, path, mime, size: file.size, cardId: cardId || null, createdAt: new Date().toISOString() };
+        D().files.push(record);
+        created.push({ file, record });
         saveState();
         await idbPut(path, file);
         offlineSet.add(path);
@@ -13371,6 +13400,178 @@ const renderTrip = (() => {
     }));
     renderDocs();
     if (failed.length) alert(`Não consegui enviar:\n${failed.map(n => '• ' + n).join('\n')}\nConfira a conexão e tente de novo.`);
+    return created;
+  }
+
+  // ----- leitura automática de prints e documentos (Claude) -----
+  // scan: { status: 'loading'|'done'|'error', msg, message, items:[{type, fields, source, on, matchId}], sources:[{file, fileId}] , targetCardId }
+  let scan = null;
+  const SCAN_MAX = 6;
+
+  async function prepForAI(file) {
+    const mime = guessMime(file);
+    if (mime === 'application/pdf') {
+      if (file.size > 8 * 1024 * 1024) throw new Error(`${file.name} passa de 8 MB`);
+      return { media_type: 'application/pdf', data: await blobToB64(file), name: file.name };
+    }
+    let bmp;
+    try { bmp = await createImageBitmap(file); }
+    catch { throw new Error(`Não consegui abrir ${file.name}. Envie em JPG, PNG ou PDF.`); }
+    // 1568px no lado maior: é o tamanho que o modelo usa; mantém códigos legíveis
+    const sc = Math.min(1, 1568 / Math.max(bmp.width, bmp.height));
+    const c = document.createElement('canvas');
+    c.width = Math.round(bmp.width * sc); c.height = Math.round(bmp.height * sc);
+    c.getContext('2d').drawImage(bmp, 0, 0, c.width, c.height);
+    return { media_type: 'image/jpeg', data: c.toDataURL('image/jpeg', 0.9).split(',')[1], name: file.name };
+  }
+  function blobToB64(blob) {
+    return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(String(r.result).split(',')[1]); r.onerror = rej; r.readAsDataURL(blob); });
+  }
+
+  const norm = v => (v || '').toString().toUpperCase().replace(/\s+/g, '');
+  function findMatch(type, f, preferId) {
+    const cards = D().cards.filter(c => c.type === type);
+    if (preferId) { const p = cards.find(c => c.id === preferId); if (p) return p; }
+    return cards.find(c => {
+      const g = c.fields || {};
+      switch (type) {
+        case 'flight': return (f.flight && norm(f.flight) === norm(g.flight) && (f.date || '') === (g.date || '')) || (f.locator && norm(f.locator) === norm(g.locator) && f.date && f.date === g.date);
+        case 'transport': return f.code && norm(f.code) === norm(g.code) && (f.date || '') === (g.date || '');
+        case 'hotel': return (f.confirmation && norm(f.confirmation) === norm(g.confirmation)) || (f.name && f.checkin && norm(f.name) === norm(g.name) && f.checkin === g.checkin);
+        case 'insurance': return f.policy && norm(f.policy) === norm(g.policy);
+        case 'passport': return f.number && norm(f.number) === norm(g.number);
+        case 'contact': return f.phone && norm(f.phone) === norm(g.phone);
+        default: return f.title && norm(f.title) === norm(g.title);
+      }
+    }) || null;
+  }
+
+  // files: File[]; opts.fileIds: ids já salvos (mesma ordem); opts.targetCardId: anexado num cartão
+  async function scanFiles(files, opts = {}) {
+    files = [...files].slice(0, SCAN_MAX);
+    if (!files.length) return;
+    scan = { status: 'loading', n: files.length, sources: files.map((file, i) => ({ file, fileId: (opts.fileIds || [])[i] || null })), targetCardId: opts.targetCardId || null };
+    renderScan();
+    try {
+      const payload = await Promise.all(files.map(prepForAI));
+      const { data, error } = await sb.functions.invoke('trip-assistant', { body: { mode: 'extract', today: localISO(new Date()), files: payload } });
+      if (error) {
+        let msg = error.message || 'Falha ao ler o arquivo';
+        if (error.context && error.context.status === 404) msg = 'A função trip-assistant ainda não foi publicada no Supabase.';
+        else { try { const b = await error.context.json(); if (b && b.error) msg = b.error; } catch {} }
+        throw new Error(msg);
+      }
+      if (data && data.error) throw new Error(data.error);
+      const items = (data.cards || []).filter(c => DOC_TYPES[c.type]).map(c => {
+        const fields = {};
+        DOC_TYPES[c.type].fields.forEach(([k]) => { if (c.fields[k]) fields[k] = c.fields[k]; });
+        const match = findMatch(c.type, fields, scan.targetCardId);
+        return { type: c.type, fields, source: c.source_index || 0, on: true, matchId: match ? match.id : null };
+      }).filter(it => Object.keys(it.fields).length);
+      scan = { ...scan, status: 'done', message: data.message || '', items };
+    } catch (err) {
+      console.error('Leitura do documento falhou:', err);
+      scan = { ...scan, status: 'error', msg: err.message || 'Erro desconhecido' };
+    }
+    renderScan();
+  }
+
+  function renderScan() {
+    const el = $('tp-doc-scan-result');
+    if (!el) return;
+    if (!scan) { el.innerHTML = ''; return; }
+    if (scan.status === 'loading') {
+      el.innerHTML = `<div class="tp-scan is-loading"><span class="tp-scan-spin"></span> Lendo ${scan.n === 1 ? 'o arquivo' : scan.n + ' arquivos'} com IA… isso leva alguns segundos.</div>`;
+      return;
+    }
+    if (scan.status === 'error') {
+      el.innerHTML = `<div class="tp-scan is-error">Não consegui ler agora. ${escapeHTML(scan.msg)}${scan.sources.some(s => s.fileId) ? ' O arquivo continua salvo em Arquivos.' : ''}
+        <div class="tp-ai-foot"><button class="btn btn-ghost" data-scan-dismiss>Fechar</button></div></div>`;
+      return;
+    }
+    const docs = D();
+    const on = scan.items.filter(i => i.on).length;
+    el.innerHTML = `
+      <div class="tp-scan">
+        <div class="tp-scan-head">✨ ${escapeHTML(scan.message || 'Leitura concluída')}</div>
+        ${scan.items.length ? `<div class="tp-scan-list">${scan.items.map((it, k) => {
+          const def = DOC_TYPES[it.type];
+          const match = it.matchId && docs.cards.find(c => c.id === it.matchId);
+          const pairs = def.fields.filter(([key, , , kind]) => it.fields[key] && kind !== 'textarea').slice(0, 7)
+            .map(([key, label, , kind]) => `<span class="tp-scan-kv"><span class="tp-label">${escapeHTML(label)}</span>${escapeHTML(kind === 'date' ? fmtDate(it.fields[key]) : it.fields[key])}</span>`).join('');
+          return `<div class="tp-scan-item ${it.on ? '' : 'is-off'}">
+            <div class="checkbox ${it.on ? 'checked' : ''}" data-scan-toggle="${k}" role="checkbox" aria-checked="${it.on}"></div>
+            <div class="tp-scan-body">
+              <div class="tp-scan-title">${def.emoji} ${escapeHTML(cardTitle({ type: it.type, fields: it.fields }))}
+                <span class="tp-scan-tag">${match ? 'completa cartão existente' : 'novo · ' + escapeHTML(def.label)}</span></div>
+              <div class="tp-scan-kvs">${pairs}</div>
+              ${it.fields.notes ? `<div class="tp-ai-row-tip">${escapeHTML(it.fields.notes)}</div>` : ''}
+            </div>
+          </div>`;
+        }).join('')}</div>` : '<div class="tp-doc-note">Nenhuma informação de viagem encontrada nesse arquivo.</div>'}
+        <div class="tp-ai-foot">
+          ${on ? `<button class="btn" data-scan-apply>Salvar ${on} ${on === 1 ? 'cartão' : 'cartões'}</button>` : ''}
+          <button class="btn btn-ghost" data-scan-dismiss>${on ? 'Descartar' : 'Fechar'}</button>
+          ${scan.sources.some(s => !s.fileId) && on ? '<span class="tp-ai-hint">O arquivo será anexado ao cartão.</span>' : ''}
+        </div>
+      </div>`;
+  }
+
+  async function applyScan() {
+    if (!scan || scan.status !== 'done') return;
+    const docs = D();
+    const firstCardBySource = {};
+    let created = 0, updated = 0;
+    scan.items.filter(i => i.on).forEach(it => {
+      let card = it.matchId && docs.cards.find(c => c.id === it.matchId);
+      if (card) {
+        // completa só o que está vazio, sem apagar o que você digitou
+        Object.entries(it.fields).forEach(([k, v]) => { if (!card.fields[k]) card.fields[k] = v; });
+        updated++;
+      } else {
+        card = { id: uid(), type: it.type, fields: { ...it.fields }, createdAt: new Date().toISOString() };
+        docs.cards.push(card);
+        created++;
+      }
+      if (!(it.source in firstCardBySource)) firstCardBySource[it.source] = card.id;
+    });
+    saveState();
+    const sources = scan.sources;
+    scan = null;
+    renderScan();
+    renderDocs();
+    // Arquivos já salvos: liga ao cartão. Novos (botão "Ler"): envia e anexa.
+    const toUpload = [];
+    sources.forEach((s, i) => {
+      const cardId = firstCardBySource[i] || null;
+      if (s.fileId) {
+        const f = docs.files.find(x => x.id === s.fileId);
+        if (f && cardId && !f.cardId) f.cardId = cardId;
+      } else {
+        toUpload.push({ file: s.file, cardId });
+      }
+    });
+    saveState();
+    for (const u of toUpload) await uploadFiles([u.file], u.cardId);
+    renderDocs();
+    const parts = [];
+    if (created) parts.push(`${created} ${created === 1 ? 'cartão criado' : 'cartões criados'}`);
+    if (updated) parts.push(`${updated} ${updated === 1 ? 'cartão completado' : 'cartões completados'}`);
+    if (parts.length) $('tp-doc-scan-result').innerHTML = `<div class="tp-scan">✓ ${escapeHTML(parts.join(' · '))}</div>`;
+  }
+
+  async function scanStoredFile(id) {
+    const f = D().files.find(x => x.id === id);
+    if (!f) return;
+    let blob = await idbGet(f.path);
+    if (!blob) {
+      const { data, error } = await sb.storage.from(DOC_BUCKET).download(f.path);
+      if (error || !data) { alert('Não consegui baixar o arquivo para ler.'); return; }
+      blob = data;
+      idbPut(f.path, data); offlineSet.add(f.path);
+    }
+    const file = new File([blob], f.name, { type: f.mime || blob.type });
+    scanFiles([file], { fileIds: [f.id], targetCardId: f.cardId || null });
   }
 
   async function deleteFile(id) {
@@ -13438,15 +13639,40 @@ const renderTrip = (() => {
     renderDocs();
   }
 
-  $('tp-doc-file').addEventListener('change', e => {
-    const files = e.target.files;
-    if (files && files.length) uploadFiles(files, attachFor);
+  $('tp-doc-file').addEventListener('change', async e => {
+    const files = e.target.files ? [...e.target.files] : [];
     e.target.value = '';
+    if (!files.length) return;
+    const target = attachFor;
+    const created = await uploadFiles(files, target) || [];
+    // Todo documento anexado passa pela leitura automática
+    if (created.length) scanFiles(created.map(c => c.file), { fileIds: created.map(c => c.record.id), targetCardId: target });
+  });
+  $('tp-doc-scan').addEventListener('change', e => {
+    const files = e.target.files ? [...e.target.files] : [];
+    e.target.value = '';
+    if (files.length > SCAN_MAX) alert(`Vou ler os ${SCAN_MAX} primeiros arquivos. Envie o resto em seguida.`);
+    if (files.length) scanFiles(files);
+  });
+  // Colar um print (⌘/Ctrl+V) na aba Documentos
+  document.addEventListener('paste', e => {
+    if (tab !== 'docs' || !$('page-trip').classList.contains('active')) return;
+    if (e.target.closest && e.target.closest('input, textarea, [contenteditable="true"]')) return;
+    const files = [...((e.clipboardData && e.clipboardData.files) || [])].filter(f => /^image\/|application\/pdf/.test(f.type));
+    if (!files.length) return;
+    e.preventDefault();
+    const stamp = new Date().toLocaleString('pt-BR').replace(/[/:, ]+/g, '-');
+    scanFiles(files.map((f, i) => new File([f], f.name && f.name !== 'image.png' ? f.name : `print-${stamp}${i ? '-' + i : ''}.png`, { type: f.type })));
   });
 
   $('tp-view-docs').addEventListener('click', async e => {
-    const el = e.target.closest('[data-doc-new],[data-doc-edit],[data-doc-del],[data-doc-attach],[data-doc-copy],[data-doc-file-del],[data-doc-open],[data-doc-offline-all]');
+    const el = e.target.closest('[data-doc-new],[data-doc-edit],[data-doc-del],[data-doc-attach],[data-doc-copy],[data-doc-file-del],[data-doc-file-read],[data-doc-open],[data-doc-offline-all],[data-doc-scan],[data-scan-toggle],[data-scan-apply],[data-scan-dismiss]');
     if (!el) return;
+    if (el.matches('[data-doc-scan]')) { if (!scan || scan.status !== 'loading') $('tp-doc-scan').click(); return; }
+    if (el.matches('[data-scan-toggle]')) { const it = scan && scan.items[Number(el.dataset.scanToggle)]; if (it) { it.on = !it.on; renderScan(); } return; }
+    if (el.matches('[data-scan-apply]')) { applyScan(); return; }
+    if (el.matches('[data-scan-dismiss]')) { scan = null; renderScan(); return; }
+    if (el.matches('[data-doc-file-read]')) { e.stopPropagation(); if (!scan || scan.status !== 'loading') scanStoredFile(el.dataset.docFileRead); return; }
     const docs = D();
     if (el.matches('[data-doc-copy]')) { e.stopPropagation(); copyText(el.dataset.docCopy, el); return; }
     if (el.matches('[data-doc-file-del]')) { e.stopPropagation(); deleteFile(el.dataset.docFileDel); return; }

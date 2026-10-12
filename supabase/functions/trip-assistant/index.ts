@@ -23,6 +23,99 @@ function json(body: unknown, status = 200) {
   });
 }
 
+// ---------- leitura de prints/PDFs (modo "extract") ----------
+const MAX_EXTRACT_FILES = 6;
+const MAX_EXTRACT_B64 = 15_000_000;
+const ExtractInputSchema = z.object({
+  mode: z.literal('extract'),
+  today: z.string().max(10),
+  files: z.array(z.object({
+    media_type: z.enum(['image/jpeg', 'image/png', 'image/webp', 'application/pdf']),
+    data: z.string().min(10),
+    name: z.string().max(200).default(''),
+  })).min(1).max(MAX_EXTRACT_FILES),
+});
+
+const DOC_FIELD_KEYS = [
+  'airline', 'flight', 'date', 'time', 'from', 'to', 'locator', 'ticket', 'seat', 'terminal', 'baggage',
+  'company', 'code', 'name', 'address', 'checkin', 'checkout', 'confirmation', 'phone',
+  'policy', 'coverage', 'holder', 'number', 'expiry', 'country', 'relation', 'title', 'value', 'notes',
+] as const;
+const ExtractOutputSchema = z.object({
+  message: z.string(),
+  cards: z.array(z.object({
+    type: z.enum(['flight', 'transport', 'hotel', 'insurance', 'passport', 'contact', 'other']),
+    source_index: z.number().int(),
+    fields: z.object(Object.fromEntries(DOC_FIELD_KEYS.map(k => [k, z.string().nullable()])) as Record<typeof DOC_FIELD_KEYS[number], z.ZodNullable<z.ZodString>>),
+  })),
+});
+
+const EXTRACT_SYSTEM = `Você lê prints de tela e PDFs de viagem (cartões de embarque, e-mails e apps de companhias aéreas, confirmações de reserva de hotel/Airbnb, bilhetes de trem/ônibus, aluguel de carro, apólices de seguro viagem, passaporte) e extrai os dados importantes para um app pessoal em português do Brasil.
+
+Para cada item distinto encontrado, crie um card. Um mesmo arquivo pode ter vários (ex.: ida e volta = 2 voos; cada trecho com conexão = 1 voo por trecho). source_index é o número do arquivo (começando em 0) de onde o card saiu.
+
+Tipos e campos usados (os demais ficam null):
+- flight: airline, flight (ex.: "TP 82"), date, time (partida), from, to, locator (código da reserva/PNR, ~6 caracteres), ticket (nº do bilhete/e-ticket, ~13 dígitos), seat, terminal (terminal/portão), baggage, notes.
+- transport (trem, ônibus, carro alugado, transfer): company, code (localizador/reserva), date, time, from, to, seat, notes.
+- hotel (inclui Airbnb): name, address, checkin, checkout, confirmation, phone, notes.
+- insurance: company, policy, phone (emergência), coverage, notes.
+- passport (ou outro documento de identidade): holder, number, expiry, country, notes.
+- contact: name, phone, relation, notes.
+- other: title, value, notes.
+
+Regras:
+- Copie códigos EXATAMENTE como aparecem (localizador, bilhete, apólice, nº de reserva, nº do passaporte), sem inventar nem "corrigir". Se um caractere estiver ilegível, deixe o campo null e avise em notes.
+- Datas sempre YYYY-MM-DD; horários HH:MM (24h). Se o ano não aparecer, use o próximo ano em que a data cai a partir de hoje.
+- Aeroportos no formato "GRU · São Paulo" (código IATA + cidade) quando o código existir; senão só a cidade.
+- notes: só informações úteis curtas que não cabem nos outros campos (ex.: "Embarque 21:50 · Grupo 3", "Café incluso", "Conexão em Lisboa"). Senão null.
+- Não crie cards para propaganda, termos de uso ou itens sem dados úteis.
+- message: 1 frase em português dizendo o que foi encontrado (ou que nada útil foi encontrado e por quê).`;
+
+async function handleExtract(raw: unknown) {
+  const parsed = ExtractInputSchema.safeParse(raw);
+  if (!parsed.success) return json({ error: 'Envie de 1 a 6 imagens (JPG/PNG/WebP) ou PDFs' }, 400);
+  const input = parsed.data;
+  const total = input.files.reduce((n, f) => n + f.data.length, 0);
+  if (total > MAX_EXTRACT_B64) return json({ error: 'Arquivos grandes demais. Envie menos de uma vez.' }, 400);
+
+  const content: Anthropic.Beta.BetaContentBlockParam[] = [];
+  input.files.forEach((f, i) => {
+    content.push({ type: 'text', text: `Arquivo ${i}${f.name ? ` (${f.name})` : ''}:` });
+    if (f.media_type === 'application/pdf') {
+      content.push({ type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: f.data } });
+    } else {
+      content.push({ type: 'image', source: { type: 'base64', media_type: f.media_type, data: f.data } });
+    }
+  });
+  content.push({ type: 'text', text: `Hoje é ${input.today}. Extraia os dados de viagem desses arquivos.` });
+
+  const response = await client.beta.messages.parse({
+    model: MODEL,
+    max_tokens: 16000,
+    betas: ['server-side-fallback-2026-07-01'],
+    fallbacks: 'default',
+    output_config: { effort: 'medium', format: betaZodOutputFormat(ExtractOutputSchema) },
+    system: EXTRACT_SYSTEM,
+    messages: [{ role: 'user', content }],
+  });
+  if (response.stop_reason === 'refusal') {
+    return json({ error: 'Não consegui ler esse arquivo. Tente outro print.' }, 422);
+  }
+  if (response.stop_reason === 'max_tokens' || !response.parsed_output) {
+    return json({ error: 'Leitura incompleta. Tente com menos arquivos de uma vez.' }, 502);
+  }
+  const out = response.parsed_output;
+  return json({
+    message: out.message,
+    cards: out.cards.map(c => ({
+      type: c.type,
+      source_index: c.source_index >= 0 && c.source_index < input.files.length ? c.source_index : 0,
+      // só campos preenchidos
+      fields: Object.fromEntries(Object.entries(c.fields).filter(([, v]) => typeof v === 'string' && v.trim()).map(([k, v]) => [k, (v as string).trim()])),
+    })).filter(c => Object.keys(c.fields).length),
+  });
+}
+
 // ---------- entrada ----------
 const InputSchema = z.object({
   mode: z.enum(['route', 'next']),
@@ -122,9 +215,23 @@ Deno.serve(async (req) => {
   });
   if (!userRes.ok) return json({ error: 'Faça login para usar o assistente' }, 401);
 
+  let body: unknown;
+  try {
+    body = await req.json();
+  } catch {
+    return json({ error: 'Body inválido' }, 400);
+  }
+  if (body && typeof body === 'object' && (body as { mode?: string }).mode === 'extract') {
+    try {
+      return await handleExtract(body);
+    } catch (err) {
+      return apiError(err);
+    }
+  }
+
   let input: Input;
   try {
-    const parsed = InputSchema.safeParse(await req.json());
+    const parsed = InputSchema.safeParse(body);
     if (!parsed.success) return json({ error: 'Dados da viagem inválidos ou grandes demais' }, 400);
     input = parsed.data;
   } catch {
@@ -168,13 +275,17 @@ Deno.serve(async (req) => {
       completed_item_ids: input.mode === 'route' ? out.completed_item_ids.filter(id => itemIds.has(id)) : [],
     });
   } catch (err) {
-    if (err instanceof Anthropic.RateLimitError) {
-      return json({ error: 'Muitas solicitações agora. Tente de novo em alguns segundos.' }, 429);
-    } else if (err instanceof Anthropic.AuthenticationError) {
-      return json({ error: 'Chave da Anthropic inválida na função' }, 500);
-    } else if (err instanceof Anthropic.APIError) {
-      return json({ error: `Anthropic ${err.status}: ${err.message.slice(0, 300)}` }, 502);
-    }
-    return json({ error: err instanceof Error ? err.message : 'Erro desconhecido' }, 500);
+    return apiError(err);
   }
 });
+
+function apiError(err: unknown) {
+  if (err instanceof Anthropic.RateLimitError) {
+    return json({ error: 'Muitas solicitações agora. Tente de novo em alguns segundos.' }, 429);
+  } else if (err instanceof Anthropic.AuthenticationError) {
+    return json({ error: 'Chave da Anthropic inválida na função' }, 500);
+  } else if (err instanceof Anthropic.APIError) {
+    return json({ error: `Anthropic ${err.status}: ${err.message.slice(0, 300)}` }, 502);
+  }
+  return json({ error: err instanceof Error ? err.message : 'Erro desconhecido' }, 500);
+}
