@@ -41,12 +41,15 @@ const DOC_FIELD_KEYS = [
   'company', 'code', 'name', 'address', 'checkin', 'checkout', 'confirmation', 'phone',
   'policy', 'coverage', 'holder', 'number', 'expiry', 'country', 'relation', 'title', 'value', 'notes',
 ] as const;
+const KNOWN_KEYS = new Set<string>(DOC_FIELD_KEYS);
 const ExtractOutputSchema = z.object({
   message: z.string(),
   cards: z.array(z.object({
     type: z.enum(['flight', 'transport', 'hotel', 'insurance', 'passport', 'contact', 'other']),
     source_index: z.number().int(),
-    fields: z.object(Object.fromEntries(DOC_FIELD_KEYS.map(k => [k, z.string().nullable()])) as Record<typeof DOC_FIELD_KEYS[number], z.ZodNullable<z.ZodString>>),
+    // Lista de pares campo/valor (só os encontrados). Um objeto com ~30 campos
+    // opcionais estoura o limite de parâmetros com união do structured output.
+    fields: z.array(z.object({ key: z.string(), value: z.string() })),
   })),
 });
 
@@ -54,7 +57,7 @@ const EXTRACT_SYSTEM = `Você lê prints de tela e PDFs de viagem (cartões de e
 
 Para cada item distinto encontrado, crie um card. Um mesmo arquivo pode ter vários (ex.: ida e volta = 2 voos; cada trecho com conexão = 1 voo por trecho). source_index é o número do arquivo (começando em 0) de onde o card saiu.
 
-Tipos e campos usados (os demais ficam null):
+fields é uma lista de pares { key, value } só com os campos que você encontrou (não inclua campos vazios). Tipos e campos usados:
 - flight: airline, flight (ex.: "TP 82"), date, time (partida), from, to, locator (código da reserva/PNR, ~6 caracteres), ticket (nº do bilhete/e-ticket, ~13 dígitos), seat, terminal (terminal/portão), baggage, notes.
 - transport (trem, ônibus, carro alugado, transfer): company, code (localizador/reserva), date, time, from, to, seat, notes.
 - hotel (inclui Airbnb): name, address, checkin, checkout, confirmation, phone, notes.
@@ -64,10 +67,10 @@ Tipos e campos usados (os demais ficam null):
 - other: title, value, notes.
 
 Regras:
-- Copie códigos EXATAMENTE como aparecem (localizador, bilhete, apólice, nº de reserva, nº do passaporte), sem inventar nem "corrigir". Se um caractere estiver ilegível, deixe o campo null e avise em notes.
+- Copie códigos EXATAMENTE como aparecem (localizador, bilhete, apólice, nº de reserva, nº do passaporte), sem inventar nem "corrigir". Se um caractere estiver ilegível, não inclua o campo e avise em notes.
 - Datas sempre YYYY-MM-DD; horários HH:MM (24h). Se o ano não aparecer, use o próximo ano em que a data cai a partir de hoje.
 - Aeroportos no formato "GRU · São Paulo" (código IATA + cidade) quando o código existir; senão só a cidade.
-- notes: só informações úteis curtas que não cabem nos outros campos (ex.: "Embarque 21:50 · Grupo 3", "Café incluso", "Conexão em Lisboa"). Senão null.
+- notes: só informações úteis curtas que não cabem nos outros campos (ex.: "Embarque 21:50 · Grupo 3", "Café incluso", "Conexão em Lisboa"). Se não houver, não inclua.
 - Não crie cards para propaganda, termos de uso ou itens sem dados úteis.
 - message: 1 frase em português dizendo o que foi encontrado (ou que nada útil foi encontrado e por quê).`;
 
@@ -111,7 +114,7 @@ async function handleExtract(raw: unknown) {
       type: c.type,
       source_index: c.source_index >= 0 && c.source_index < input.files.length ? c.source_index : 0,
       // só campos preenchidos
-      fields: Object.fromEntries(Object.entries(c.fields).filter(([, v]) => typeof v === 'string' && v.trim()).map(([k, v]) => [k, (v as string).trim()])),
+      fields: Object.fromEntries(c.fields.filter(f => KNOWN_KEYS.has(f.key) && f.value.trim()).map(f => [f.key, f.value.trim()])),
     })).filter(c => Object.keys(c.fields).length),
   });
 }
