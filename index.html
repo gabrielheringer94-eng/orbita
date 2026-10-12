@@ -4002,8 +4002,15 @@
   .tp-file-read { border: 1px solid var(--line); background: var(--bg); color: var(--ink-soft); border-radius: 7px; padding: 4px 8px; font: 600 11px 'DM Sans', sans-serif; cursor: pointer; white-space: nowrap; }
   .tp-file-read:hover { border-color: var(--ink); color: var(--ink); }
   /* Documentos */
-  .tp-doc-add { display: flex; gap: 6px; flex-wrap: wrap; }
-  .tp-doc-add .btn-ghost { padding: 7px 12px; font-size: 12px; }
+  .tp-doc-filter { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 4px; }
+  .tp-doc-filter .btn-ghost { padding: 7px 12px; font-size: 12px; }
+  .tp-doc-filter .btn-ghost.is-empty:not(.active) { opacity: 0.6; }
+  .tp-doc-count { display: inline-block; min-width: 18px; padding: 0 5px; margin-left: 4px; border-radius: 9px; background: var(--bg-card); color: var(--ink); font-size: 11px; line-height: 18px; text-align: center; }
+  .tp-doc-filter .btn-ghost.active .tp-doc-count { background: rgba(255,255,255,0.25); color: inherit; }
+  .tp-doc-sec { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .tp-doc-addbtn { border: 1px solid var(--line); background: var(--bg-elevated); color: var(--ink); border-radius: 8px; padding: 5px 10px; font: 600 12px 'DM Sans', sans-serif; letter-spacing: 0; text-transform: none; cursor: pointer; white-space: nowrap; }
+  .tp-doc-addbtn:hover { border-color: var(--ink); }
+  .tp-doc-empty.is-small { padding: 14px 16px; font-size: 13px; margin-bottom: 0; }
   .tp-doc-empty { background: var(--bg-card); border: 1px dashed var(--line); border-radius: 14px; padding: 20px; color: var(--ink-soft); font-size: 14px; line-height: 1.5; margin-bottom: 16px; }
   .tp-doc-empty-title { font-weight: 600; color: var(--ink); margin-bottom: 4px; }
   .tp-doc-section-title { font: 600 11px 'DM Sans', sans-serif; text-transform: uppercase; letter-spacing: 0.14em; color: var(--ink-faint); margin: 22px 0 10px; }
@@ -13184,6 +13191,16 @@ const renderTrip = (() => {
   }
 
   // ----- render -----
+  const DOC_FILTER_KEY = 'orbita_trip_doc_filter';
+  let docFilter = (() => { try { const v = localStorage.getItem(DOC_FILTER_KEY); return v && (v === 'all' || DOC_TYPES[v]) ? v : 'all'; } catch { return 'all'; } })();
+  // Título de seção com o botão "+ Adicionar" no canto direito
+  function sectionHead(type, title, noButton) {
+    return `<div class="tp-doc-section-title tp-doc-sec">
+      <span>${escapeHTML(title)}</span>
+      ${noButton ? '' : `<button class="tp-doc-addbtn" data-doc-new="${type}" title="Adicionar ${escapeHTML(DOC_TYPES[type].label.toLowerCase())} manualmente">+ Adicionar</button>`}
+    </div>`;
+  }
+
   function renderDocs() {
     const docs = D();
     const el = $('tp-view-docs');
@@ -13198,23 +13215,29 @@ const renderTrip = (() => {
         <span class="tp-ai-hint">Envie prints, fotos ou PDFs (cartão de embarque, reserva, apólice, passaporte) e a IA preenche os cartões. No computador, você também pode colar um print aqui com ${/Mac|iPhone|iPad/.test(navigator.platform) ? '⌘' : 'Ctrl'}+V.</span>
       </div>
       <div id="tp-doc-scan-result"></div>
-      <div class="tp-toolbar">
-        <div class="tp-doc-add">
-          ${DOC_ORDER.map(k => `<button class="btn btn-ghost" data-doc-new="${k}">${DOC_TYPES[k].emoji} ${escapeHTML(DOC_TYPES[k].label)}</button>`).join('')}
-        </div>
+      <div class="tp-doc-filter" role="tablist" aria-label="Filtrar por tipo">
+        <button class="btn btn-ghost ${docFilter === 'all' ? 'active' : ''}" data-doc-filter="all">Tudo</button>
+        ${DOC_ORDER.map(k => {
+          const n = cards.filter(c => c.type === k).length;
+          return `<button class="btn btn-ghost ${docFilter === k ? 'active' : ''} ${n ? '' : 'is-empty'}" data-doc-filter="${k}">${DOC_TYPES[k].emoji} ${escapeHTML(DOC_TYPES[k].label)}${n ? ` <span class="tp-doc-count">${n}</span>` : ''}</button>`;
+        }).join('')}
       </div>
-      ${!cards.length ? `<div class="tp-doc-empty">
+      ${!cards.length && docFilter === 'all' ? `<div class="tp-doc-empty">
           <div class="tp-doc-empty-title">Guarde aqui tudo que você vai precisar mostrar ou digitar na viagem</div>
-          <div>Voos com localizador e nº do bilhete, hospedagens, seguro, passaporte, contatos. Toque num tipo acima para começar, e anexe os PDFs e fotos.</div>
+          <div>Use “✨ Ler print ou documento” para a IA preencher, ou toque num tipo acima e em “+ Adicionar”.</div>
         </div>` : ''}
-      ${nextFlight ? `<div class="tp-doc-section-title">Próximo voo</div>${docCard(nextFlight, true)}` : ''}
-      ${DOC_ORDER.map(type => {
-        const list = cards.filter(c => c.type === type && c !== nextFlight);
-        if (!list.length) return '';
-        return `<div class="tp-doc-section-title">${DOC_TYPES[type].emoji} ${escapeHTML(DOC_TYPES[type].label)}${type === 'flight' && nextFlight ? ' · outros' : ''}</div>
-          <div class="tp-doc-grid">${list.map(c => docCard(c, false)).join('')}</div>`;
+      ${docFilter === 'all' && nextFlight ? `${sectionHead('flight', 'Próximo voo', cards.some(c => c.type === 'flight' && c !== nextFlight))}${docCard(nextFlight, true)}` : ''}
+      ${(docFilter === 'all' ? DOC_ORDER : [docFilter]).map(type => {
+        // No filtro de voos o próximo voo aparece em destaque, junto dos outros
+        const inFilter = docFilter !== 'all';
+        const list = cards.filter(c => c.type === type && (inFilter || c !== nextFlight));
+        if (!list.length && !inFilter) return '';
+        const title = `${DOC_TYPES[type].emoji} ${DOC_TYPES[type].label}${!inFilter && type === 'flight' && nextFlight ? ' · outros' : ''}`;
+        return `${sectionHead(type, title)}
+          ${list.length ? `<div class="tp-doc-grid">${list.map(c => docCard(c, inFilter && c === nextFlight)).join('')}</div>`
+            : `<div class="tp-doc-empty is-small">Nada em ${escapeHTML(DOC_TYPES[type].label.toLowerCase())} ainda. Leia um print ou documento com a IA, ou toque em “+ Adicionar”.</div>`}`;
       }).join('')}
-      <div class="tp-doc-section-title tp-doc-files-head">
+      ${docFilter !== 'all' ? '' : `<div class="tp-doc-section-title tp-doc-files-head">
         <span>📎 Arquivos</span>
         <span class="tp-doc-files-actions">
           ${docs.files.length ? `<button class="btn btn-ghost" data-doc-offline-all ${allCached ? 'disabled' : ''}>${allCached ? '✓ Tudo disponível offline' : 'Baixar tudo para usar offline'}</button>` : ''}
@@ -13223,7 +13246,7 @@ const renderTrip = (() => {
       </div>
       ${uploadingCount ? `<div class="tp-doc-uploading">Enviando ${uploadingCount} ${uploadingCount === 1 ? 'arquivo' : 'arquivos'}…</div>` : ''}
       ${generalFiles.length ? `<div class="tp-file-grid">${generalFiles.map(fileTile).join('')}</div>`
-        : `<div class="tp-doc-note">PDF ou foto de passaporte, cartões de embarque, apólice, reservas (até 10 MB cada). Ficam privados na sua conta.</div>`}`;
+        : `<div class="tp-doc-note">PDF ou foto de passaporte, cartões de embarque, apólice, reservas (até 10 MB cada). Ficam privados na sua conta.</div>`}`}`;
     hydrateThumbs();
     renderScan();
   }
@@ -13804,8 +13827,14 @@ const renderTrip = (() => {
     if (e.target.matches('[data-scan-link]') && scan) scan.link = e.target.checked;
   });
   $('tp-view-docs').addEventListener('click', async e => {
-    const el = e.target.closest('[data-doc-new],[data-doc-edit],[data-doc-del],[data-doc-attach],[data-doc-copy],[data-doc-file-del],[data-doc-file-read],[data-doc-open],[data-doc-offline-all],[data-doc-scan],[data-scan-toggle],[data-scan-apply],[data-scan-dismiss]');
+    const el = e.target.closest('[data-doc-filter],[data-doc-new],[data-doc-edit],[data-doc-del],[data-doc-attach],[data-doc-copy],[data-doc-file-del],[data-doc-file-read],[data-doc-open],[data-doc-offline-all],[data-doc-scan],[data-scan-toggle],[data-scan-apply],[data-scan-dismiss]');
     if (!el) return;
+    if (el.matches('[data-doc-filter]')) {
+      docFilter = el.dataset.docFilter;
+      try { localStorage.setItem(DOC_FILTER_KEY, docFilter); } catch {}
+      renderDocs();
+      return;
+    }
     if (el.matches('[data-doc-scan]')) { if (!scan || scan.status !== 'loading') $('tp-doc-scan').click(); return; }
     if (el.matches('[data-scan-toggle]')) { const it = scan && scan.items[Number(el.dataset.scanToggle)]; if (it) { it.on = !it.on; renderScan(); } return; }
     if (el.matches('[data-scan-apply]')) { applyScan(); return; }
