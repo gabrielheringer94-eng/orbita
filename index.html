@@ -4002,6 +4002,12 @@
   .tp-file-read { border: 1px solid var(--line); background: var(--bg); color: var(--ink-soft); border-radius: 7px; padding: 4px 8px; font: 600 11px 'DM Sans', sans-serif; cursor: pointer; white-space: nowrap; }
   .tp-file-read:hover { border-color: var(--ink); color: var(--ink); }
   /* Documentos */
+  .sync-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 6px 0 12px; }
+  .sync-col { background: var(--bg-card); border-radius: 10px; padding: 10px 12px; }
+  .sync-col-title { font-weight: 700; font-size: 13px; margin-bottom: 6px; }
+  .sync-row { display: flex; justify-content: space-between; gap: 8px; font-size: 13px; padding: 2px 0; color: var(--ink-soft); }
+  .sync-row b { color: var(--ink); }
+  .sync-msg { font-size: 13px; min-height: 18px; margin-bottom: 8px; color: var(--ink-soft); }
   /* Pôsteres */
   .tp-row { display: grid; grid-auto-flow: column; grid-auto-columns: 250px; gap: 14px; overflow-x: auto; padding: 4px 2px 14px; scroll-snap-type: x mandatory; scrollbar-width: thin; }
   .tp-row.is-grid { grid-auto-flow: row; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); grid-auto-columns: unset; overflow: visible; }
@@ -4414,6 +4420,7 @@
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
         </button>
       </div>
+      <button id="sync-open-btn" type="button" title="Ver e resolver a sincronização entre aparelhos" style="background:none;border:none;padding:0;margin:0 0 4px;font:600 10px 'DM Sans',sans-serif;color:var(--ink-soft);cursor:pointer;text-decoration:underline">⇅ Sincronizar aparelhos</button>
       <div id="sync-status" style="font-size:10px;color:var(--ink-faint);margin-bottom:4px">
         <span style="color:#16a34a">●</span> Sincronizado
       </div>
@@ -4985,6 +4992,24 @@
     <div class="modal-actions">
       <button class="btn btn-ghost" data-close-modal>Cancelar</button>
       <button class="btn" id="trip-save">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Sincronizar aparelhos -->
+<div class="modal-bg" id="sync-modal">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-title">Sincronizar aparelhos</div>
+    <div class="modal-sub">Escolha qual versão vale. Nada é apagado sem guardar uma cópia.</div>
+    <div class="sync-grid">
+      <div class="sync-col"><div class="sync-col-title">📱💻 Este aparelho</div><div id="sync-local"></div></div>
+      <div class="sync-col"><div class="sync-col-title">☁️ Nuvem</div><div id="sync-cloud"></div></div>
+    </div>
+    <div id="sync-msg" class="sync-msg"></div>
+    <div class="modal-actions" style="flex-wrap:wrap">
+      <button class="btn btn-ghost" data-close-modal>Fechar</button>
+      <button class="btn btn-ghost" id="sync-pull-btn">Usar os da nuvem aqui</button>
+      <button class="btn" id="sync-push-btn">Enviar este aparelho → nuvem</button>
     </div>
   </div>
 </div>
@@ -5654,6 +5679,93 @@ function scheduleReconnect() {
     }
   }, 20000);
 }
+// ----- Sincronizar aparelhos: comparar e escolher qual versão vale -----
+function describeState(st) {
+  const t = (st && st.trip) || {};
+  const docs = t.docs || {};
+  const stops = (t.days || []).reduce((n, d) => n + ((d.stops || []).length), 0);
+  const done = (t.checklists || []).reduce((n, c) => n + (c.items || []).filter(i => i.done).length, 0);
+  const parts = [
+    [(docs.cards || []).length, 'documentos'], [(docs.files || []).length, 'arquivos'], [stops, 'paradas no roteiro'],
+    [done, 'itens marcados'], [((st && st.tasks) || []).length, 'tarefas'], [((st && st.notes) || []).length, 'notas'],
+    [((st && st.places) || []).length, 'lugares'],
+  ];
+  return parts.map(([n, l]) => `<div class="sync-row"><span>${l}</span><b>${n}</b></div>`).join('');
+}
+let syncCloudRow = null;
+async function openSyncModal() {
+  const m = document.getElementById('sync-modal');
+  if (!m) return;
+  document.getElementById('sync-local').innerHTML = describeState(state);
+  document.getElementById('sync-cloud').innerHTML = '<div class="sync-row"><span>Carregando…</span></div>';
+  document.getElementById('sync-msg').textContent = '';
+  m.classList.add('active');
+  try {
+    syncCloudRow = await fetchCloudRow();
+    document.getElementById('sync-cloud').innerHTML = syncCloudRow ? describeState(syncCloudRow.data) : '<div class="sync-row"><span>Nada na nuvem</span></div>';
+  } catch (e) {
+    syncCloudRow = null;
+    document.getElementById('sync-cloud').innerHTML = '<div class="sync-row"><span>Sem conexão com a nuvem agora</span></div>';
+  }
+}
+// Envia este aparelho para a nuvem. Antes: guarda cópia da nuvem e junta os
+// arquivos/documentos que só existem lá, para não perder nada.
+async function pushLocalToCloud() {
+  const msg = document.getElementById('sync-msg');
+  if (!currentUser) return;
+  msg.textContent = 'Enviando…';
+  try {
+    const cloudRow = await fetchCloudRow();
+    if (cloudRow) {
+      try { localStorage.setItem(STORAGE_KEY + '_cloud_backup', JSON.stringify({ savedAt: new Date().toISOString(), data: cloudRow.data })); } catch {}
+      const cd = (cloudRow.data && cloudRow.data.trip && cloudRow.data.trip.docs) || {};
+      if (!state.trip) state.trip = cloudRow.data.trip || state.trip;
+      if (state.trip) {
+        state.trip.docs = state.trip.docs || { cards: [], files: [] };
+        const paths = new Set((state.trip.docs.files || []).map(f => f.path));
+        (cd.files || []).forEach(f => { if (!paths.has(f.path)) state.trip.docs.files.push(f); });
+        const ids = new Set((state.trip.docs.cards || []).map(c => c.id));
+        (cd.cards || []).forEach(c => { if (!ids.has(c.id)) state.trip.docs.cards.push(c); });
+      }
+      cloudVersion = cloudRow.updated_at;
+    }
+    syncBlocked = null;
+    window.__conflictWarned = false;
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch {}
+    await syncToCloud();
+    if (syncBlocked) throw new Error('outro aparelho salvou de novo neste instante; tente outra vez');
+    msg.textContent = '✓ Pronto! Os dados deste aparelho estão na nuvem. Recarregue o app nos outros aparelhos.';
+    refreshCurrentPage();
+  } catch (e) {
+    msg.textContent = 'Não consegui enviar: ' + (e.message || e);
+  }
+}
+// Troca os dados deste aparelho pelos da nuvem (guardando cópia)
+async function pullCloudToLocal() {
+  const msg = document.getElementById('sync-msg');
+  if (!confirm('Substituir os dados deste aparelho pelos da nuvem? (Uma cópia deste aparelho fica guardada.)')) return;
+  try {
+    const cloudRow = await fetchCloudRow();
+    if (!cloudRow) { msg.textContent = 'Não há dados na nuvem.'; return; }
+    try { localStorage.setItem(STORAGE_KEY + '_prev', JSON.stringify({ savedAt: new Date().toISOString(), data: state })); } catch {}
+    state = { ...defaultState, ...cloudRow.data };
+    cloudVersion = cloudRow.updated_at;
+    syncBlocked = null;
+    window.__conflictWarned = false;
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch {}
+    updateSyncStatus('synced');
+    msg.textContent = '✓ Dados da nuvem carregados neste aparelho.';
+    refreshCurrentPage();
+  } catch (e) {
+    msg.textContent = 'Não consegui ler a nuvem: ' + (e.message || e);
+  }
+}
+document.addEventListener('click', e => {
+  if (e.target.closest('#sync-open-btn')) openSyncModal();
+  if (e.target.closest('#sync-push-btn')) pushLocalToCloud();
+  if (e.target.closest('#sync-pull-btn')) pullCloudToLocal();
+});
+
 function refreshCurrentPage() {
   const active = document.querySelector('.nav-item.active');
   if (active) active.click();
@@ -5879,12 +5991,12 @@ function updateSyncStatus(status) {
   } else if (status === 'offline') {
     el.innerHTML = '<span style="color:#ca8a04">●</span> Offline: salvando só neste aparelho';
   } else if (status === 'conflict') {
-    el.innerHTML = '<span style="color:#dc2626">●</span> Alterado em outro aparelho · <a href="#" id="sync-reload" style="color:inherit;text-decoration:underline">recarregar</a>';
-    const a = document.getElementById('sync-reload');
-    if (a) a.onclick = e => { e.preventDefault(); location.reload(); };
+    el.innerHTML = '<span style="color:#dc2626">●</span> Alterado em outro aparelho · <a href="#" id="sync-resolve" style="color:inherit;text-decoration:underline">resolver</a>';
+    const a = document.getElementById('sync-resolve');
+    if (a) a.onclick = e => { e.preventDefault(); openSyncModal(); };
     if (!window.__conflictWarned) {
       window.__conflictWarned = true;
-      setTimeout(() => alert('Seus dados foram alterados em outro aparelho.\n\nPara não apagar nada, este aparelho parou de enviar para a nuvem. Recarregue o app: ele vai comparar e te perguntar qual versão usar.'), 50);
+      setTimeout(openSyncModal, 50);
     }
   }
 }
