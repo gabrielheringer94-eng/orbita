@@ -7516,13 +7516,7 @@ function renderPlacesOverviewMap(list) {
       scrollWheelZoom: false, // evita capturar scroll da página
       attributionControl: true,
     }).setView([-23.561, -46.656], 12); // default: SP
-    // CartoDB Voyager: tiles claros e modernos, parecido com Google Maps.
-    // Suporta retina via {r}. Subdomínios a-d.
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-      maxZoom: 20,
-      subdomains: 'abcd',
-      attribution: '© <a href="https://www.openstreetmap.org/copyright">OSM</a> · © <a href="https://carto.com/attributions">CARTO</a>',
-    }).addTo(placesOverviewMap);
+    addBaseTiles(placesOverviewMap);
     placesOverviewLayer = L.layerGroup().addTo(placesOverviewMap);
     // Habilita scroll-zoom ao clicar no mapa, desabilita ao tirar foco
     placesOverviewMap.on('focus', () => placesOverviewMap.scrollWheelZoom.enable());
@@ -7598,6 +7592,40 @@ function scrollToPlaceCard(placeId) {
   setTimeout(() => card.classList.remove('is-highlight'), 1500);
 }
 
+
+// ============== TILES DO MAPA ==============
+// Mapa base sem chave de API. O CARTO passou a exigir chave (tiles com
+// "API KEY REQUIRED"), então usamos os tiles do OpenStreetMap e, se eles
+// falharem repetidamente, trocamos automaticamente pelo Esri World Street Map.
+const BASE_TILES = [
+  {
+    url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+    options: { maxZoom: 19, attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>' },
+  },
+  {
+    url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}',
+    options: { maxZoom: 19, attribution: 'Tiles © <a href="https://www.esri.com">Esri</a> · © OpenStreetMap' },
+  },
+];
+function addBaseTiles(leafletMap, idx = 0) {
+  const src = BASE_TILES[idx];
+  const layer = L.tileLayer(src.url, src.options).addTo(leafletMap);
+  if (idx + 1 < BASE_TILES.length) {
+    let errors = 0, loaded = 0;
+    layer.on('tileload', () => { loaded++; });
+    layer.on('tileerror', () => {
+      errors++;
+      if (errors >= 4 && errors > loaded) {
+        layer.off();
+        leafletMap.removeLayer(layer);
+        if (leafletMap.attributionControl) leafletMap.attributionControl.removeAttribution(src.options.attribution);
+        console.warn('Tiles do mapa falharam, trocando de provedor:', src.url);
+        addBaseTiles(leafletMap, idx + 1);
+      }
+    });
+  }
+  return layer;
+}
 
 // ============== GEOCODING + MINI-MAPS ==============
 const NOMINATIM_URL = 'https://nominatim.openstreetmap.org/search';
@@ -12218,11 +12246,7 @@ const renderTrip = (() => {
     if (typeof L === 'undefined') { setTimeout(() => { if (tab === 'roteiro') renderMap(true); }, 200); return false; }
     if (map) return true;
     map = L.map('tp-map', { zoomControl: true, scrollWheelZoom: false }).setView(EUROPE, 4);
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-      maxZoom: 20,
-      subdomains: 'abcd',
-      attribution: '© <a href="https://www.openstreetmap.org/copyright">OSM</a> · © <a href="https://carto.com/attributions">CARTO</a>',
-    }).addTo(map);
+    addBaseTiles(map);
     planLayer = L.layerGroup().addTo(map);
     resultsLayer = L.layerGroup().addTo(map);
     map.on('focus', () => map.scrollWheelZoom.enable());
