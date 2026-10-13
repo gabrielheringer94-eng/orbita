@@ -3954,7 +3954,67 @@
   .tp-bar { height: 4px; background: var(--line-soft); border-radius: 4px; overflow: hidden; margin-top: 10px; }
   .tp-bar span { display: block; height: 100%; background: var(--ink); border-radius: 4px; transition: width 0.3s ease; }
 
-  .tp-tabs { grid-template-columns: repeat(3, 1fr); max-width: 520px; }
+  .tp-tabs { grid-template-columns: repeat(4, 1fr); max-width: 680px; }
+  /* Calendário */
+  .cal-layout { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(280px, 1fr); gap: 20px; align-items: start; }
+  .cal-main { background: var(--bg-elevated); border: 1px solid var(--line); border-radius: 16px; padding: 16px 18px; box-shadow: var(--shadow-sm); min-width: 0; }
+  .cal-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .cal-title { font-size: 22px; font-weight: 300; min-width: 150px; text-align: center; }
+  .cal-title::first-letter, .cal-day-date::first-letter, .cal-month-btn::first-letter { text-transform: uppercase; }
+  .cal-nav { font-size: 20px; width: 34px; height: 34px; border: 1px solid var(--line); border-radius: 8px; }
+  .cal-head-actions { margin-left: auto; display: flex; gap: 6px; flex-wrap: wrap; }
+  .cal-head-actions .btn-ghost { padding: 6px 12px; font-size: 12px; }
+  .cal-sub { font-size: 13px; color: var(--ink-soft); margin: 8px 0 12px; }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
+  .cal-wd { font: 600 10px 'DM Sans', sans-serif; text-transform: uppercase; letter-spacing: 0.12em; color: var(--ink-faint); text-align: center; padding: 4px 0; }
+  .cal-cell { position: relative; min-height: 92px; border: 1px solid var(--line-soft); border-radius: 10px; background: var(--bg); padding: 6px 6px 5px; text-align: left; display: flex; flex-direction: column; gap: 3px; cursor: pointer; font-family: 'DM Sans', sans-serif; color: var(--ink); min-width: 0; transition: border-color 0.15s, transform 0.12s; }
+  .cal-cell:hover { border-color: var(--ink-faint); }
+  .cal-cell.is-blank { background: transparent; border: none; cursor: default; }
+  .cal-cell.is-past:not(.is-trip) { opacity: 0.55; }
+  .cal-cell.is-trip { background: linear-gradient(180deg, #eef4ff, #e3edff); border-color: #c7d7fe; }
+  html.theme-dark .cal-cell.is-trip { background: linear-gradient(180deg, #1e2a44, #1b2540); border-color: #2f4170; }
+  .cal-cell.is-start, .cal-cell.is-end { border: 2px solid #2563eb; }
+  .cal-cell.is-today .cal-num { background: #dc2626; color: #fff; border-radius: 999px; padding: 0 7px; }
+  .cal-cell.is-selected { box-shadow: 0 0 0 2px var(--ink); transform: translateY(-1px); }
+  .cal-num { font-weight: 700; font-size: 13px; align-self: flex-start; display: flex; align-items: center; gap: 4px; }
+  .cal-tag { font: 700 9px 'DM Sans', sans-serif; text-transform: uppercase; letter-spacing: 0.06em; background: #2563eb; color: #fff; border-radius: 4px; padding: 1px 4px; }
+  .cal-place { font-size: 11px; font-weight: 600; color: #1e3a8a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  html.theme-dark .cal-place { color: #93b4ff; }
+  .cal-icons { margin-top: auto; display: flex; flex-wrap: wrap; gap: 2px; font-size: 14px; line-height: 1.1; }
+  .cal-legend { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 12px; font-size: 12px; color: var(--ink-soft); }
+  .cal-swatch { display: inline-block; width: 14px; height: 10px; border-radius: 3px; background: #dbe7ff; border: 1px solid #c7d7fe; vertical-align: -1px; }
+  .cal-side { position: sticky; top: 16px; background: var(--bg-elevated); border: 1px solid var(--line); border-radius: 16px; padding: 16px 18px; box-shadow: var(--shadow-sm); min-width: 0; }
+  .cal-day-kicker { font: 700 10px 'DM Sans', sans-serif; letter-spacing: 0.16em; text-transform: uppercase; color: #2563eb; }
+  .cal-day-date { font-size: 20px; font-weight: 300; margin: 2px 0 4px; }
+  .cal-stay { font-size: 13px; color: var(--ink-soft); margin-top: 6px; }
+  .cal-events { margin-top: 12px; display: grid; gap: 8px; }
+  .cal-ev { display: grid; grid-template-columns: 30px minmax(0, 1fr); gap: 8px; padding: 10px; border: 1px solid var(--line-soft); border-radius: 12px; background: var(--bg); cursor: pointer; }
+  .cal-ev.is-stop { cursor: default; }
+  .cal-ev.is-flight { background: linear-gradient(120deg, #1e3a8a, #3b82f6); color: #fff; border: none; }
+  .cal-ev.is-flight .cal-ev-sub { color: rgba(255,255,255,0.8); }
+  .cal-ev-icon { font-size: 20px; line-height: 1.2; }
+  .cal-ev-title { font-weight: 700; font-size: 14px; overflow-wrap: anywhere; }
+  .cal-ev-sub { font-size: 12px; color: var(--ink-faint); font-weight: 400; overflow-wrap: anywhere; }
+  .cal-ev-code { display: flex; align-items: center; gap: 8px; margin-top: 6px; flex-wrap: wrap; }
+  .cal-ev-code span { font: 600 10px 'DM Sans', sans-serif; letter-spacing: 0.12em; text-transform: uppercase; opacity: 0.8; }
+  .cal-ev-code b { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 18px; letter-spacing: 0.06em; }
+  .cal-ev.is-flight .tp-copy { background: #fff; color: #111; border-color: #fff; }
+  .cal-ev-row { display: flex; gap: 6px; align-items: center; }
+  .cal-ev-name { flex: 1; min-width: 0; border: none; background: transparent; color: var(--ink); font: 600 14px 'DM Sans', sans-serif; padding: 2px 0; outline: none; }
+  .cal-day-actions { margin-top: 10px; }
+  .cal-day-actions .btn-ghost { padding: 6px 12px; font-size: 12px; }
+  @media (max-width: 1100px) { .cal-layout { grid-template-columns: 1fr; } .cal-side { position: static; } }
+  @media (max-width: 900px) {
+    .tp-tabs { grid-template-columns: repeat(2, 1fr); }
+    .cal-main, .cal-side { padding: 12px; }
+    .cal-cell { min-height: 64px; padding: 4px 3px; border-radius: 8px; }
+    .cal-place { font-size: 9px; }
+    .cal-icons { font-size: 11px; }
+    .cal-num { font-size: 12px; }
+    .cal-tag { display: none; }
+    .cal-head-actions { margin-left: 0; width: 100%; }
+    .cal-title { font-size: 18px; min-width: 0; flex: 1; }
+  }
 
   .tp-toolbar { display: flex; gap: 8px; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-bottom: 16px; }
   .tp-toolbar .btn-ghost { padding: 8px 14px; font-size: 12px; }
@@ -4720,6 +4780,7 @@
 
       <div class="tr-tabs tp-tabs">
         <button class="tr-tab active" data-tp-tab="checklists">Checklists</button>
+        <button class="tr-tab" data-tp-tab="calendar">📅 Calendário</button>
         <button class="tr-tab" data-tp-tab="roteiro">Roteiro e mapa</button>
         <button class="tr-tab" data-tp-tab="docs">Documentos</button>
       </div>
@@ -4740,6 +4801,7 @@
 
       <div id="tp-view-checklists"></div>
 
+      <div id="tp-view-calendar" hidden></div>
       <div id="tp-view-docs" hidden></div>
       <input type="file" id="tp-doc-file" accept="application/pdf,image/*,.heic,.heif" multiple hidden />
       <input type="file" id="tp-doc-scan" accept="application/pdf,image/*,.heic,.heif" multiple hidden />
@@ -12360,7 +12422,7 @@ const renderTrip = (() => {
 
   const TAB_KEY = 'orbita_trip_tab';
   let tab = (() => {
-    try { const v = localStorage.getItem(TAB_KEY); return ['checklists', 'roteiro', 'docs'].includes(v) ? v : 'checklists'; }
+    try { const v = localStorage.getItem(TAB_KEY); return ['checklists', 'calendar', 'roteiro', 'docs'].includes(v) ? v : 'checklists'; }
     catch { return 'checklists'; }
   })();
   let hideDone = false;
@@ -12498,8 +12560,10 @@ const renderTrip = (() => {
     $('tp-ai').hidden = tab !== 'checklists';
     $('tp-view-roteiro').hidden = tab !== 'roteiro';
     $('tp-view-docs').hidden = tab !== 'docs';
+    $('tp-view-calendar').hidden = tab !== 'calendar';
     if (tab === 'checklists') renderChecklists();
     else if (tab === 'docs') renderDocs();
+    else if (tab === 'calendar') renderCalendar();
     else {
       sortDays();
       renderDays();
@@ -14486,6 +14550,269 @@ const renderTrip = (() => {
   $('trip-doc-view-body').addEventListener('click', onDocsClick);
   $('tp-view-docs').addEventListener('keydown', e => {
     if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('[data-doc-view],[data-doc-open]')) { e.preventDefault(); e.target.click(); }
+  });
+
+  // ---------- calendário da viagem ----------
+  // Visão de mês com o período da viagem, ícones do que acontece em cada dia
+  // e um painel para ver/editar o dia selecionado.
+  const CAL_KEY = 'orbita_trip_cal_day';
+  let calDay = (() => { try { return localStorage.getItem(CAL_KEY) || ''; } catch { return ''; } })();
+  let calMonth = '';            // 'YYYY-MM' em exibição
+  const WEEKDAYS = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
+
+  function tripRange() {
+    const t = T();
+    const dates = t.days.map(d => d.date).filter(Boolean)
+      .concat(D().cards.flatMap(c => [c.fields.date, c.fields.checkin, c.fields.checkout]).filter(Boolean))
+      .sort();
+    const start = t.start || dates[0] || localISO(new Date());
+    const end = t.end || dates[dates.length - 1] || start;
+    return { start, end: end < start ? start : end };
+  }
+  function addressCity(addr) {
+    const p = (addr || '').split(',').map(x => x.replace(/\d[\d-]*/g, '').trim()).filter(Boolean);
+    return p.length >= 2 ? p[p.length - 2] : (p[0] || '');
+  }
+  // Tudo o que acontece num dia (documentos + paradas do roteiro)
+  function dayInfo(date) {
+    const t = T();
+    const cards = D().cards;
+    const flights = cards.filter(c => c.type === 'flight' && c.fields.date === date);
+    const transports = cards.filter(c => c.type === 'transport' && c.fields.date === date);
+    const checkins = cards.filter(c => c.type === 'hotel' && c.fields.checkin === date);
+    const checkouts = cards.filter(c => c.type === 'hotel' && c.fields.checkout === date);
+    const stays = cards.filter(c => c.type === 'hotel' && c.fields.checkin && c.fields.checkout && c.fields.checkin <= date && date < c.fields.checkout);
+    const day = t.days.find(d => d.date === date) || null;
+    const stops = day ? day.stops : [];
+    const plain = stops.filter(s => !s.docRef);  // paradas que não vieram de documento
+    let place = '';
+    if (day && day.title && !/^✈️/.test(day.title) && day.title !== 'Embarque') place = day.title;
+    else if (flights.length) {
+      const f = flights[flights.length - 1].fields;
+      place = [airport(f.from).code || cityOf(f.from), airport(f.to).code || cityOf(f.to)].filter(Boolean).join(' → ');
+    } else if (stays.length) place = addressCity(stays[0].fields.address) || stays[0].fields.name || '';
+    else if (day && day.title) place = day.title;
+    return { day, stops, plain, flights, transports, checkins, checkouts, stays, place, fav: stops.some(s => s.fav) };
+  }
+
+  function renderCalendar() {
+    const el = $('tp-view-calendar');
+    const { start, end } = tripRange();
+    const today = localISO(new Date());
+    if (!calDay) calDay = today >= start && today <= end ? today : start;
+    if (!calMonth) calMonth = calDay.slice(0, 7);
+    const [yy, mm] = calMonth.split('-').map(Number);
+    const first = new Date(yy, mm - 1, 1);
+    const lead = (first.getDay() + 6) % 7; // semana começando na segunda
+    const daysInMonth = new Date(yy, mm, 0).getDate();
+    const cells = [];
+    for (let i = 0; i < lead; i++) cells.push(null);
+    for (let d = 1; d <= daysInMonth; d++) cells.push(`${calMonth}-${String(d).padStart(2, '0')}`);
+    while (cells.length % 7) cells.push(null);
+    const monthLabel = first.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+    const tripMonths = [];
+    for (let m = start.slice(0, 7); m <= end.slice(0, 7); m = shiftMonth(m, 1)) tripMonths.push(m);
+    const total = Math.round((parseISO(end) - parseISO(start)) / 864e5) + 1;
+    el.innerHTML = `
+      <div class="cal-layout">
+        <div class="cal-main">
+          <div class="cal-head">
+            <button class="tp-icon-btn cal-nav" data-cal-month="-1" aria-label="Mês anterior">‹</button>
+            <div class="cal-title">${escapeHTML(monthLabel)}</div>
+            <button class="tp-icon-btn cal-nav" data-cal-month="1" aria-label="Próximo mês">›</button>
+            <div class="cal-head-actions">
+              ${tripMonths.length > 1 ? tripMonths.map(m => `<button class="btn btn-ghost cal-month-btn ${m === calMonth ? 'active' : ''}" data-cal-goto="${m}">${escapeHTML(parseISO(m + '-01').toLocaleDateString('pt-BR', { month: 'short' }).replace('.', ''))}</button>`).join('') : ''}
+              <button class="btn btn-ghost" data-cal-today>Hoje</button>
+              <button class="btn btn-ghost" data-cal-edit-trip>✎ Datas da viagem</button>
+            </div>
+          </div>
+          <div class="cal-sub">✈️ ${escapeHTML(fmtDay(start))} → ${escapeHTML(fmtDay(end))} · ${total} ${total === 1 ? 'dia' : 'dias'}${T().cities ? ' · ' + escapeHTML(T().cities) : ''}</div>
+          <div class="cal-grid" role="grid">
+            ${WEEKDAYS.map(w => `<div class="cal-wd">${w}</div>`).join('')}
+            ${cells.map(date => {
+              if (!date) return '<div class="cal-cell is-blank"></div>';
+              const inTrip = date >= start && date <= end;
+              const info = dayInfo(date);
+              const icons = [];
+              if (info.flights.length) icons.push(['✈️', `${info.flights.length} voo(s)`]);
+              if (info.transports.length) icons.push(['🚆', 'Transporte']);
+              if (info.checkins.length) icons.push(['🛎️', 'Check-in']);
+              if (info.checkouts.length) icons.push(['🧳', 'Check-out']);
+              if (info.stays.length && !info.checkins.length) icons.push(['🏨', 'Hospedado']);
+              if (info.plain.length) icons.push([`📍${info.plain.length > 1 ? info.plain.length : ''}`, `${info.plain.length} parada(s)`]);
+              if (info.fav) icons.push(['❤️', 'Favorito']);
+              const cls = ['cal-cell', inTrip ? 'is-trip' : '', date === start ? 'is-start' : '', date === end ? 'is-end' : '', date === today ? 'is-today' : '', date === calDay ? 'is-selected' : '', date < today ? 'is-past' : ''].join(' ');
+              return `<button class="${cls}" data-cal-day="${date}" aria-label="${escapeHTML(fmtDay(date))}${info.place ? ' · ' + escapeHTML(info.place) : ''}">
+                <div class="cal-num">${Number(date.slice(8))}${date === start ? '<span class="cal-tag">ida</span>' : date === end && end !== start ? '<span class="cal-tag">volta</span>' : ''}</div>
+                ${info.place ? `<div class="cal-place">${escapeHTML(info.place)}</div>` : ''}
+                <div class="cal-icons">${icons.map(([i, tt]) => `<span title="${escapeHTML(tt)}">${i}</span>`).join('')}</div>
+              </button>`;
+            }).join('')}
+          </div>
+          <div class="cal-legend">
+            <span><i class="cal-swatch"></i> Período da viagem</span>
+            <span>✈️ Voo</span><span>🛎️ Check-in</span><span>🏨 Hospedado</span><span>🧳 Check-out</span><span>🚆 Transporte</span><span>📍 Paradas</span><span>❤️ Favorito</span>
+          </div>
+        </div>
+        <div class="cal-side" id="cal-side">${dayPanel(calDay)}</div>
+      </div>`;
+  }
+
+  function shiftMonth(ym, n) {
+    const [y, m] = ym.split('-').map(Number);
+    const d = new Date(y, m - 1 + n, 1);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+  }
+
+  // Agenda do dia: documentos + paradas, em ordem de horário, com edição
+  function dayPanel(date) {
+    const t = T();
+    const info = dayInfo(date);
+    const { start, end } = tripRange();
+    const n = Math.round((parseISO(date) - parseISO(start)) / 864e5) + 1;
+    const inTrip = date >= start && date <= end;
+    const events = [];
+    info.flights.forEach(c => {
+      const f = c.fields;
+      events.push({ time: f.time || '', html: `
+        <div class="cal-ev is-flight" data-doc-view="${c.id}">
+          <div class="cal-ev-icon">✈️</div>
+          <div class="cal-ev-body">
+            <div class="cal-ev-title">${escapeHTML([airport(f.from).code || cityOf(f.from), airport(f.to).code || cityOf(f.to)].filter(Boolean).join(' → ') || 'Voo')} <span class="cal-ev-sub">${escapeHTML([f.airline, f.flight].filter(Boolean).join(' '))}</span></div>
+            <div class="cal-ev-sub">${escapeHTML([f.time && 'Partida ' + f.time, f.seat && 'Assento ' + f.seat, f.terminal && 'Terminal ' + f.terminal].filter(Boolean).join(' · '))}</div>
+            ${f.locator ? `<div class="cal-ev-code"><span>Localizador</span><b>${escapeHTML(f.locator)}</b>${copyBtn(f.locator, 'localizador')}</div>` : ''}
+          </div>
+        </div>` });
+    });
+    info.transports.forEach(c => {
+      const f = c.fields;
+      events.push({ time: f.time || '', html: `
+        <div class="cal-ev" data-doc-view="${c.id}"><div class="cal-ev-icon">🚆</div><div class="cal-ev-body">
+          <div class="cal-ev-title">${escapeHTML(f.company || 'Transporte')}</div>
+          <div class="cal-ev-sub">${escapeHTML([f.time, [cityOf(f.from), cityOf(f.to)].filter(Boolean).join(' → '), f.code && 'Reserva ' + f.code].filter(Boolean).join(' · '))}</div>
+        </div></div>` });
+    });
+    info.checkouts.forEach(c => events.push({ time: '11:00', html: `
+      <div class="cal-ev" data-doc-view="${c.id}"><div class="cal-ev-icon">🧳</div><div class="cal-ev-body">
+        <div class="cal-ev-title">Check-out · ${escapeHTML(c.fields.name || 'Hospedagem')}</div>
+        <div class="cal-ev-sub">${escapeHTML(c.fields.confirmation ? 'Reserva ' + c.fields.confirmation : '')}</div></div></div>` }));
+    info.checkins.forEach(c => events.push({ time: '15:00', html: `
+      <div class="cal-ev" data-doc-view="${c.id}"><div class="cal-ev-icon">🛎️</div><div class="cal-ev-body">
+        <div class="cal-ev-title">Check-in · ${escapeHTML(c.fields.name || 'Hospedagem')}</div>
+        <div class="cal-ev-sub">${escapeHTML([c.fields.address, c.fields.confirmation && 'Reserva ' + c.fields.confirmation].filter(Boolean).join(' · '))}</div></div></div>` }));
+    // paradas (as que não duplicam um documento já mostrado)
+    info.plain.forEach(s => events.push({ time: s.time || '', html: `
+      <div class="cal-ev is-stop">
+        <div class="cal-ev-icon">${s.fav ? '❤️' : '📍'}</div>
+        <div class="cal-ev-body">
+          <div class="cal-ev-row">
+            <input type="time" class="tp-time" data-cal-stop-time="${s.id}" value="${escapeHTML(s.time || '')}" aria-label="Horário" />
+            <input type="text" class="cal-ev-name" data-cal-stop-name="${s.id}" value="${escapeHTML(s.name)}" aria-label="Nome" />
+            <button class="tp-icon-btn" data-cal-stop-del="${s.id}" title="Remover" aria-label="Remover">${ICON.trash}</button>
+          </div>
+          <input type="text" class="tp-stop-note" data-cal-stop-note="${s.id}" value="${escapeHTML(s.note || '')}" placeholder="Anotação: ingresso, reserva, horário…" />
+        </div>
+      </div>` }));
+    events.sort((a, b) => (a.time || '99:99').localeCompare(b.time || '99:99'));
+    const stay = info.stays[0];
+    return `
+      <div class="cal-day-head">
+        <div class="cal-day-kicker">${inTrip ? `Dia ${n} da viagem` : 'Fora do período da viagem'}</div>
+        <div class="cal-day-date">${escapeHTML(parseISO(date).toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' }))}</div>
+        <input type="text" class="tp-day-title cal-day-title" data-cal-title="${date}" value="${escapeHTML(info.day ? info.day.title || '' : '')}" placeholder="Cidade ou título do dia (ex: Londres)" />
+        ${stay ? `<div class="cal-stay">🏨 Dormindo em <b>${escapeHTML(stay.fields.name || 'hospedagem')}</b>${stay.fields.checkout ? ` até ${escapeHTML(fmtDay(stay.fields.checkout))}` : ''}</div>` : ''}
+      </div>
+      <div class="cal-events">
+        ${events.length ? events.map(e => e.html).join('') : '<div class="tp-empty-day">Nada marcado neste dia ainda.</div>'}
+      </div>
+      <input type="text" class="tp-add-input" data-cal-add="${date}" placeholder="+ Adicionar parada (ex: Torre de Londres)" enterkeyhint="done" />
+      <div class="cal-day-actions">
+        <button class="btn btn-ghost" data-cal-roteiro="${date}">Ver no roteiro e mapa</button>
+      </div>`;
+  }
+
+  function calRefresh() {
+    if (tab !== 'calendar') return;
+    const keepFocus = document.activeElement && document.activeElement.dataset && document.activeElement.dataset.calAdd;
+    renderCalendar();
+    if (keepFocus) { const i = page.querySelector(`[data-cal-add="${keepFocus}"]`); if (i) i.focus(); }
+  }
+  function findStopAny(id) {
+    for (const d of T().days) { const s = d.stops.find(x => x.id === id); if (s) return { day: d, stop: s }; }
+    return null;
+  }
+
+  $('tp-view-calendar').addEventListener('click', e => {
+    const el = e.target.closest('[data-cal-day],[data-cal-month],[data-cal-goto],[data-cal-today],[data-cal-edit-trip],[data-cal-stop-del],[data-cal-roteiro],[data-doc-copy],[data-doc-view]');
+    if (!el) return;
+    if (el.matches('[data-doc-copy]')) { e.stopPropagation(); copyText(el.dataset.docCopy, el); return; }
+    if (el.matches('[data-doc-view]')) { openDocView(el.dataset.docView); return; }
+    if (el.matches('[data-cal-day]')) {
+      calDay = el.dataset.calDay;
+      try { localStorage.setItem(CAL_KEY, calDay); } catch {}
+      if (calDay.slice(0, 7) !== calMonth) calMonth = calDay.slice(0, 7);
+      renderCalendar();
+      if (window.innerWidth <= 900) $('cal-side').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      return;
+    }
+    if (el.matches('[data-cal-month]')) { calMonth = shiftMonth(calMonth, Number(el.dataset.calMonth)); renderCalendar(); return; }
+    if (el.matches('[data-cal-goto]')) { calMonth = el.dataset.calGoto; renderCalendar(); return; }
+    if (el.matches('[data-cal-today]')) { calDay = localISO(new Date()); calMonth = calDay.slice(0, 7); try { localStorage.setItem(CAL_KEY, calDay); } catch {} renderCalendar(); return; }
+    if (el.matches('[data-cal-edit-trip]')) { $('tp-edit-btn').click(); return; }
+    if (el.matches('[data-cal-stop-del]')) {
+      const hit = findStopAny(el.dataset.calStopDel);
+      if (!hit) return;
+      hit.day.stops.splice(hit.day.stops.indexOf(hit.stop), 1);
+      saveState(); renderHeader(); renderCalendar();
+      return;
+    }
+    if (el.matches('[data-cal-roteiro]')) {
+      const d = T().days.find(x => x.date === el.dataset.calRoteiro);
+      tab = 'roteiro';
+      try { localStorage.setItem(TAB_KEY, tab); } catch {}
+      if (d) mapFilter = d.id;
+      needsFit = true;
+      render();
+      if (d) { const card = $('tp-day-' + d.id); if (card) card.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+    }
+  });
+  $('tp-view-calendar').addEventListener('change', e => {
+    const el = e.target;
+    if (el.matches('[data-cal-title]')) {
+      const d = ensureDay(el.dataset.calTitle);
+      d.title = el.value.trim();
+      sortDays(); saveState(); renderCalendar();
+      return;
+    }
+    const id = el.dataset.calStopTime || el.dataset.calStopName || el.dataset.calStopNote;
+    const hit = id && findStopAny(id);
+    if (!hit) return;
+    if (el.matches('[data-cal-stop-time]')) {
+      hit.stop.time = el.value;
+      if (hit.day.stops.every(x => x.time)) hit.day.stops.sort((a, b) => a.time.localeCompare(b.time));
+      saveState(); renderCalendar();
+    } else if (el.matches('[data-cal-stop-name]')) {
+      if (el.value.trim()) { hit.stop.name = el.value.trim(); saveState(); }
+    } else if (el.matches('[data-cal-stop-note]')) {
+      hit.stop.note = el.value.trim(); saveState();
+    }
+  });
+  $('tp-view-calendar').addEventListener('keydown', async e => {
+    if (e.key !== 'Enter' || e.isComposing) return;
+    const el = e.target;
+    if (el.matches('[data-cal-add]')) {
+      const text = el.value.trim();
+      if (!text) return;
+      const day = ensureDay(el.dataset.calAdd);
+      sortDays();
+      el.value = '';
+      const p = addManualStop(day.id, text);
+      calRefresh();
+      await p;
+      calRefresh();
+      return;
+    }
+    if (el.matches('[data-cal-title], .cal-ev-name, .tp-stop-note')) el.blur();
   });
 
   // ---------- modal da viagem ----------
