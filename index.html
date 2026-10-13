@@ -3956,34 +3956,66 @@
 
   .tp-tabs { grid-template-columns: repeat(4, 1fr); max-width: 680px; }
   /* Calendário */
-  .cal-layout { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(280px, 1fr); gap: 20px; align-items: start; }
   .cal-main { background: var(--bg-elevated); border: 1px solid var(--line); border-radius: 16px; padding: 16px 18px; box-shadow: var(--shadow-sm); min-width: 0; }
-  .cal-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-  .cal-title { font-size: 22px; font-weight: 300; min-width: 150px; text-align: center; }
-  .cal-title::first-letter, .cal-day-date::first-letter, .cal-month-btn::first-letter { text-transform: uppercase; }
-  .cal-nav { font-size: 20px; width: 34px; height: 34px; border: 1px solid var(--line); border-radius: 8px; }
-  .cal-head-actions { margin-left: auto; display: flex; gap: 6px; flex-wrap: wrap; }
+  .cal-head { display: flex; align-items: baseline; gap: 6px 14px; flex-wrap: wrap; margin-bottom: 12px; }
+  .cal-title { font-size: 24px; font-weight: 300; }
+  .cal-sub { font-size: 13px; color: var(--ink-soft); }
+  .cal-head-actions { margin-left: auto; display: flex; gap: 6px; }
   .cal-head-actions .btn-ghost { padding: 6px 12px; font-size: 12px; }
-  .cal-sub { font-size: 13px; color: var(--ink-soft); margin: 8px 0 12px; }
-  .cal-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
-  .cal-wd { font: 600 10px 'DM Sans', sans-serif; text-transform: uppercase; letter-spacing: 0.12em; color: var(--ink-faint); text-align: center; padding: 4px 0; }
-  .cal-cell { position: relative; min-height: 92px; border: 1px solid var(--line-soft); border-radius: 10px; background: var(--bg); padding: 6px 6px 5px; text-align: left; display: flex; flex-direction: column; gap: 3px; cursor: pointer; font-family: 'DM Sans', sans-serif; color: var(--ink); min-width: 0; transition: border-color 0.15s, transform 0.12s; }
-  .cal-cell:hover { border-color: var(--ink-faint); }
-  .cal-cell.is-blank { background: transparent; border: none; cursor: default; }
-  .cal-cell.is-past:not(.is-trip) { opacity: 0.55; }
-  .cal-cell.is-trip { background: linear-gradient(180deg, #eef4ff, #e3edff); border-color: #c7d7fe; }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
+  .cal-wd { font: 600 10px 'DM Sans', sans-serif; text-transform: uppercase; letter-spacing: 0.12em; color: var(--ink-faint); text-align: center; padding: 2px 0 4px; }
+  .cal-month-row { grid-column: 1 / -1; font: 700 12px 'DM Sans', sans-serif; text-transform: uppercase; letter-spacing: 0.16em; color: var(--ink-soft); padding: 8px 2px 2px; }
+  .cal-cell { position: relative; min-height: 150px; border: 1px solid var(--line-soft); border-radius: 12px; background: var(--bg); padding: 8px; display: flex; flex-direction: column; gap: 5px; cursor: pointer; min-width: 0; transition: border-color 0.15s, box-shadow 0.15s; outline: none; }
+  .cal-cell:hover, .cal-cell:focus-visible { border-color: var(--ink-faint); box-shadow: var(--shadow-md); }
+  .cal-cell.is-out { opacity: 0.45; background: transparent; }
+  .cal-cell.is-trip { background: linear-gradient(180deg, #f4f8ff, #e9f0ff); border-color: #c7d7fe; }
   html.theme-dark .cal-cell.is-trip { background: linear-gradient(180deg, #1e2a44, #1b2540); border-color: #2f4170; }
   .cal-cell.is-start, .cal-cell.is-end { border: 2px solid #2563eb; }
-  .cal-cell.is-today .cal-num { background: #dc2626; color: #fff; border-radius: 999px; padding: 0 7px; }
-  .cal-cell.is-selected { box-shadow: 0 0 0 2px var(--ink); transform: translateY(-1px); }
-  .cal-num { font-weight: 700; font-size: 13px; align-self: flex-start; display: flex; align-items: center; gap: 4px; }
-  .cal-tag { font: 700 9px 'DM Sans', sans-serif; text-transform: uppercase; letter-spacing: 0.06em; background: #2563eb; color: #fff; border-radius: 4px; padding: 1px 4px; }
-  .cal-place { font-size: 11px; font-weight: 600; color: #1e3a8a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cal-cell.is-past.is-trip { opacity: 0.75; }
+  .cal-cell-head { display: flex; align-items: center; gap: 6px; }
+  .cal-num { font-weight: 800; font-size: 16px; line-height: 1; }
+  .cal-cell.is-today .cal-num { background: #dc2626; color: #fff; border-radius: 999px; padding: 3px 7px; }
+  .cal-wd-m { display: none; font-size: 12px; color: var(--ink-faint); text-transform: capitalize; }
+  .cal-tag { margin-left: auto; font: 700 9px 'DM Sans', sans-serif; text-transform: uppercase; letter-spacing: 0.06em; background: #2563eb; color: #fff; border-radius: 4px; padding: 2px 5px; }
+  .cal-daynum { margin-left: auto; font: 600 10px 'DM Sans', sans-serif; color: #5b74b8; }
+  .cal-place { font-size: 12px; font-weight: 700; color: #1e3a8a; overflow-wrap: anywhere; }
   html.theme-dark .cal-place { color: #93b4ff; }
-  .cal-icons { margin-top: auto; display: flex; flex-wrap: wrap; gap: 2px; font-size: 14px; line-height: 1.1; }
+  .cal-chips { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .cal-chip { border-radius: 7px; padding: 4px 6px; font-size: 11.5px; line-height: 1.25; background: var(--bg-elevated); border: 1px solid var(--line-soft); min-width: 0; }
+  .cal-chip-main { overflow-wrap: anywhere; }
+  .cal-chip-sub { font-size: 10.5px; color: var(--ink-faint); overflow-wrap: anywhere; }
+  .cal-chip.is-flight { background: linear-gradient(120deg, #1e3a8a, #3b82f6); color: #fff; border: none; }
+  .cal-chip.is-flight .cal-chip-sub { color: rgba(255,255,255,0.85); }
+  .cal-chip.is-transport { background: #ecfdf5; border-color: #a7f3d0; color: #065f46; }
+  .cal-chip.is-hotel { background: #fff7ed; border-color: #fed7aa; color: #9a3412; }
+  html.theme-dark .cal-chip.is-transport { background: #0b2b22; color: #6ee7b7; border-color: #14532d; }
+  html.theme-dark .cal-chip.is-hotel { background: #2b1a0b; color: #fdba74; border-color: #7c2d12; }
+  .cal-chip[data-doc-view] { cursor: pointer; }
+  .cal-stay-bar { margin-top: auto; font-size: 10.5px; font-weight: 600; color: #9a3412; background: repeating-linear-gradient(135deg, #ffedd5, #ffedd5 6px, #fff7ed 6px, #fff7ed 12px); border-radius: 6px; padding: 3px 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  html.theme-dark .cal-stay-bar { color: #fdba74; background: #2b1a0b; }
   .cal-legend { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 12px; font-size: 12px; color: var(--ink-soft); }
+  .cal-hint { margin-left: auto; color: var(--ink-faint); }
   .cal-swatch { display: inline-block; width: 14px; height: 10px; border-radius: 3px; background: #dbe7ff; border: 1px solid #c7d7fe; vertical-align: -1px; }
-  .cal-side { position: sticky; top: 16px; background: var(--bg-elevated); border: 1px solid var(--line); border-radius: 16px; padding: 16px 18px; box-shadow: var(--shadow-sm); min-width: 0; }
+  @media (max-width: 1100px) { .cal-cell { min-height: 130px; } .cal-chip { font-size: 10.5px; } }
+  /* Celular: dias em lista (só os da viagem), com tudo escrito */
+  @media (max-width: 760px) {
+    .tp-tabs { grid-template-columns: repeat(2, 1fr); }
+    .cal-main { padding: 12px; }
+    .cal-grid { grid-template-columns: 1fr; gap: 8px; }
+    .cal-wd, .cal-cell.is-out { display: none; }
+    .cal-cell { min-height: 0; display: grid; grid-template-columns: 54px minmax(0, 1fr); column-gap: 10px; align-items: start; }
+    .cal-cell-head { grid-row: 1 / span 3; flex-direction: column; align-items: center; gap: 2px; }
+    .cal-num { font-size: 26px; font-weight: 300; }
+    .cal-cell.is-today .cal-num { padding: 4px 8px; font-size: 20px; }
+    .cal-wd-m { display: block; font-size: 10px; text-align: center; }
+    .cal-tag, .cal-daynum { margin-left: 0; }
+    .cal-place { font-size: 14px; }
+    .cal-chip { font-size: 13px; padding: 6px 8px; }
+    .cal-chip-sub { font-size: 11.5px; white-space: normal; }
+    .cal-chip-main { white-space: normal; }
+    .cal-stay-bar { font-size: 12px; grid-column: 2; }
+    .cal-hint { margin-left: 0; }
+  }
   .cal-day-kicker { font: 700 10px 'DM Sans', sans-serif; letter-spacing: 0.16em; text-transform: uppercase; color: #2563eb; }
   .cal-day-date { font-size: 20px; font-weight: 300; margin: 2px 0 4px; }
   .cal-stay { font-size: 13px; color: var(--ink-soft); margin-top: 6px; }
@@ -4003,18 +4035,7 @@
   .cal-ev-name { flex: 1; min-width: 0; border: none; background: transparent; color: var(--ink); font: 600 14px 'DM Sans', sans-serif; padding: 2px 0; outline: none; }
   .cal-day-actions { margin-top: 10px; }
   .cal-day-actions .btn-ghost { padding: 6px 12px; font-size: 12px; }
-  @media (max-width: 1100px) { .cal-layout { grid-template-columns: 1fr; } .cal-side { position: static; } }
-  @media (max-width: 900px) {
-    .tp-tabs { grid-template-columns: repeat(2, 1fr); }
-    .cal-main, .cal-side { padding: 12px; }
-    .cal-cell { min-height: 64px; padding: 4px 3px; border-radius: 8px; }
-    .cal-place { font-size: 9px; }
-    .cal-icons { font-size: 11px; }
-    .cal-num { font-size: 12px; }
-    .cal-tag { display: none; }
-    .cal-head-actions { margin-left: 0; width: 100%; }
-    .cal-title { font-size: 18px; min-width: 0; flex: 1; }
-  }
+  @media (max-width: 900px) { .tp-tabs { grid-template-columns: repeat(2, 1fr); } }
 
   .tp-toolbar { display: flex; gap: 8px; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-bottom: 16px; }
   .tp-toolbar .btn-ghost { padding: 8px 14px; font-size: 12px; }
@@ -5058,6 +5079,16 @@
     <div class="modal-actions">
       <button class="btn btn-ghost" data-close-modal>Cancelar</button>
       <button class="btn" id="trip-save">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Dia do calendário -->
+<div class="modal-bg" id="cal-day-modal">
+  <div class="modal" style="max-width:520px;max-height:90vh;overflow-y:auto">
+    <div id="cal-day-body"></div>
+    <div class="modal-actions" style="justify-content:flex-end">
+      <button class="btn" data-close-modal>Pronto</button>
     </div>
   </div>
 </div>
@@ -14599,63 +14630,96 @@ const renderTrip = (() => {
     const el = $('tp-view-calendar');
     const { start, end } = tripRange();
     const today = localISO(new Date());
-    if (!calDay) calDay = today >= start && today <= end ? today : start;
-    if (!calMonth) calMonth = calDay.slice(0, 7);
-    const [yy, mm] = calMonth.split('-').map(Number);
-    const first = new Date(yy, mm - 1, 1);
-    const lead = (first.getDay() + 6) % 7; // semana começando na segunda
-    const daysInMonth = new Date(yy, mm, 0).getDate();
-    const cells = [];
-    for (let i = 0; i < lead; i++) cells.push(null);
-    for (let d = 1; d <= daysInMonth; d++) cells.push(`${calMonth}-${String(d).padStart(2, '0')}`);
-    while (cells.length % 7) cells.push(null);
-    const monthLabel = first.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
-    const tripMonths = [];
-    for (let m = start.slice(0, 7); m <= end.slice(0, 7); m = shiftMonth(m, 1)) tripMonths.push(m);
     const total = Math.round((parseISO(end) - parseISO(start)) / 864e5) + 1;
+    // Só as semanas da viagem: da segunda da semana da ida ao domingo da volta
+    const s0 = parseISO(start); s0.setDate(s0.getDate() - ((s0.getDay() + 6) % 7));
+    const e0 = parseISO(end); e0.setDate(e0.getDate() + (6 - ((e0.getDay() + 6) % 7)));
+    const dates = [];
+    for (let d = new Date(s0); d <= e0; d.setDate(d.getDate() + 1)) dates.push(localISO(d));
+    const weeks = [];
+    for (let i = 0; i < dates.length; i += 7) weeks.push(dates.slice(i, i + 7));
+    const t = T();
     el.innerHTML = `
-      <div class="cal-layout">
-        <div class="cal-main">
-          <div class="cal-head">
-            <button class="tp-icon-btn cal-nav" data-cal-month="-1" aria-label="Mês anterior">‹</button>
-            <div class="cal-title">${escapeHTML(monthLabel)}</div>
-            <button class="tp-icon-btn cal-nav" data-cal-month="1" aria-label="Próximo mês">›</button>
-            <div class="cal-head-actions">
-              ${tripMonths.length > 1 ? tripMonths.map(m => `<button class="btn btn-ghost cal-month-btn ${m === calMonth ? 'active' : ''}" data-cal-goto="${m}">${escapeHTML(parseISO(m + '-01').toLocaleDateString('pt-BR', { month: 'short' }).replace('.', ''))}</button>`).join('') : ''}
-              <button class="btn btn-ghost" data-cal-today>Hoje</button>
-              <button class="btn btn-ghost" data-cal-edit-trip>✎ Datas da viagem</button>
-            </div>
-          </div>
-          <div class="cal-sub">✈️ ${escapeHTML(fmtDay(start))} → ${escapeHTML(fmtDay(end))} · ${total} ${total === 1 ? 'dia' : 'dias'}${T().cities ? ' · ' + escapeHTML(T().cities) : ''}</div>
-          <div class="cal-grid" role="grid">
-            ${WEEKDAYS.map(w => `<div class="cal-wd">${w}</div>`).join('')}
-            ${cells.map(date => {
-              if (!date) return '<div class="cal-cell is-blank"></div>';
-              const inTrip = date >= start && date <= end;
-              const info = dayInfo(date);
-              const icons = [];
-              if (info.flights.length) icons.push(['✈️', `${info.flights.length} voo(s)`]);
-              if (info.transports.length) icons.push(['🚆', 'Transporte']);
-              if (info.checkins.length) icons.push(['🛎️', 'Check-in']);
-              if (info.checkouts.length) icons.push(['🧳', 'Check-out']);
-              if (info.stays.length && !info.checkins.length) icons.push(['🏨', 'Hospedado']);
-              if (info.plain.length) icons.push([`📍${info.plain.length > 1 ? info.plain.length : ''}`, `${info.plain.length} parada(s)`]);
-              if (info.fav) icons.push(['❤️', 'Favorito']);
-              const cls = ['cal-cell', inTrip ? 'is-trip' : '', date === start ? 'is-start' : '', date === end ? 'is-end' : '', date === today ? 'is-today' : '', date === calDay ? 'is-selected' : '', date < today ? 'is-past' : ''].join(' ');
-              return `<button class="${cls}" data-cal-day="${date}" aria-label="${escapeHTML(fmtDay(date))}${info.place ? ' · ' + escapeHTML(info.place) : ''}">
-                <div class="cal-num">${Number(date.slice(8))}${date === start ? '<span class="cal-tag">ida</span>' : date === end && end !== start ? '<span class="cal-tag">volta</span>' : ''}</div>
-                ${info.place ? `<div class="cal-place">${escapeHTML(info.place)}</div>` : ''}
-                <div class="cal-icons">${icons.map(([i, tt]) => `<span title="${escapeHTML(tt)}">${i}</span>`).join('')}</div>
-              </button>`;
-            }).join('')}
-          </div>
-          <div class="cal-legend">
-            <span><i class="cal-swatch"></i> Período da viagem</span>
-            <span>✈️ Voo</span><span>🛎️ Check-in</span><span>🏨 Hospedado</span><span>🧳 Check-out</span><span>🚆 Transporte</span><span>📍 Paradas</span><span>❤️ Favorito</span>
+      <div class="cal-main">
+        <div class="cal-head">
+          <div class="cal-title">${escapeHTML(t.name || 'Viagem')}</div>
+          <div class="cal-sub">✈️ ${escapeHTML(fmtDay(start))} → ${escapeHTML(fmtDay(end))} · ${total} ${total === 1 ? 'dia' : 'dias'}${t.cities ? ' · ' + escapeHTML(t.cities) : ''}</div>
+          <div class="cal-head-actions">
+            <button class="btn btn-ghost" data-cal-edit-trip>✎ Datas da viagem</button>
           </div>
         </div>
-        <div class="cal-side" id="cal-side">${dayPanel(calDay)}</div>
+        <div class="cal-grid">
+          ${WEEKDAYS.map(w => `<div class="cal-wd">${w}</div>`).join('')}
+          ${weeks.map((week, wi) => {
+            // rótulo do mês quando a semana começa um mês novo (ou na primeira semana)
+            const firstOfMonth = week.find(d => d.endsWith('-01'));
+            const label = wi === 0 ? week.find(d => d >= start) || week[0] : firstOfMonth;
+            return `${label ? `<div class="cal-month-row">${escapeHTML(parseISO(label).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }))}</div>` : ''}
+              ${week.map(date => dayCell(date, start, end, today)).join('')}`;
+          }).join('')}
+        </div>
+        <div class="cal-legend">
+          <span><i class="cal-swatch"></i> Período da viagem</span>
+          <span>✈️ Voo</span><span>🛎️ Check-in</span><span>🏨 Hospedado</span><span>🧳 Check-out</span><span>🚆 Transporte</span><span>📍 Parada</span><span>❤️ Favorito</span>
+          <span class="cal-hint">Toque num dia para editar</span>
+        </div>
       </div>`;
+    refreshCalModal();
+  }
+
+  // Um dia com tudo escrito dentro (sem precisar clicar)
+  function dayCell(date, start, end, today) {
+    const info = dayInfo(date);
+    const inTrip = date >= start && date <= end;
+    const n = Math.round((parseISO(date) - parseISO(start)) / 864e5) + 1;
+    const chips = [];
+    info.flights.forEach(c => {
+      const f = c.fields;
+      const route = [airport(f.from).code || cityOf(f.from), airport(f.to).code || cityOf(f.to)].filter(Boolean).join(' → ');
+      chips.push({ t: f.time || '', html: `<div class="cal-chip is-flight" data-doc-view="${c.id}" title="Abrir o voo">
+        <div class="cal-chip-main">✈️ ${f.time ? `<b>${escapeHTML(f.time)}</b> ` : ''}${escapeHTML(route || 'Voo')}</div>
+        <div class="cal-chip-sub">${escapeHTML([[f.airline, f.flight].filter(Boolean).join(' '), f.locator && 'Loc. ' + f.locator, f.seat && 'Assento ' + f.seat].filter(Boolean).join(' · '))}</div>
+      </div>` });
+    });
+    info.transports.forEach(c => {
+      const f = c.fields;
+      chips.push({ t: f.time || '', html: `<div class="cal-chip is-transport" data-doc-view="${c.id}">
+        <div class="cal-chip-main">🚆 ${f.time ? `<b>${escapeHTML(f.time)}</b> ` : ''}${escapeHTML(f.company || 'Transporte')}</div>
+        <div class="cal-chip-sub">${escapeHTML([[cityOf(f.from), cityOf(f.to)].filter(Boolean).join(' → '), f.code && 'Reserva ' + f.code].filter(Boolean).join(' · '))}</div>
+      </div>` });
+    });
+    info.checkouts.forEach(c => chips.push({ t: '11:00', html: `<div class="cal-chip is-hotel" data-doc-view="${c.id}"><div class="cal-chip-main">🧳 Check-out · ${escapeHTML(c.fields.name || 'Hospedagem')}</div></div>` }));
+    info.checkins.forEach(c => chips.push({ t: '15:00', html: `<div class="cal-chip is-hotel" data-doc-view="${c.id}"><div class="cal-chip-main">🛎️ Check-in · ${escapeHTML(c.fields.name || 'Hospedagem')}</div>${c.fields.confirmation ? `<div class="cal-chip-sub">Reserva ${escapeHTML(c.fields.confirmation)}</div>` : ''}</div>` }));
+    info.plain.forEach(s => chips.push({ t: s.time || '', html: `<div class="cal-chip is-stop"><div class="cal-chip-main">${s.fav ? '❤️' : '📍'} ${s.time ? `<b>${escapeHTML(s.time)}</b> ` : ''}${escapeHTML(s.name)}</div>${s.note ? `<div class="cal-chip-sub">${escapeHTML(s.note)}</div>` : ''}</div>` }));
+    chips.sort((a, b) => (a.t || '99:99').localeCompare(b.t || '99:99'));
+    // noite de hotel (sem check-in no dia): faixa fina embaixo
+    const stay = !info.checkins.length && info.stays[0];
+    const cls = ['cal-cell', inTrip ? 'is-trip' : 'is-out', date === start ? 'is-start' : '', date === end ? 'is-end' : '', date === today ? 'is-today' : '', date < today ? 'is-past' : ''].join(' ');
+    const wd = parseISO(date).toLocaleDateString('pt-BR', { weekday: 'short' }).replace('.', '');
+    return `<div class="${cls}" data-cal-day="${date}" role="button" tabindex="0" aria-label="${escapeHTML(fmtDay(date))} — toque para editar">
+      <div class="cal-cell-head">
+        <span class="cal-num">${Number(date.slice(8))}</span>
+        <span class="cal-wd-m">${escapeHTML(wd)} · ${escapeHTML(parseISO(date).toLocaleDateString('pt-BR', { month: 'short' }).replace('.', ''))}</span>
+        ${date === start ? '<span class="cal-tag">ida</span>' : date === end && end !== start ? '<span class="cal-tag">volta</span>' : inTrip ? `<span class="cal-daynum">dia ${n}</span>` : ''}
+      </div>
+      ${info.place ? `<div class="cal-place">${escapeHTML(info.place)}</div>` : ''}
+      <div class="cal-chips">${chips.map(c => c.html).join('')}</div>
+      ${stay ? `<div class="cal-stay-bar" data-doc-view="${stay.id}" title="Hospedado">🏨 ${escapeHTML(stay.fields.name || 'Hospedagem')}</div>` : ''}
+    </div>`;
+  }
+
+  // Editor do dia (janela)
+  function openCalDay(date) {
+    calDay = date;
+    try { localStorage.setItem(CAL_KEY, calDay); } catch {}
+    $('cal-day-body').innerHTML = dayPanel(date);
+    $('cal-day-modal').classList.add('active');
+  }
+  function refreshCalModal() {
+    if (!$('cal-day-modal').classList.contains('active') || !calDay) return;
+    const focusAdd = document.activeElement && document.activeElement.dataset && document.activeElement.dataset.calAdd;
+    $('cal-day-body').innerHTML = dayPanel(calDay);
+    if (focusAdd) { const i = $('cal-day-body').querySelector(`[data-cal-add="${focusAdd}"]`); if (i) i.focus(); }
   }
 
   function shiftMonth(ym, n) {
@@ -14732,41 +14796,30 @@ const renderTrip = (() => {
   }
 
   function calRefresh() {
-    if (tab !== 'calendar') return;
-    const keepFocus = document.activeElement && document.activeElement.dataset && document.activeElement.dataset.calAdd;
-    renderCalendar();
-    if (keepFocus) { const i = page.querySelector(`[data-cal-add="${keepFocus}"]`); if (i) i.focus(); }
+    if (tab === 'calendar') renderCalendar();
+    else refreshCalModal();
   }
   function findStopAny(id) {
     for (const d of T().days) { const s = d.stops.find(x => x.id === id); if (s) return { day: d, stop: s }; }
     return null;
   }
 
-  $('tp-view-calendar').addEventListener('click', e => {
-    const el = e.target.closest('[data-cal-day],[data-cal-month],[data-cal-goto],[data-cal-today],[data-cal-edit-trip],[data-cal-stop-del],[data-cal-roteiro],[data-doc-copy],[data-doc-view]');
+  function onCalClick(e) {
+    const el = e.target.closest('[data-cal-day],[data-cal-edit-trip],[data-cal-stop-del],[data-cal-roteiro],[data-doc-copy],[data-doc-view]');
     if (!el) return;
     if (el.matches('[data-doc-copy]')) { e.stopPropagation(); copyText(el.dataset.docCopy, el); return; }
     if (el.matches('[data-doc-view]')) { openDocView(el.dataset.docView); return; }
-    if (el.matches('[data-cal-day]')) {
-      calDay = el.dataset.calDay;
-      try { localStorage.setItem(CAL_KEY, calDay); } catch {}
-      if (calDay.slice(0, 7) !== calMonth) calMonth = calDay.slice(0, 7);
-      renderCalendar();
-      if (window.innerWidth <= 900) $('cal-side').scrollIntoView({ behavior: 'smooth', block: 'start' });
-      return;
-    }
-    if (el.matches('[data-cal-month]')) { calMonth = shiftMonth(calMonth, Number(el.dataset.calMonth)); renderCalendar(); return; }
-    if (el.matches('[data-cal-goto]')) { calMonth = el.dataset.calGoto; renderCalendar(); return; }
-    if (el.matches('[data-cal-today]')) { calDay = localISO(new Date()); calMonth = calDay.slice(0, 7); try { localStorage.setItem(CAL_KEY, calDay); } catch {} renderCalendar(); return; }
+    if (el.matches('[data-cal-day]')) { openCalDay(el.dataset.calDay); return; }
     if (el.matches('[data-cal-edit-trip]')) { $('tp-edit-btn').click(); return; }
     if (el.matches('[data-cal-stop-del]')) {
       const hit = findStopAny(el.dataset.calStopDel);
       if (!hit) return;
       hit.day.stops.splice(hit.day.stops.indexOf(hit.stop), 1);
-      saveState(); renderHeader(); renderCalendar();
+      saveState(); renderHeader(); calRefresh();
       return;
     }
     if (el.matches('[data-cal-roteiro]')) {
+      $('cal-day-modal').classList.remove('active');
       const d = T().days.find(x => x.date === el.dataset.calRoteiro);
       tab = 'roteiro';
       try { localStorage.setItem(TAB_KEY, tab); } catch {}
@@ -14775,13 +14828,13 @@ const renderTrip = (() => {
       render();
       if (d) { const card = $('tp-day-' + d.id); if (card) card.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
     }
-  });
-  $('tp-view-calendar').addEventListener('change', e => {
+  }
+  function onCalChange(e) {
     const el = e.target;
     if (el.matches('[data-cal-title]')) {
       const d = ensureDay(el.dataset.calTitle);
       d.title = el.value.trim();
-      sortDays(); saveState(); renderCalendar();
+      sortDays(); saveState(); calRefresh();
       return;
     }
     const id = el.dataset.calStopTime || el.dataset.calStopName || el.dataset.calStopNote;
@@ -14790,14 +14843,15 @@ const renderTrip = (() => {
     if (el.matches('[data-cal-stop-time]')) {
       hit.stop.time = el.value;
       if (hit.day.stops.every(x => x.time)) hit.day.stops.sort((a, b) => a.time.localeCompare(b.time));
-      saveState(); renderCalendar();
+      saveState(); calRefresh();
     } else if (el.matches('[data-cal-stop-name]')) {
-      if (el.value.trim()) { hit.stop.name = el.value.trim(); saveState(); }
+      if (el.value.trim()) { hit.stop.name = el.value.trim(); saveState(); if (tab === 'calendar') renderCalendar(); }
     } else if (el.matches('[data-cal-stop-note]')) {
-      hit.stop.note = el.value.trim(); saveState();
+      hit.stop.note = el.value.trim(); saveState(); if (tab === 'calendar') renderCalendar();
     }
-  });
-  $('tp-view-calendar').addEventListener('keydown', async e => {
+  }
+  async function onCalKeydown(e) {
+    if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('.cal-cell')) { e.preventDefault(); openCalDay(e.target.dataset.calDay); return; }
     if (e.key !== 'Enter' || e.isComposing) return;
     const el = e.target;
     if (el.matches('[data-cal-add]')) {
@@ -14813,6 +14867,11 @@ const renderTrip = (() => {
       return;
     }
     if (el.matches('[data-cal-title], .cal-ev-name, .tp-stop-note')) el.blur();
+  }
+  ['tp-view-calendar', 'cal-day-body'].forEach(id => {
+    $(id).addEventListener('click', onCalClick);
+    $(id).addEventListener('change', onCalChange);
+    $(id).addEventListener('keydown', onCalKeydown);
   });
 
   // ---------- modal da viagem ----------
