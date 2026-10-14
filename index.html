@@ -3944,17 +3944,118 @@
   .note-live-preview details > div { padding: 6px 0 2px; }
 
   /* ============== VIAGEM ============== */
-  .tp-summary { display: grid; grid-template-columns: 1.2fr 1fr 1fr; gap: 12px; margin-bottom: 20px; }
-  .tp-tile { background: var(--bg-elevated); border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; box-shadow: var(--shadow-sm); min-width: 0; }
-  .tp-tile-main { background: var(--ink); border-color: var(--ink); color: var(--bg); }
-  .tp-tile-label { font: 600 10px 'DM Sans', sans-serif; text-transform: uppercase; letter-spacing: 0.15em; color: var(--ink-faint); }
-  .tp-tile-main .tp-tile-label { color: inherit; opacity: 0.6; }
-  .tp-tile-value { font-size: 26px; font-weight: 300; letter-spacing: -0.02em; margin-top: 6px; line-height: 1.15; }
-  .tp-tile-sub { font-size: 12px; color: var(--ink-faint); margin-top: 6px; }
+  #page-trip { --tv-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace; --tv-yellow: #f2c14e; --tv-navy: #121826; --tv-navy2: #1c2436; --tv-stay: #ecece7; --tv-miss: #fff4d6; --tv-miss-line: #f1dc9e; --tv-miss-ink: #7a5a00; }
+  html.theme-dark #page-trip { --tv-stay: #26262b; --tv-miss: #2f2812; --tv-miss-line: #5a4a1a; --tv-miss-ink: #f2c14e; --tv-navy: #0d1220; --tv-navy2: #182033; }
+  .tv-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px 20px; flex-wrap: wrap; margin-bottom: 22px; }
+  .tv-head-main { min-width: 0; }
+  .tv-kicker { font: 600 12px var(--tv-mono); letter-spacing: 0.12em; color: var(--ink-soft); text-transform: uppercase; }
+  .tv-title { font-size: 44px; font-weight: 700; letter-spacing: -0.03em; line-height: 1.05; margin: 4px 0 6px; overflow-wrap: anywhere; }
+  .tv-cities { font-size: 15px; color: var(--ink-soft); }
+  .tv-head-side { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+  .tv-pills { display: flex; gap: 8px; flex-wrap: wrap; }
+  .tv-pill { border: 1px solid var(--line); background: var(--bg-elevated); border-radius: 999px; padding: 8px 14px; font-size: 13px; white-space: nowrap; }
+  .tv-pill.is-warn { background: var(--tv-miss); border-color: var(--tv-miss-line); color: var(--tv-miss-ink); font-weight: 600; }
+  .tv-edit { border: none; background: none; color: var(--ink-faint); font: 500 12px 'DM Sans', sans-serif; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; padding: 8px 4px; }
+  .tv-edit:hover { color: var(--ink); }
+  .tv-tab-pct { font-size: 11px; opacity: 0.6; margin-left: 2px; }
+  .tv-h2 { font-size: 24px; font-weight: 700; letter-spacing: -0.02em; margin: 30px 0 14px; }
+  .tv-h2-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 30px 0 14px; }
+  .tv-h2-row .tv-h2 { margin: 0; }
+  .tv-btn { border: 1px solid var(--ink); background: var(--bg-elevated); color: var(--ink); border-radius: 12px; padding: 11px 16px; font: 600 13px 'DM Sans', sans-serif; cursor: pointer; white-space: nowrap; }
+  .tv-btn:hover { background: var(--ink); color: var(--bg); }
+  .tv-btn.is-yellow { background: var(--tv-yellow); border-color: var(--tv-yellow); color: #1a1a1a; }
+  .tv-empty { border: 1px dashed var(--line); border-radius: 16px; padding: 22px; color: var(--ink-soft); font-size: 14px; }
+  /* Herói: próximo voo */
+  .tv-hero { background: var(--tv-navy); color: #f5f6f8; border-radius: 24px; padding: 28px 30px; cursor: pointer; }
+  .tv-hero-empty { cursor: default; display: flex; flex-direction: column; gap: 16px; align-items: flex-start; }
+  .tv-hero-emptytxt { color: rgba(255,255,255,0.75); font-size: 15px; max-width: 520px; }
+  .tv-hero-top { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .tv-badge { background: var(--tv-yellow); color: #1a1a1a; font: 700 12px var(--tv-mono); letter-spacing: 0.06em; border-radius: 999px; padding: 6px 12px; }
+  .tv-hero-when { font-size: 14px; color: rgba(255,255,255,0.88); }
+  .tv-checkin { margin-left: auto; background: none; border: 1px solid rgba(255,255,255,0.22); color: rgba(255,255,255,0.75); border-radius: 999px; padding: 6px 12px; font: 500 13px 'DM Sans', sans-serif; cursor: pointer; }
+  .tv-checkin.is-done { border-color: transparent; color: #86efac; padding-right: 0; }
+  .tv-hero-body { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 28px; align-items: center; margin-top: 22px; }
+  .tv-route { display: flex; align-items: center; gap: 14px; min-width: 0; }
+  .tv-ap { min-width: 0; }
+  .tv-ap.is-right { text-align: right; }
+  .tv-code { font-size: 64px; font-weight: 700; letter-spacing: -0.03em; line-height: 1; }
+  .tv-apname { font-size: 13px; color: rgba(255,255,255,0.8); margin-top: 8px; }
+  .tv-aptime { font: 700 20px var(--tv-mono); margin-top: 14px; }
+  .tv-aptime sup { color: var(--tv-yellow); font-size: 11px; margin-left: 4px; vertical-align: 2px; }
+  .tv-line { flex: 1; min-width: 80px; text-align: center; font-size: 11.5px; color: rgba(255,255,255,0.8); }
+  .tv-line-mid { display: flex; align-items: center; gap: 4px; color: var(--tv-yellow); margin: 4px 0; }
+  .tv-line-mid span { flex: 1; height: 1px; background: rgba(255,255,255,0.25); }
+  .tv-line-mid svg { transform: rotate(90deg); flex-shrink: 0; }
+  .tv-panel { background: var(--tv-navy2); border-radius: 16px; overflow: hidden; min-width: 0; }
+  .tv-cells { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; border-bottom: 1px solid rgba(255,255,255,0.08); }
+  .tv-cell { padding: 14px 16px; min-width: 0; }
+  .tv-cell + .tv-cell { border-left: 1px solid rgba(255,255,255,0.08); }
+  .tv-k { font: 600 10.5px 'DM Sans', sans-serif; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(255,255,255,0.7); }
+  .tv-ticket .tv-k { color: var(--ink-faint); }
+  .tv-v { font-size: 26px; font-weight: 700; margin-top: 6px; overflow-wrap: anywhere; }
+  .tv-prow { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px; }
+  .tv-prow + .tv-prow { border-top: 1px solid rgba(255,255,255,0.08); }
+  .tv-prow > div { min-width: 0; }
+  .tv-code-sm { font: 700 17px var(--tv-mono); letter-spacing: 0.04em; margin-top: 4px; overflow-wrap: anywhere; user-select: all; }
+  .tv-code-sm.is-big { font-size: 24px; letter-spacing: 0.1em; }
+  .tv-copy { flex-shrink: 0; border: 1px solid rgba(255,255,255,0.3); background: transparent; color: #fff; border-radius: 12px; padding: 11px 16px; font: 600 13px 'DM Sans', sans-serif; cursor: pointer; }
+  .tv-copy.is-yellow { background: var(--tv-yellow); border-color: var(--tv-yellow); color: #1a1a1a; }
+  .tv-copy.is-light { border-color: var(--line); background: var(--bg-card); color: var(--ink); }
+  .tv-copy.is-done { background: #16a34a; border-color: #16a34a; color: #fff; }
+  /* Itinerário */
+  .tv-itin { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 12px; }
+  .tv-seg { position: relative; text-align: left; font: inherit; color: inherit; background: var(--bg-elevated); border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; min-height: 110px; cursor: pointer; display: flex; flex-direction: column; align-items: flex-start; gap: 6px; min-width: 0; transition: box-shadow 0.15s, border-color 0.15s; }
+  .tv-seg:hover { box-shadow: var(--shadow-md); border-color: var(--ink-faint); }
+  .tv-seg.is-now { border: 2px solid var(--ink); padding: 15px 17px; }
+  .tv-seg.is-past { opacity: 0.6; }
+  .tv-seg.is-stay { background: var(--tv-stay); border-color: transparent; }
+  .tv-seg.is-missing { background: var(--tv-miss); border-color: var(--tv-miss-line); }
+  .tv-seg.is-missing .tv-seg-k, .tv-seg.is-missing .tv-seg-s { color: var(--tv-miss-ink); }
+  .tv-seg.is-ghost { border-style: dashed; }
+  .tv-seg-k { font: 600 12px var(--tv-mono); letter-spacing: 0.06em; color: var(--ink-soft); }
+  .tv-seg-t { font-size: 20px; font-weight: 700; letter-spacing: -0.01em; overflow-wrap: anywhere; }
+  .tv-seg-s { font-size: 13px; color: var(--ink-soft); line-height: 1.4; overflow-wrap: anywhere; }
+  .tv-seg-n { font-size: 12px; color: var(--ink-faint); overflow-wrap: anywhere; }
+  .tv-now { background: var(--tv-yellow); color: #1a1a1a; font: 700 10.5px 'DM Sans', sans-serif; letter-spacing: 0.06em; border-radius: 5px; padding: 3px 7px; margin-top: 2px; }
+  /* Passagens */
+  .tv-tickets { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; align-items: start; margin-bottom: 30px; }
+  .tv-ticket { background: var(--bg-elevated); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; cursor: pointer; min-width: 0; transition: box-shadow 0.15s; }
+  .tv-ticket:hover { box-shadow: var(--shadow-md); }
+  .tv-ticket.is-ghost { border-style: dashed; }
+  .tv-ticket.is-ghost .tv-t-code { color: var(--ink-faint); }
+  .tv-t-head { display: flex; justify-content: space-between; gap: 10px; padding: 18px 18px 10px; font-size: 13px; font-weight: 600; color: var(--ink-soft); }
+  .tv-t-head span:first-child { min-width: 0; overflow-wrap: anywhere; }
+  .tv-mono-s { font: 500 13px var(--tv-mono); white-space: nowrap; }
+  .tv-t-legs { padding: 0 18px 14px; display: flex; flex-direction: column; gap: 5px; }
+  .tv-t-leg { display: flex; justify-content: space-between; gap: 10px; font-size: 15px; }
+  .tv-t-leg b { font-weight: 700; min-width: 0; overflow-wrap: anywhere; }
+  .tv-t-leg span { color: var(--ink-soft); white-space: nowrap; }
+  .tv-t-leg.is-soft span:first-child { white-space: normal; overflow-wrap: anywhere; }
+  .tv-t-loc { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 0 18px; padding: 14px 0 16px; border-top: 1px solid var(--line-soft); }
+  .tv-t-code { font: 700 24px var(--tv-mono); letter-spacing: 0.12em; margin-top: 4px; user-select: all; overflow-wrap: anywhere; }
+  .tv-t-files { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1px; background: var(--line); border-top: 1px solid var(--line); }
+  .tv-t-files button { border: none; background: var(--bg-elevated); color: var(--ink); font: 600 13px 'DM Sans', sans-serif; padding: 14px 10px; cursor: pointer; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .tv-t-files button:hover { background: var(--bg-card); }
+  @media (max-width: 760px) {
+    .tv-title { font-size: 34px; }
+    .tv-head-side { justify-content: flex-start; }
+    .tv-hero { padding: 20px 18px; border-radius: 20px; }
+    .tv-hero-body { grid-template-columns: 1fr; gap: 18px; }
+    .tv-code { font-size: 44px; }
+    .tv-aptime { font-size: 17px; }
+    .tv-v { font-size: 20px; }
+    .tv-checkin { margin-left: 0; }
+    .tv-itin { grid-template-columns: 1fr 1fr; gap: 10px; }
+    .tv-seg { padding: 13px 14px; min-height: 96px; }
+    .tv-seg.is-now { padding: 12px 13px; }
+    .tv-seg-t { font-size: 17px; }
+    .tv-tickets { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 400px) { .tv-itin { grid-template-columns: 1fr; } }
   .tp-bar { height: 4px; background: var(--line-soft); border-radius: 4px; overflow: hidden; margin-top: 10px; }
   .tp-bar span { display: block; height: 100%; background: var(--ink); border-radius: 4px; transition: width 0.3s ease; }
 
-  .tp-tabs { grid-template-columns: repeat(4, 1fr); max-width: 680px; }
+  .tp-tabs { grid-template-columns: repeat(5, 1fr); max-width: 820px; }
   /* Calendário */
   .cal-main { background: var(--bg-elevated); border: 1px solid var(--line); border-radius: 16px; padding: 16px 18px; box-shadow: var(--shadow-sm); min-width: 0; }
   .cal-head { display: flex; align-items: baseline; gap: 6px 14px; flex-wrap: wrap; margin-bottom: 12px; }
@@ -3999,7 +4100,6 @@
   @media (max-width: 1100px) { .cal-cell { min-height: 130px; } .cal-chip { font-size: 10.5px; } }
   /* Celular: dias em lista (só os da viagem), com tudo escrito */
   @media (max-width: 760px) {
-    .tp-tabs { grid-template-columns: repeat(2, 1fr); }
     .cal-main { padding: 12px; }
     .cal-grid { grid-template-columns: 1fr; gap: 8px; }
     .cal-wd, .cal-cell.is-out { display: none; }
@@ -4035,7 +4135,7 @@
   .cal-ev-name { flex: 1; min-width: 0; border: none; background: transparent; color: var(--ink); font: 600 14px 'DM Sans', sans-serif; padding: 2px 0; outline: none; }
   .cal-day-actions { margin-top: 10px; }
   .cal-day-actions .btn-ghost { padding: 6px 12px; font-size: 12px; }
-  @media (max-width: 900px) { .tp-tabs { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 900px) { .tp-tabs { display: flex; overflow-x: auto; scrollbar-width: none; } .tp-tabs .tr-tab { flex: 0 0 auto; padding: 8px 12px; white-space: nowrap; } .tp-tabs::-webkit-scrollbar { display: none; } }
 
   .tp-toolbar { display: flex; gap: 8px; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-bottom: 16px; }
   .tp-toolbar .btn-ghost { padding: 8px 14px; font-size: 12px; }
@@ -4339,8 +4439,6 @@
     .tp-map-col { position: static; }
   }
   @media (max-width: 900px) {
-    .tp-summary { grid-template-columns: 1fr 1fr; }
-    .tp-tile-main { grid-column: 1 / -1; }
     #tp-map { height: 360px; }
     .tp-lists { grid-template-columns: 1fr; }
     .tp-tabs { max-width: none; }
@@ -4789,22 +4887,27 @@
 
     <!-- VIAGEM -->
     <section class="page" id="page-trip">
-      <div class="page-header">
-        <div>
-          <h1 class="page-title">Via<em>gem</em></h1>
-          <div class="page-meta" id="tp-meta">—</div>
+      <div class="tv-head">
+        <div class="tv-head-main">
+          <div class="tv-kicker" id="tv-kicker">—</div>
+          <h1 class="tv-title" id="tv-title">Viagem</h1>
+          <div class="tv-cities" id="tv-cities"></div>
         </div>
-        <button class="btn btn-ghost" id="tp-edit-btn">Editar viagem</button>
+        <div class="tv-head-side">
+          <div class="tv-pills" id="tv-pills"></div>
+          <button class="tv-edit" id="tp-edit-btn" title="Editar viagem">Editar viagem</button>
+        </div>
       </div>
 
-      <div class="tp-summary" id="tp-summary"></div>
-
       <div class="tr-tabs tp-tabs">
-        <button class="tr-tab active" data-tp-tab="checklists">Checklists</button>
-        <button class="tr-tab" data-tp-tab="calendar">📅 Calendário</button>
+        <button class="tr-tab active" data-tp-tab="overview">Visão geral</button>
+        <button class="tr-tab" data-tp-tab="checklists" id="tp-tab-checklists">Checklists</button>
+        <button class="tr-tab" data-tp-tab="calendar">Calendário</button>
         <button class="tr-tab" data-tp-tab="roteiro">Roteiro e mapa</button>
         <button class="tr-tab" data-tp-tab="docs">Documentos</button>
       </div>
+
+      <div id="tp-view-overview"></div>
 
       <div class="tp-ai" id="tp-ai">
         <div class="tp-ai-head">
@@ -12451,10 +12554,10 @@ const renderTrip = (() => {
     ext: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>',
   };
 
-  const TAB_KEY = 'orbita_trip_tab';
+  const TAB_KEY = 'orbita_trip_tab_v2';
   let tab = (() => {
-    try { const v = localStorage.getItem(TAB_KEY); return ['checklists', 'calendar', 'roteiro', 'docs'].includes(v) ? v : 'checklists'; }
-    catch { return 'checklists'; }
+    try { const v = localStorage.getItem(TAB_KEY); return ['overview', 'checklists', 'calendar', 'roteiro', 'docs'].includes(v) ? v : 'overview'; }
+    catch { return 'overview'; }
   })();
   let hideDone = false;
   let mapFilter = 'all';
@@ -12592,7 +12695,9 @@ const renderTrip = (() => {
     $('tp-view-roteiro').hidden = tab !== 'roteiro';
     $('tp-view-docs').hidden = tab !== 'docs';
     $('tp-view-calendar').hidden = tab !== 'calendar';
-    if (tab === 'checklists') renderChecklists();
+    $('tp-view-overview').hidden = tab !== 'overview';
+    if (tab === 'overview') renderOverview();
+    else if (tab === 'checklists') renderChecklists();
     else if (tab === 'docs') renderDocs();
     else if (tab === 'calendar') renderCalendar();
     else {
@@ -12622,26 +12727,25 @@ const renderTrip = (() => {
     const items = t.checklists.flatMap(c => c.items);
     const done = items.filter(i => i.done).length;
     const pct = items.length ? Math.round(done / items.length * 100) : 0;
-    const stops = t.days.reduce((n, d) => n + d.stops.length, 0);
-    const range = t.start ? fmtDay(t.start) + (t.end ? ' → ' + fmtDay(t.end) : '') : '';
-    $('tp-meta').textContent = [t.name, t.cities, range].filter(Boolean).join(' · ').toUpperCase() || '—';
-    $('tp-summary').innerHTML = `
-      <div class="tp-tile tp-tile-main">
-        <div class="tp-tile-label">Contagem</div>
-        <div class="tp-tile-value">${escapeHTML(countdown(t))}</div>
-        <div class="tp-tile-sub" style="color:inherit;opacity:.6">${t.start ? 'Embarque ' + escapeHTML(fmtDay(t.start)) : 'Toque em “Editar viagem”'}</div>
-      </div>
-      <div class="tp-tile">
-        <div class="tp-tile-label">Checklists</div>
-        <div class="tp-tile-value">${pct}%</div>
-        <div class="tp-bar"><span style="width:${pct}%"></span></div>
-        <div class="tp-tile-sub">${done} de ${items.length} itens prontos</div>
-      </div>
-      <div class="tp-tile">
-        <div class="tp-tile-label">Roteiro</div>
-        <div class="tp-tile-value">${t.days.length} ${t.days.length === 1 ? 'dia' : 'dias'}</div>
-        <div class="tp-tile-sub">${stops} ${stops === 1 ? 'parada' : 'paradas'} · ${t.ideas.length} ${t.ideas.length === 1 ? 'ideia' : 'ideias'}</div>
-      </div>`;
+    $('tp-tab-checklists').innerHTML = `Checklists${items.length ? ` <span class="tv-tab-pct">${pct}%</span>` : ''}`;
+    const ov = tripOverview();
+    const start = t.start || (ov.legs[0] && ov.legs[0].date);
+    const end = t.end || (ov.legs.length && ov.legs[ov.legs.length - 1].arrDate);
+    let kicker = '';
+    if (start) {
+      const sd = parseISO(start);
+      kicker = shortDate(start) + (end && end !== start ? ' → ' + shortDate(end) : '');
+      kicker += ' ' + (end ? parseISO(end) : sd).getFullYear();
+      if (end) { const n = Math.round((parseISO(end) - sd) / 864e5) + 1; kicker += ` · ${n} ${n === 1 ? 'DIA' : 'DIAS'}`; }
+    }
+    $('tv-kicker').textContent = kicker || 'Defina as datas em “Editar viagem”';
+    $('tv-title').textContent = t.name || 'Viagem';
+    $('tv-cities').textContent = ov.cities.join(' · ');
+    const missing = ov.items.filter(i => i.kind === 'missing').length;
+    $('tv-pills').innerHTML = [
+      ov.legs.length ? `<span class="tv-pill"><b>${ov.legs.length}</b> ${ov.legs.length === 1 ? 'voo emitido' : 'voos emitidos'}</span>` : '',
+      missing ? `<span class="tv-pill is-warn">${missing} ${missing === 1 ? 'trecho' : 'trechos'} para adicionar</span>` : '',
+    ].join('');
   }
 
   // ---------- checklists ----------
@@ -13477,6 +13581,8 @@ const renderTrip = (() => {
       ['airline', 'Companhia aérea', 'Ex: TAP, LATAM'], ['flight', 'Nº do voo', 'Ex: TP 82'],
       ['date', 'Data', '', 'date'], ['time', 'Horário de partida', '', 'time'],
       ['from', 'Origem', 'Ex: GRU · São Paulo'], ['to', 'Destino', 'Ex: LIS · Lisboa'],
+      ['arrdate', 'Data de chegada', '', 'date'], ['arrtime', 'Horário de chegada', '', 'time'],
+      ['cabin', 'Classe', 'Ex: Econômica'],
       ['locator', 'Localizador / código da reserva', 'Ex: ABC12D', 'copy'], ['ticket', 'Nº do bilhete (e-ticket)', 'Ex: 047 2112345678', 'copy'],
       ['seat', 'Assento', 'Ex: 23C'], ['terminal', 'Terminal / portão', 'Ex: T3'], ['baggage', 'Bagagem', 'Ex: 1 mala de 23kg'],
       ['notes', 'Observações', '', 'textarea'],
@@ -13844,6 +13950,7 @@ const renderTrip = (() => {
   }
 
   function renderDocs() {
+    if (tab === 'overview') { renderHeader(); renderOverview(); }
     syncStoredFiles();
     const docs = D();
     const el = $('tp-view-docs');
@@ -14465,12 +14572,12 @@ const renderTrip = (() => {
   }
 
   // ----- modal -----
-  function openDocModal(type, card) {
+  function openDocModal(type, card, prefill) {
     editingDoc = { id: card ? card.id : null, type };
     const def = DOC_TYPES[type];
     $('trip-doc-title').textContent = card ? `Editar · ${def.label}` : `Novo · ${def.label}`;
     $('trip-doc-delete').style.display = card ? '' : 'none';
-    const f = (card && card.fields) || {};
+    const f = (card && card.fields) || prefill || {};
     $('trip-doc-fields').innerHTML = def.fields.map(([k, label, ph, kind]) => `
       <div class="form-group">
         <label class="form-label" for="trip-doc-f-${k}">${escapeHTML(label)}</label>
@@ -14491,7 +14598,9 @@ const renderTrip = (() => {
     if (!Object.keys(fields).length) { alert('Preencha pelo menos um campo.'); return; }
     if (editingDoc.id) {
       const c = docs.cards.find(x => x.id === editingDoc.id);
-      if (c) c.fields = fields;
+      // Mantém campos que o formulário não mostra (ex.: check-in feito)
+      const shown = new Set(DOC_TYPES[editingDoc.type].fields.map(x => x[0]));
+      if (c) c.fields = { ...Object.fromEntries(Object.entries(c.fields || {}).filter(([k]) => !shown.has(k))), ...fields };
     } else {
       docs.cards.push({ id: uid(), type: editingDoc.type, fields, createdAt: new Date().toISOString() });
     }
@@ -14907,6 +15016,345 @@ const renderTrip = (() => {
     closeAllModals();
     render();
   };
+
+  // ---------- visão geral (cabeçalho, próximo voo, itinerário, passagens) ----------
+  const WD3 = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'];
+  const MO3 = ['JAN', 'FEV', 'MAR', 'ABR', 'MAI', 'JUN', 'JUL', 'AGO', 'SET', 'OUT', 'NOV', 'DEZ'];
+  const AIRPORT_TZ = {
+    'America/Sao_Paulo': 'GRU GIG CGH VCP BSB CNF SDU POA CWB FLN REC SSA FOR',
+    'Europe/London': 'LHR LGW STN LTN LCY SEN MAN EDI',
+    'Europe/Paris': 'CDG ORY BVA NCE LYS MRS',
+    'Europe/Malta': 'MLA', 'Europe/Madrid': 'MAD BCN AGP PMI SVQ VLC IBZ',
+    'Europe/Lisbon': 'LIS OPO FAO', 'Europe/Rome': 'FCO CIA MXP LIN BGY VCE NAP FLR BLQ PSA',
+    'Europe/Amsterdam': 'AMS', 'Europe/Berlin': 'FRA MUC BER HAM DUS', 'Europe/Dublin': 'DUB',
+    'Europe/Zurich': 'ZRH GVA BSL', 'Europe/Brussels': 'BRU CRL', 'Europe/Vienna': 'VIE', 'Europe/Prague': 'PRG',
+    'Europe/Athens': 'ATH', 'Europe/Istanbul': 'IST SAW', 'Europe/Budapest': 'BUD', 'Europe/Copenhagen': 'CPH',
+    'Europe/Warsaw': 'WAW KRK', 'Atlantic/Azores': 'PDL', 'Atlantic/Madeira': 'FNC', 'Asia/Dubai': 'DXB',
+    'Asia/Qatar': 'DOH', 'America/New_York': 'JFK EWR', 'America/Panama': 'PTY', 'America/Bogota': 'BOG',
+  };
+  const TZ_OF = {};
+  Object.entries(AIRPORT_TZ).forEach(([tz, codes]) => codes.split(' ').forEach(c => { TZ_OF[c] = tz; }));
+  const tzFmt = {};
+  // Converte data+hora locais de um aeroporto em instante (ms). Sem fuso conhecido, usa o do aparelho.
+  function airportTime(date, time, code) {
+    if (!date) return null;
+    const [y, mo, d] = date.split('-').map(Number);
+    const [h, mi] = (time || '12:00').split(':').map(Number);
+    const tz = TZ_OF[code];
+    if (!tz) return new Date(y, mo - 1, d, h || 0, mi || 0).getTime();
+    const guess = Date.UTC(y, mo - 1, d, h || 0, mi || 0);
+    try {
+      const fmt = tzFmt[tz] || (tzFmt[tz] = new Intl.DateTimeFormat('en-US', { timeZone: tz, hourCycle: 'h23', year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric' }));
+      const p = Object.fromEntries(fmt.formatToParts(new Date(guess)).map(x => [x.type, x.value]));
+      const asUTC = Date.UTC(+p.year, +p.month - 1, +p.day, +p.hour % 24, +p.minute);
+      return guess - (asUTC - guess);
+    } catch { return new Date(y, mo - 1, d, h || 0, mi || 0).getTime(); }
+  }
+  function shortDate(iso) { const d = parseISO(iso); return `${String(d.getDate()).padStart(2, '0')} ${MO3[d.getMonth()]}`; }
+  function wdDate(iso) { return `${WD3[parseISO(iso).getDay()]} ${shortDate(iso)}`; }
+  function ddmm(iso) { const d = parseISO(iso); return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}`; }
+  function durTxt(ms) {
+    const m = Math.max(0, Math.round(ms / 6e4));
+    const h = Math.floor(m / 60), r = m % 60;
+    return h ? `${h}h${r ? String(r).padStart(2, '0') : ''}` : `${r}min`;
+  }
+  function normCity(s) { return (s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim(); }
+  function cabinShort(c) {
+    const v = normCity(c);
+    if (!v) return '';
+    if (/primeira|first/.test(v)) return '1ª classe';
+    if (/premium|world traveller plus/.test(v)) return 'Premium';
+    if (/execut|business|club/.test(v)) return 'Exec.';
+    if (/econ|traveller|basic|light/.test(v)) return 'Econ.';
+    return c;
+  }
+  // Junta os cards de voo em trechos (o mesmo voo lido de dois arquivos vira um só)
+  function flightLegs() {
+    const cards = D().cards.filter(c => c.type === 'flight' && c.fields && c.fields.date && c.fields.from && c.fields.to);
+    const byKey = new Map();
+    cards.forEach(c => {
+      const f = c.fields, a = airport(f.from), b = airport(f.to);
+      const key = [a.code || normCity(a.name), b.code || normCity(b.name), f.date].join('|');
+      (byKey.get(key) || byKey.set(key, []).get(key)).push(c);
+    });
+    const legs = [...byKey.values()].map(group => {
+      group.sort((x, y) => Object.keys(x.fields).length - Object.keys(y.fields).length);
+      const main = group[group.length - 1];
+      const f = Object.assign({}, ...group.map(c => c.fields));
+      const notes = group.map(c => c.fields.notes).filter(Boolean).join(' · ');
+      const from = airport(f.from), to = airport(f.to);
+      let arrDate = f.arrdate || '', arrTime = f.arrtime || '';
+      const m = notes.match(/cheg(?:a|ada)\s*(?:em\s*)?(\d{4}-\d{2}-\d{2})?\s*(?:às\s*)?(\d{1,2})[:h](\d{2})/i);
+      if (m) { arrDate = arrDate || m[1] || ''; arrTime = arrTime || `${m[2].padStart(2, '0')}:${m[3]}`; }
+      if (arrTime && !arrDate) arrDate = f.time && arrTime < f.time ? addDaysISO(f.date, 1) : f.date;
+      const cabinM = notes.match(/(world traveller plus|world traveller|euro traveller|club (?:world|europe)|premium economy|econ[oóô]mica|economy|executiva|business|primeira classe|first)/i);
+      const dep = airportTime(f.date, f.time, from.code);
+      const arr = arrTime ? airportTime(arrDate, arrTime, to.code) : null;
+      return {
+        f, main, cardIds: group.map(c => c.id), date: f.date, time: f.time || '',
+        from, to, fromCity: cityOf(f.from) || from.code, toCity: cityOf(f.to) || to.code,
+        arrDate: arrDate || f.date, arrTime, dep, arr,
+        cabin: f.cabin || (cabinM ? cabinM[1] : ''),
+        locator: (group.map(c => c.fields.locator).find(Boolean) || '').toUpperCase(),
+        checkedIn: group.some(c => c.fields.checkedIn),
+      };
+    });
+    return legs.sort((x, y) => (x.dep || 0) - (y.dep || 0));
+  }
+  function sameCity(a, b) { return normCity(a) === normCity(b); }
+  function hotelFor(city, from, to) {
+    const hs = D().cards.filter(c => c.type === 'hotel' && c.fields);
+    const inCity = c => city && normCity([c.fields.name, c.fields.address].join(' ')).includes(normCity(city));
+    const h = hs.find(c => inCity(c) && (!c.fields.checkin || !to || c.fields.checkin < to))
+      || hs.find(c => c.fields.checkin && c.fields.checkin === from);
+    return h ? h.fields.name || '' : '';
+  }
+  function tripOverview() {
+    const legs = flightLegs();
+    const now = Date.now();
+    const items = [];
+    const home = legs.length ? legs[0].fromCity : '';
+    legs.forEach((leg, i) => {
+      items.push({ kind: 'flight', leg });
+      const next = legs[i + 1];
+      if (!next) {
+        if (!sameCity(leg.toCity, home)) {
+          items.push({ kind: 'stay', city: leg.toCity, from: leg.arrDate, to: null, hotel: hotelFor(leg.toCity, leg.arrDate, null) });
+          items.push({ kind: 'missing', ret: true, from: leg.to.code || leg.toCity, to: legs[0].from.code || home, prefill: { from: leg.f.to, to: legs[0].f.from } });
+        }
+        return;
+      }
+      if ((leg.to.code && leg.to.code === next.from.code) || sameCity(leg.toCity, next.fromCity)) {
+        const arr = leg.arr || leg.dep;
+        if (arr && next.dep && next.dep - arr < 24 * 36e5) {
+          next.connection = `Conexão de ${durTxt(next.dep - arr)} em ${leg.toCity}`;
+        } else {
+          const nights = Math.round((parseISO(next.date) - parseISO(leg.arrDate)) / 864e5);
+          items.push({ kind: 'stay', city: leg.toCity, from: leg.arrDate, to: next.date, nights, hotel: hotelFor(leg.toCity, leg.arrDate, next.date) });
+        }
+      } else {
+        items.push({ kind: 'stay', city: leg.toCity, from: leg.arrDate, to: null, hotel: hotelFor(leg.toCity, leg.arrDate, next.date) });
+        items.push({ kind: 'missing', from: leg.toCity, to: next.fromCity, until: next.date, prefill: { from: leg.f.to, to: next.f.from } });
+      }
+    });
+    // Próximo voo (ou o que está no ar)
+    const hero = legs.find(l => (l.arr || (l.dep && l.dep + 12 * 36e5) || 0) > now) || null;
+    // Cidades na ordem da viagem
+    const cities = [];
+    const add = c => { if (c && !sameCity(c, home) && !cities.some(x => sameCity(x, c))) cities.push(c); };
+    legs.forEach(l => { add(l.fromCity); add(l.toCity); });
+    (T().cities || '').split(/[,·;]/).map(x => x.trim()).forEach(add);
+    return { legs, items, hero, home, cities };
+  }
+
+  function renderOverview() {
+    const ov = tripOverview();
+    $('tp-view-overview').innerHTML = `
+      ${heroHTML(ov)}
+      <h2 class="tv-h2">Itinerário</h2>
+      ${ov.items.length ? `<div class="tv-itin">${ov.items.map(i => itinCard(i, ov)).join('')}</div>`
+        : `<div class="tv-empty">Nenhum voo com data, origem e destino ainda. Adicione em <b>Passagens</b> ou leia um print/PDF na aba Documentos.</div>`}
+      <div class="tv-h2-row"><h2 class="tv-h2">Passagens</h2><button class="tv-btn" data-tv="add-flight">+ Adicionar voo</button></div>
+      <div class="tv-tickets">${ticketsHTML(ov)}</div>`;
+  }
+
+  function heroHTML(ov) {
+    const l = ov.hero;
+    if (!l) return ov.legs.length ? '' : `
+      <div class="tv-hero tv-hero-empty">
+        <div class="tv-hero-top"><span class="tv-badge">PRÓXIMO VOO</span></div>
+        <div class="tv-hero-emptytxt">Cadastre seus voos para ver aqui o próximo embarque, com localizador e bilhete à mão.</div>
+        <button class="tv-btn is-yellow" data-tv="add-flight">+ Adicionar voo</button>
+      </div>`;
+    const now = Date.now();
+    const today = localISO(new Date());
+    const inAir = l.dep && l.dep <= now;
+    let badge = `PRÓXIMO VOO · ${wdDate(l.date)}`;
+    if (l.date === today) badge = `HOJE · ${wdDate(l.date)}`;
+    else if (l.date === addDaysISO(today, 1)) badge = `AMANHÃ · ${wdDate(l.date)}`;
+    let when = '';
+    if (inAir) when = l.arr ? `Em voo · pousa em ${durTxt(l.arr - now)}` : 'Em voo';
+    else if (l.dep) {
+      const ms = l.dep - now;
+      when = ms < 48 * 36e5 ? `Decola em ${durTxt(ms)}` : `Decola em ${Math.round((parseISO(l.date) - parseISO(today)) / 864e5)} dias`;
+    }
+    const plusDays = Math.round((parseISO(l.arrDate) - parseISO(l.date)) / 864e5);
+    const dur = l.arr && l.dep ? durTxt(l.arr - l.dep) : '';
+    const terminal = (l.f.terminal || '').replace(/^terminal\s*/i, '');
+    const cells = [['Terminal', terminal], ['Assento', l.f.seat], ['Classe', cabinShort(l.cabin)]].filter(x => x[1]);
+    return `
+      <div class="tv-hero" data-tv="view" data-id="${l.main.id}">
+        <div class="tv-hero-top">
+          <span class="tv-badge">${escapeHTML(inAir ? 'NO AR · ' + wdDate(l.date) : badge)}</span>
+          <span class="tv-hero-when" data-tv-when>${escapeHTML(when)}</span>
+          <button class="tv-checkin ${l.checkedIn ? 'is-done' : ''}" data-tv="checkin" data-id="${l.main.id}">${l.checkedIn ? '✓ Check-in feito' : 'Marcar check-in feito'}</button>
+        </div>
+        <div class="tv-hero-body">
+          <div class="tv-route">
+            <div class="tv-ap">
+              <div class="tv-code">${escapeHTML(l.from.code || l.fromCity)}</div>
+              <div class="tv-apname">${escapeHTML(l.fromCity)}</div>
+              <div class="tv-aptime">${escapeHTML(l.time || '--:--')}</div>
+            </div>
+            <div class="tv-line">
+              <div class="tv-line-top">${escapeHTML(dur)}</div>
+              <div class="tv-line-mid"><span></span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 00-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/></svg><span></span></div>
+              <div class="tv-line-bot">${escapeHTML([l.f.airline, l.f.flight].filter(Boolean).join(' '))}</div>
+            </div>
+            <div class="tv-ap is-right">
+              <div class="tv-code">${escapeHTML(l.to.code || l.toCity)}</div>
+              <div class="tv-apname">${escapeHTML(l.toCity)}</div>
+              <div class="tv-aptime">${escapeHTML(l.arrTime || '--:--')}${plusDays > 0 ? `<sup>+${plusDays}</sup>` : ''}</div>
+            </div>
+          </div>
+          <div class="tv-panel">
+            ${cells.length ? `<div class="tv-cells">${cells.map(([k, v]) => `<div class="tv-cell"><div class="tv-k">${k}</div><div class="tv-v">${escapeHTML(v)}</div></div>`).join('')}</div>` : ''}
+            ${l.locator ? `<div class="tv-prow"><div><div class="tv-k">Localizador</div><div class="tv-code-sm is-big">${escapeHTML(l.locator)}</div></div><button class="tv-copy is-yellow" data-doc-copy="${escapeHTML(l.locator)}">Copiar</button></div>` : ''}
+            ${l.f.ticket ? `<div class="tv-prow"><div><div class="tv-k">Bilhete</div><div class="tv-code-sm">${escapeHTML(l.f.ticket)}</div></div><button class="tv-copy" data-doc-copy="${escapeHTML(l.f.ticket)}">Copiar</button></div>` : ''}
+            ${!l.locator && !l.f.ticket && !cells.length ? `<div class="tv-prow"><div class="tv-k">Sem localizador ainda</div><button class="tv-copy" data-tv="edit" data-id="${l.main.id}">Completar</button></div>` : ''}
+          </div>
+        </div>
+      </div>`;
+  }
+
+  function itinCard(i, ov) {
+    if (i.kind === 'flight') {
+      const l = i.leg;
+      const isNow = ov.hero === l;
+      const toHome = sameCity(l.toCity, ov.home);
+      const fromTxt = sameCity(l.fromCity, ov.home) || !l.fromCity ? l.from.code || l.fromCity : l.fromCity;
+      const toTxt = toHome || !l.toCity ? l.to.code || l.toCity : l.toCity;
+      const sub = [l.f.flight, l.arrTime ? `chega ${l.arrDate !== l.date ? ddmm(l.arrDate) + ' ' : ''}${l.arrTime}` : ''].filter(Boolean).join(' · ');
+      return `
+        <button class="tv-seg ${isNow ? 'is-now' : ''} ${l.arr && l.arr < Date.now() ? 'is-past' : ''}" data-tv="view" data-id="${l.main.id}">
+          <div class="tv-seg-k">${escapeHTML(wdDate(l.date))}${l.time ? ' · ' + escapeHTML(l.time) : ''}</div>
+          <div class="tv-seg-t">${escapeHTML(fromTxt)} → ${escapeHTML(toTxt)}</div>
+          ${sub ? `<div class="tv-seg-s">${escapeHTML(sub)}</div>` : ''}
+          ${l.connection ? `<div class="tv-seg-n">${escapeHTML(l.connection)}</div>` : ''}
+          ${toHome ? '<div class="tv-seg-n">Volta para casa</div>' : ''}
+          ${isNow ? '<span class="tv-now">AGORA</span>' : ''}
+        </button>`;
+    }
+    if (i.kind === 'stay') {
+      const k = i.to ? `${shortDate(i.from)} → ${shortDate(i.to)}` : `DESDE ${shortDate(i.from)}`;
+      const sub = [i.to ? `${i.nights} ${i.nights === 1 ? 'noite' : 'noites'}` : '', i.hotel].filter(Boolean).join(' · ');
+      return `
+        <button class="tv-seg is-stay" data-tv="day" data-date="${i.from}">
+          <div class="tv-seg-k">${escapeHTML(k)}</div>
+          <div class="tv-seg-t">${escapeHTML(i.city)}</div>
+          ${sub ? `<div class="tv-seg-s">${escapeHTML(sub)}</div>` : ''}
+        </button>`;
+    }
+    const k = i.ret ? '[DATA] · [HORA]' : `ATÉ ${shortDate(i.until)}`;
+    return `
+      <button class="tv-seg is-missing ${i.ret ? 'is-ghost' : ''}" data-tv="add-flight" data-from="${escapeHTML(i.prefill.from || '')}" data-to="${escapeHTML(i.prefill.to || '')}">
+        <div class="tv-seg-k">${escapeHTML(k)}</div>
+        <div class="tv-seg-t">${escapeHTML(i.from)} → ${escapeHTML(i.to)}</div>
+        <div class="tv-seg-s">${i.ret ? 'Volta para casa · voo não cadastrado' : 'Voo não cadastrado'}</div>
+      </button>`;
+  }
+
+  function fileLabel(f, used) {
+    const n = normCity(f.name || '');
+    let label = (f.name || 'Arquivo').replace(/\.[a-z0-9]+$/i, '');
+    if (/boarding|embarque/.test(n)) label = 'Cartão de embarque';
+    else if (/recibo|receipt|bilhete/.test(n)) label = 'Recibo do bilhete';
+    else if (/itinerario|itinerary/.test(n)) label = /trip\.?com/.test(n) ? 'Itinerário Trip.com' : 'Itinerário';
+    else if (/e-?mail|reserva|confirma/.test(n)) label = 'E-mail da reserva';
+    else if (/^(imagem|img|screenshot|captura|print)/.test(n)) label = 'Print';
+    used[label] = (used[label] || 0) + 1;
+    return used[label] > 1 ? `${label} ${used[label]}` : label;
+  }
+  function ticketsHTML(ov) {
+    const flights = D().cards.filter(c => c.type === 'flight');
+    const groups = new Map();
+    const keyOf = loc => loc ? 'L:' + loc : null;
+    ov.legs.forEach(l => {
+      const k = keyOf(l.locator) || 'C:' + l.main.id;
+      const g = groups.get(k) || groups.set(k, { locator: l.locator, legs: [], cardIds: new Set() }).get(k);
+      g.legs.push(l); l.cardIds.forEach(id => g.cardIds.add(id));
+    });
+    const inLeg = new Set(ov.legs.flatMap(l => l.cardIds));
+    flights.filter(c => !inLeg.has(c.id)).forEach(c => {
+      const loc = ((c.fields || {}).locator || '').toUpperCase();
+      const k = keyOf(loc) || 'C:' + c.id;
+      const g = groups.get(k) || groups.set(k, { locator: loc, legs: [], cardIds: new Set() }).get(k);
+      g.cardIds.add(c.id);
+    });
+    const files = D().files;
+    const html = [...groups.values()].map(g => {
+      const cards = flights.filter(c => g.cardIds.has(c.id));
+      const airlines = [...new Set(cards.map(c => (c.fields || {}).airline).filter(Boolean))];
+      const notes = cards.map(c => (c.fields || {}).notes || '').join(' ');
+      const via = (notes.match(/\b(Trip\.com|Decolar|Booking\.com|Expedia|Kiwi\.com|eDreams|123 ?milhas|MaxMilhas|Smiles|LATAM Pass|Kayak)\b/i) || [])[1];
+      const head = (airlines.join(' + ') || 'Voo') + (via ? ` · via ${via}` : '');
+      const legs = g.legs;
+      const tickets = [...new Set(legs.map(l => l.f.ticket).concat(cards.map(c => (c.fields || {}).ticket)).filter(Boolean))];
+      const first = legs[0] || null;
+      const seen = new Set(), used = {};
+      const gFiles = files.filter(f => g.cardIds.has(f.cardId) && !seen.has(f.path || f.id) && seen.add(f.path || f.id));
+      return `
+        <div class="tv-ticket" data-tv="view" data-id="${(first ? first.main : cards[0]).id}">
+          <div class="tv-t-head"><span>${escapeHTML(head)}</span><span class="tv-mono-s">${legs.length ? `${legs.length} ${legs.length === 1 ? 'trecho' : 'trechos'}` : 'sem trecho'}</span></div>
+          <div class="tv-t-legs">
+            ${legs.map(l => `<div class="tv-t-leg"><b>${escapeHTML(l.from.code || l.fromCity)} → ${escapeHTML(l.to.code || l.toCity)}${l.f.flight ? ' · ' + escapeHTML(l.f.flight) : ''}</b><span>${escapeHTML([ddmm(l.date), l.f.seat || l.time].filter(Boolean).join(' · '))}</span></div>`).join('')}
+            ${tickets.length ? `<div class="tv-t-leg is-soft"><span>Bilhete ${escapeHTML(tickets.join(', '))}</span><span>${escapeHTML(legs.length === 1 && first.cabin ? cabinShort(first.cabin) === 'Econ.' ? 'Econômica' : first.cabin : '')}</span></div>` : ''}
+            ${!legs.length ? '<div class="tv-t-leg is-soft"><span>Sem data/trecho — toque para completar</span></div>' : ''}
+          </div>
+          <div class="tv-t-loc">
+            <div><div class="tv-k">Localizador</div><div class="tv-t-code">${escapeHTML(g.locator || '—')}</div></div>
+            ${g.locator ? `<button class="tv-copy is-light" data-doc-copy="${escapeHTML(g.locator)}">Copiar</button>` : ''}
+          </div>
+          ${gFiles.length ? `<div class="tv-t-files">${gFiles.map(f => `<button data-tv="file" data-id="${f.id}" title="${escapeHTML(f.name || '')}">${escapeHTML(fileLabel(f, used))}</button>`).join('')}</div>` : ''}
+        </div>`;
+    });
+    const last = ov.legs[ov.legs.length - 1];
+    if (last && !sameCity(last.toCity, ov.home)) {
+      html.push(`
+        <div class="tv-ticket is-ghost" data-tv="add-flight" data-from="${escapeHTML(last.f.to)}" data-to="${escapeHTML(ov.legs[0].f.from)}">
+          <div class="tv-t-head"><span>[COMPANHIA]</span><span>Volta</span></div>
+          <div class="tv-t-legs"><div class="tv-t-leg"><b>${escapeHTML(last.to.code || last.toCity)} → ${escapeHTML(ov.legs[0].from.code || ov.home)} · [VOO]</b><span>[DATA]</span></div></div>
+          <div class="tv-t-loc"><div><div class="tv-k">Localizador</div><div class="tv-t-code">[LOCALIZADOR]</div></div></div>
+        </div>`);
+    }
+    return html.join('') || '<div class="tv-empty">Nenhuma passagem ainda.</div>';
+  }
+
+  $('tp-view-overview').addEventListener('click', e => {
+    const copy = e.target.closest('[data-doc-copy]');
+    if (copy) { e.stopPropagation(); copyText(copy.dataset.docCopy, copy); return; }
+    const el = e.target.closest('[data-tv]');
+    if (!el) return;
+    const { id } = el.dataset;
+    switch (el.dataset.tv) {
+      case 'view': openDocView(id); break;
+      case 'edit': { const c = D().cards.find(x => x.id === id); if (c) openDocModal('flight', c); break; }
+      case 'file': openFile(id); break;
+      case 'day': openCalDay(el.dataset.date); break;
+      case 'add-flight': {
+        const pre = {};
+        if (el.dataset.from) pre.from = el.dataset.from;
+        if (el.dataset.to) pre.to = el.dataset.to;
+        openDocModal('flight', null, pre);
+        break;
+      }
+      case 'checkin': {
+        e.stopPropagation();
+        const ov = tripOverview();
+        const leg = ov.legs.find(l => l.cardIds.includes(id));
+        const on = !(leg && leg.checkedIn);
+        D().cards.filter(c => leg ? leg.cardIds.includes(c.id) : c.id === id).forEach(c => {
+          if (on) c.fields.checkedIn = '1'; else delete c.fields.checkedIn;
+        });
+        saveState(); renderOverview();
+        break;
+      }
+    }
+  });
+  // Atualiza a contagem regressiva do próximo voo
+  setInterval(() => {
+    if (tab === 'overview' && page.classList.contains('active') && !document.hidden && !document.querySelector('.modal-bg.active')) renderOverview();
+  }, 60000);
 
   // ---------- eventos ----------
   page.addEventListener('click', e => {

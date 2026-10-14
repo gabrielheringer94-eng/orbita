@@ -38,6 +38,7 @@ const ExtractInputSchema = z.object({
 
 const DOC_FIELD_KEYS = [
   'airline', 'flight', 'date', 'time', 'from', 'to', 'locator', 'ticket', 'seat', 'terminal', 'baggage',
+  'arrdate', 'arrtime', 'cabin',
   'company', 'code', 'name', 'address', 'checkin', 'checkout', 'confirmation', 'phone',
   'policy', 'coverage', 'holder', 'number', 'expiry', 'country', 'relation', 'title', 'value', 'notes',
 ] as const;
@@ -58,7 +59,7 @@ const EXTRACT_SYSTEM = `Você lê prints de tela e PDFs de viagem (cartões de e
 Para cada item distinto encontrado, crie um card. Um mesmo arquivo pode ter vários (ex.: ida e volta = 2 voos; cada trecho com conexão = 1 voo por trecho). source_index é o número do arquivo (começando em 0) de onde o card saiu.
 
 fields é uma lista de pares { key, value } só com os campos que você encontrou (não inclua campos vazios). Tipos e campos usados:
-- flight: airline, flight (ex.: "TP 82"), date, time (partida), from, to, locator (código da reserva/PNR, ~6 caracteres), ticket (nº do bilhete/e-ticket, ~13 dígitos), seat, terminal (terminal/portão), baggage, notes.
+- flight: airline, flight (ex.: "TP 82"), date, time (partida), from, to, locator (código da reserva/PNR, ~6 caracteres), ticket (nº do bilhete/e-ticket, ~13 dígitos), seat, terminal (terminal/portão), baggage, arrdate (data de chegada, AAAA-MM-DD), arrtime (horário de chegada, HH:MM), cabin (classe, ex.: "Econômica", "Executiva", "Premium Economy"), notes.
 - transport (trem, ônibus, carro alugado, transfer): company, code (localizador/reserva), date, time, from, to, seat, notes.
 - hotel (inclui Airbnb): name, address, checkin, checkout, confirmation, phone, notes.
 - insurance: company, policy, phone (emergência), coverage, notes.
