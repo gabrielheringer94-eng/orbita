@@ -12658,11 +12658,29 @@ const renderTrip = (() => {
     return added;
   }
 
+  // Malta: restaurantes de comida maltesa (ficam em "Ideias", marcados com a cidade)
+  const MALTA_PLAN = [
+    { name: "Ta' Kris Restaurant", lat: 35.9118, lng: 14.5035, address: 'Sliema / Il-Gżira, Malta', category: 'Restaurante', note: 'Coelho ao vinho, bragioli e ensopado de polvo · EUR 20 a 30' },
+    { name: 'Gozitan Restaurant', lat: 35.9249, lng: 14.4893, address: 'San Ġiljan / Paceville, Malta', category: 'Restaurante', note: 'Ambiente acolhedor, ensopado de coelho e aperitivos de cortesia · EUR 20 a 30' },
+    { name: 'Gululu', lat: 35.9187, lng: 14.4906, address: 'Spinola Bay, San Ġiljan, Malta', category: 'Restaurante', note: 'Menu todo de comida maltesa com vista para o mar, ftira no forno a lenha · EUR 20 a 40' },
+  ];
+  function importMalta() {
+    const t = T();
+    if (t.importedMalta) return 0;
+    const fresh = MALTA_PLAN.filter(x => !t.ideas.some(s => s.name === x.name))
+      .map(x => ({ id: uid(), ...x, city: 'Malta', time: '' }));
+    t.ideas.push(...fresh);
+    t.importedMalta = true;
+    saveState();
+    return fresh.length;
+  }
+
   // Cidades: cada dia pode ter uma cidade; vira botão de filtro (ex.: "Londres")
   const dayCity = d => (d.city || '').trim();
   function cityList() {
     const seen = [];
     T().days.forEach(d => { const c = dayCity(d); if (c && !seen.includes(c)) seen.push(c); });
+    T().ideas.forEach(x => { const c = dayCity(x); if (c && !seen.includes(c)) seen.push(c); });
     return seen;
   }
   const isCityFilter = () => typeof mapFilter === 'string' && mapFilter.startsWith('city:');
@@ -12920,11 +12938,11 @@ const renderTrip = (() => {
     $('tp-days').innerHTML = `
       <div class="tp-days-head">
         <div class="filter-row">${chips.join('')}</div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">${t.importedLondon ? '' : '<button class="btn" data-tp="import-london">📍 Importar roteiro de Londres</button>'}<button class="btn" data-tp="add-day">+ Adicionar dia</button></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">${t.importedLondon ? '' : '<button class="btn" data-tp="import-london">📍 Importar roteiro de Londres</button>'}${t.importedMalta ? '' : '<button class="btn" data-tp="import-malta">📍 Importar restaurantes de Malta</button>'}<button class="btn" data-tp="add-day">+ Adicionar dia</button></div>
       </div>
       <datalist id="tp-city-list">${cityList().map(c => `<option value="${escapeHTML(c)}"></option>`).join('')}</datalist>
       ${t.days.map((d, i) => dayVisible(d) ? dayCard(d, i) : '').join('')}
-      <div class="tp-day ${mapFilter === 'ideas' ? 'is-focus' : ''}" id="tp-day-ideas" ${cityC ? 'hidden' : ''}>
+      <div class="tp-day ${mapFilter === 'ideas' ? 'is-focus' : ''}" id="tp-day-ideas" ${cityC && !t.ideas.some(x => dayCity(x) === cityC) ? 'hidden' : ''}>
         <div class="tp-day-head">
           <span class="tp-day-dot" style="background:${IDEA_COLOR}"></span>
           <div class="tp-day-titles">
@@ -12933,7 +12951,7 @@ const renderTrip = (() => {
           </div>
         </div>
         <div class="tp-stops">
-          ${t.ideas.map((s, j) => stopRow(s, j, 'ideas', IDEA_COLOR)).join('') || '<div class="tp-empty-day">Guarde aqui o que você quer conhecer e encaixe num dia depois.</div>'}
+          ${t.ideas.map((s, j) => cityC && dayCity(s) !== cityC ? '' : stopRow(s, j, 'ideas', IDEA_COLOR)).join('') || '<div class="tp-empty-day">Guarde aqui o que você quer conhecer e encaixe num dia depois.</div>'}
         </div>
         <div class="tp-day-foot">
           <input type="text" class="tp-add-input" data-tp-add-stop="ideas" placeholder="+ Adicionar ideia" enterkeyhint="done" />
@@ -13149,11 +13167,11 @@ const renderTrip = (() => {
     const groups = t.days.map((d, i) => ({ id: d.id, city: dayCity(d), stops: d.stops, color: COLORS[i % COLORS.length], label: `Dia ${i + 1}${d.title ? ' — ' + d.title : ''}` }));
     groups.push({ id: 'ideas', stops: t.ideas, color: IDEA_COLOR, label: 'Ideias', idea: true });
     groups.forEach(g => {
-      if (cityC) { if (g.idea || g.city !== cityC) return; }
+      if (cityC) { if (!g.idea && g.city !== cityC) return; }
       else if (mapFilter !== 'all' && !favOnly && mapFilter !== g.id) return;
       const line = [];
       g.stops.forEach((s, j) => {
-        if (!hasCoords(s) || (favOnly && !s.fav)) return;
+        if (!hasCoords(s) || (favOnly && !s.fav) || (cityC && g.idea && dayCity(s) !== cityC)) return;
         const m = addMarker('s:' + s.id, s.lat, s.lng, g.color, g.idea ? '★' : String(j + 1), false, s.fav, s.fav ? 300 : 100, s.name,
           () => popupHTML({ ...findStop(s.id), planned: g.label }, null));
         stopMarkers.set(s.id, m);
@@ -15507,7 +15525,7 @@ const renderTrip = (() => {
         mapFilter = id;
         renderDays(); renderMap(false);
         const g = id === 'all' ? allStops() : id === 'fav' ? allStops().filter(x => x.fav)
-          : id.startsWith('city:') ? [].concat(...t.days.filter(d => dayCity(d) === id.slice(5)).map(d => d.stops))
+          : id.startsWith('city:') ? [].concat(...t.days.filter(d => dayCity(d) === id.slice(5)).map(d => d.stops), t.ideas.filter(x => dayCity(x) === id.slice(5)))
           : (stopsOf(id) || []);
         const pts = g.filter(hasCoords).map(s => [s.lat, s.lng]);
         fitTo(pts);
@@ -15515,7 +15533,8 @@ const renderTrip = (() => {
         break;
       }
       case 'focus-stop': {
-        const inCity = isCityFilter() && t.days.some(d => d.id === target && dayCity(d) === filterCity());
+        const inCity = isCityFilter() && (t.days.some(d => d.id === target && dayCity(d) === filterCity())
+          || (target === 'ideas' && dayCity(findStop(id) || {}) === filterCity()));
         if (mapFilter !== 'all' && mapFilter !== target && !inCity) { mapFilter = 'all'; renderDays(); renderMap(false); }
         const m = stopMarkers.get(id);
         if (!m) return;
@@ -15531,6 +15550,15 @@ const renderTrip = (() => {
         renderDays(); renderHeader(); renderMap(false);
         fitTo([].concat(...t.days.filter(d => dayCity(d) === 'Londres').map(d => d.stops)).filter(hasCoords).map(s => [s.lat, s.lng]));
         flashStatus(`Roteiro de Londres importado · ${n} lugares`);
+        break;
+      }
+      case 'import-malta': {
+        const n = importMalta();
+        mapFilter = 'city:Malta';
+        renderDays(); renderHeader(); renderMap(false);
+        fitTo(t.ideas.filter(x => dayCity(x) === 'Malta' && hasCoords(x)).map(s => [s.lat, s.lng]));
+        showMapOnMobile();
+        flashStatus(`Restaurantes de Malta importados · ${n} lugares`);
         break;
       }
       case 'stop-fav': toggleFav(id); break;
