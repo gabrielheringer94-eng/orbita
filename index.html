@@ -4412,6 +4412,14 @@
   .tp-day-label { font: 600 10px 'DM Sans', sans-serif; text-transform: uppercase; letter-spacing: 0.15em; color: var(--ink-faint); }
   .tp-day-title { width: 100%; border: none; background: transparent; color: var(--ink); font: 600 16px 'DM Sans', sans-serif; padding: 2px 0; outline: none; }
   .tp-day-title::placeholder { color: var(--ink-faint); font-weight: 400; }
+  .tp-day-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+  .tp-day-city { border: 1px solid var(--line); background: var(--bg); color: var(--ink-soft); border-radius: 6px; font: 12px 'DM Sans', sans-serif; padding: 4px 6px; width: 118px; }
+  .tp-day-city::placeholder { color: var(--ink-faint); }
+  .tp-day-note { display: block; width: 100%; margin-top: 8px; border: 1px dashed var(--line); border-radius: 8px; background: transparent; color: var(--ink-soft); font: 12.5px/1.5 'DM Sans', sans-serif; padding: 8px 10px; outline: none; resize: none; overflow: hidden; min-height: 34px; }
+  .tp-day-note:focus { border-style: solid; border-color: var(--ink-faint); color: var(--ink); }
+  .tp-day-note::placeholder { color: var(--ink-faint); opacity: 0.8; }
+  .tp-stop-rename { width: 100%; border: 1px solid var(--ink-faint); border-radius: 6px; background: var(--bg); color: var(--ink); font: 600 14px 'DM Sans', sans-serif; padding: 3px 6px; outline: none; }
+  .tp-city-chip { font-weight: 600; }
   .tp-day-date { border: 1px solid var(--line); background: var(--bg); color: var(--ink-soft); border-radius: 6px; font: 12px 'DM Sans', sans-serif; padding: 4px 6px; }
   .tp-stops { margin-top: 10px; }
   .tp-empty-day { font-size: 13px; color: var(--ink-faint); padding: 6px 0 10px; }
@@ -12616,6 +12624,54 @@ const renderTrip = (() => {
     t.days.forEach(d => { d.stops = d.stops || []; });
     return t;
   }
+  const LONDON_PLAN = [{"date": "2026-11-04", "title": "Chegada e Tooting", "note": "Base: studio em Tooting / Mitcham, perto de Figge's Marsh.\nNorthern line · Tooting Broadway | Thameslink · Mitcham Eastfields | Ônibus pela London Road até Tooting Broadway.\nPague tudo com o mesmo cartão por aproximação: o teto diário é aplicado automaticamente. Tooting Broadway até o centro: 25 a 30 min pela Northern line.\n\nTransporte: ônibus local, a pé\nCafé: Urban Baristas Tooting Bec\nDescoberta: Tooting Bec Lido, uma das maiores piscinas ao ar livre da Inglaterra, dentro do Tooting Common.", "stops": [{"name": "Tooting Market", "lat": 51.4277, "lng": -0.1681, "category": "Mercado coberto", "note": ""}, {"name": "Broadway Market Tooting", "lat": 51.4283, "lng": -0.1689, "category": "Mercado coberto", "note": ""}, {"name": "Tooting Common", "lat": 51.434, "lng": -0.1497, "category": "Parque", "note": "Caminhada · Tooting Bec Lido fica aqui"}, {"name": "Upper Tooting Road", "lat": 51.4337, "lng": -0.1637, "category": "Restaurantes", "note": "Jantar: a rua dos restaurantes indianos"}]}, {"date": "2026-11-05", "title": "Westminster clássico", "note": "Os cartões-postais, todos a pé entre si.\nTransporte: Northern até Embankment · Volta: Charing Cross até Morden\nCafés (top UK 2026): Nostos (St James's Park), Formative (Westminster), Calico (Pimlico)\nDescoberta: Leake Street Tunnel, túnel de grafite liberado embaixo da Waterloo, a 5 min da London Eye.\nNoite: Bonfire Night. Queima de fogos da prefeitura de Merton no Morden Park, no fim da Northern line. Confirmar horário no site do organizador.", "stops": [{"name": "Westminster Abbey e Big Ben", "lat": 51.4994, "lng": -0.1273, "category": "Atração", "note": ""}, {"name": "London Eye", "lat": 51.5033, "lng": -0.1196, "category": "Atração", "note": "Pela ponte de Westminster, no South Bank"}, {"name": "Whitehall e Downing Street", "lat": 51.5034, "lng": -0.1276, "category": "Atração", "note": "Volta pelo rio"}, {"name": "St James's Park e Buckingham Palace", "lat": 51.5014, "lng": -0.1419, "category": "Atração", "note": ""}, {"name": "Trafalgar Square e National Gallery", "lat": 51.5089, "lng": -0.1283, "category": "Museu", "note": "Entrada gratuita"}, {"name": "Morden Park · Bonfire Night", "lat": 51.3905, "lng": -0.208, "category": "Evento", "note": "Noite: fogos de 5 de novembro"}]}, {"date": "2026-11-06", "title": "City e South Bank", "note": "Catedral, rio, mercado e a Torre.\nTransporte: Northern (ramal Bank) até Bank · Alternativa: Thameslink até City\nCafés (top UK 2026): Curators, Zero to One (City) · Saint Nine, Scenery (Southwark)\nDescoberta: St Dunstan in the East (ruína de igreja tomada por jardim) e Leadenhall Market, no caminho até a Torre.", "stops": [{"name": "St Paul's Cathedral", "lat": 51.5138, "lng": -0.0984, "category": "Atração", "note": ""}, {"name": "Tate Modern", "lat": 51.5076, "lng": -0.0994, "category": "Museu", "note": "Pela Millennium Bridge · gratuita"}, {"name": "Borough Market", "lat": 51.5055, "lng": -0.091, "category": "Mercado", "note": "Almoço"}, {"name": "Southwark Cathedral", "lat": 51.5061, "lng": -0.0897, "category": "Atração", "note": "Depois, caminhada pelo rio"}, {"name": "Tower Bridge", "lat": 51.5055, "lng": -0.0754, "category": "Atração", "note": ""}, {"name": "Tower of London", "lat": 51.5081, "lng": -0.0759, "category": "Atração", "note": ""}, {"name": "Sky Garden", "lat": 51.5113, "lng": -0.0836, "category": "Mirante", "note": "Pôr do sol · gratuito, reserva antecipada"}]}, {"date": "2026-11-07", "title": "Notting Hill e Kensington", "note": "Sábado é o dia forte do Portobello.\nTransporte: Northern até Embankment, depois Circle/District até Notting Hill Gate\nCafés (top UK 2026): Special Guests (Marylebone), Carbon Kopi (Hammersmith)\nDescoberta: Little Venice, canais com barcos-casa a uma estação de Notting Hill. Daunt Books, livraria eduardiana em Marylebone.\nNoite: fogos em Battersea Park (7 e 8/11), com música e parque de diversões, no caminho de volta. Wimbledon Park também tem show no dia 7.", "stops": [{"name": "Portobello Road Market", "lat": 51.5155, "lng": -0.205, "category": "Mercado de rua", "note": "De manhã cedo"}, {"name": "Ruas coloridas de Notting Hill", "lat": 51.5128, "lng": -0.201, "category": "Bairro", "note": ""}, {"name": "Kensington Gardens e Hyde Park", "lat": 51.507, "lng": -0.176, "category": "Parque", "note": ""}, {"name": "Natural History Museum ou V&A", "lat": 51.4967, "lng": -0.1764, "category": "Museu", "note": "Gratuitos"}, {"name": "Harrods", "lat": 51.4994, "lng": -0.1632, "category": "Loja de departamento", "note": ""}, {"name": "Battersea Park · fogos", "lat": 51.4791, "lng": -0.1566, "category": "Evento", "note": "Noite: fogos com música e parque de diversões"}]}, {"date": "2026-11-08", "title": "East London e partida", "note": "Checkout 11h: deixe a mala e aproveite a manhã.\nTransporte: Northern (ramal Bank) até Old Street\nCafés (top UK 2026): Specialty Cafetiere (Hackney), Moonstruck (Stockwell, na volta), Prufrock ou Catalyst (Holborn)\nDescoberta: Beigel Bake, padaria 24h da Brick Lane famosa pelo bagel de salt beef.\nAtenção: Remembrance Sunday. Cerimônia no Cenotaph, em Whitehall; Westminster fica fechada pela manhã.", "stops": [{"name": "Columbia Road Flower Market", "lat": 51.5293, "lng": -0.0703, "category": "Mercado", "note": "Só aos domingos"}, {"name": "Arte de rua em Shoreditch", "lat": 51.5246, "lng": -0.0776, "category": "Arte pública", "note": ""}, {"name": "Brick Lane e Old Spitalfields Market", "lat": 51.5205, "lng": -0.0735, "category": "Mercado", "note": ""}]}];
+  // Importa o roteiro de Londres (04 a 08/11) uma única vez, mesclando com os dias existentes
+  function importLondon() {
+    const t = T();
+    if (t.importedLondon) return 0;
+    const BASE = { lat: 51.4135, lng: -0.1565 };
+    let added = 0;
+    LONDON_PLAN.forEach((p, idx) => {
+      let d = t.days.find(x => x.date === p.date);
+      if (!d) { d = { id: uid(), date: p.date, title: '', stops: [] }; t.days.push(d); }
+      d.city = 'Londres';
+      d.title = p.title;
+      d.note = d.note ? d.note + '\n\n' + p.note : p.note;
+      // Pinos que tinham sido localizados no lugar errado
+      d.stops.forEach(s => {
+        if (s.category === 'Hospedagem' && /Londres/i.test(s.name)) { Object.assign(s, BASE); s.address = "Tooting / Mitcham, perto de Figge's Marsh"; }
+        if (/→ LHR/.test(s.name)) { s.lat = 51.4700; s.lng = -0.4543; }
+        if (/LGW →/.test(s.name)) { s.lat = 51.1537; s.lng = -0.1821; }
+      });
+      const fresh = p.stops.filter(x => !d.stops.some(s => s.name === x.name))
+        .map(x => ({ id: uid(), name: x.name, lat: x.lat, lng: x.lng, address: 'Londres', category: x.category, time: '', note: x.note }));
+      added += fresh.length;
+      if (idx === LONDON_PLAN.length - 1) {
+        // Último dia: passeios antes do check-out e do voo
+        const firstTimed = d.stops.findIndex(s => s.time);
+        d.stops.splice(firstTimed < 0 ? d.stops.length : firstTimed, 0, ...fresh);
+      } else d.stops.push(...fresh);
+    });
+    t.importedLondon = true;
+    sortDays();
+    saveState();
+    return added;
+  }
+
+  // Cidades: cada dia pode ter uma cidade; vira botão de filtro (ex.: "Londres")
+  const dayCity = d => (d.city || '').trim();
+  function cityList() {
+    const seen = [];
+    T().days.forEach(d => { const c = dayCity(d); if (c && !seen.includes(c)) seen.push(c); });
+    return seen;
+  }
+  const isCityFilter = () => typeof mapFilter === 'string' && mapFilter.startsWith('city:');
+  const filterCity = () => isCityFilter() ? mapFilter.slice(5) : null;
+  function dayVisible(d) {
+    const c = filterCity();
+    return !c || dayCity(d) === c;
+  }
+  let renamingId = null;
   function allStops() {
     const t = T();
     return t.ideas.concat(...t.days.map(d => d.stops));
@@ -12800,7 +12856,9 @@ const renderTrip = (() => {
       <div class="tp-stop ${selectedKey === 's:' + s.id ? 'is-selected' : ''}" id="tp-stop-${s.id}" style="--tp-sel-color:${color}">
         <span class="tp-stop-num" style="background:${color}">${target === 'ideas' ? '★' : idx + 1}</span>
         <div>
-          <div class="tp-stop-name" ${located ? `data-tp="focus-stop" data-target="${target}" data-id="${s.id}" title="Ver no mapa"` : ''}>${s.fav ? `<span class="tp-fav-mark" title="Favorito">${HEART}</span>` : ''}${escapeHTML(s.name)}</div>
+          ${renamingId === s.id
+            ? `<input type="text" class="tp-stop-rename" data-tp-rename data-target="${target}" data-id="${s.id}" value="${escapeHTML(s.name)}" aria-label="Nome do lugar" enterkeyhint="done" />`
+            : `<div class="tp-stop-name" ${located ? `data-tp="focus-stop" data-target="${target}" data-id="${s.id}" title="Ver no mapa"` : ''}>${s.fav ? `<span class="tp-fav-mark" title="Favorito">${HEART}</span>` : ''}${escapeHTML(s.name)}</div>`}
           ${sub ? `<div class="tp-stop-sub">${escapeHTML(sub)}</div>` : ''}
           <input type="text" class="tp-stop-note" data-tp-note data-target="${target}" data-id="${s.id}" value="${escapeHTML(s.note || '')}" placeholder="Anotação: ingresso, reserva, horário…" />
         </div>
@@ -12808,6 +12866,7 @@ const renderTrip = (() => {
           ${target === 'ideas' ? '' : `<input type="time" class="tp-time" data-tp-time data-target="${target}" data-id="${s.id}" value="${escapeHTML(s.time || '')}" aria-label="Horário" />`}
           <div class="tp-stop-actions">
             <button class="tp-icon-btn tp-fav-btn ${s.fav ? 'is-on' : ''}" data-tp="stop-fav" data-target="${target}" data-id="${s.id}" aria-pressed="${!!s.fav}" title="${s.fav ? 'Tirar dos favoritos' : 'Favoritar'}" aria-label="Favoritar">${s.fav ? HEART : HEART_O}</button>
+            <button class="tp-icon-btn" data-tp="stop-rename" data-target="${target}" data-id="${s.id}" title="Editar nome" aria-label="Editar nome">${ICON.edit}</button>
             <button class="tp-icon-btn" data-tp="stop-up" data-target="${target}" data-id="${s.id}" aria-label="Subir">${ICON.up}</button>
             <button class="tp-icon-btn" data-tp="stop-down" data-target="${target}" data-id="${s.id}" aria-label="Descer">${ICON.down}</button>
             <a class="tp-icon-btn" href="${gmapsPlaceURL(s)}" target="_blank" rel="noopener" title="Abrir no Google Maps" aria-label="Abrir no Google Maps">${ICON.ext}</a>
@@ -12829,8 +12888,12 @@ const renderTrip = (() => {
             <div class="tp-day-label">Dia ${i + 1} · ${escapeHTML(fmtDay(d.date))}</div>
             <input type="text" class="tp-day-title" data-tp-day-title="${d.id}" value="${escapeHTML(d.title || '')}" placeholder="Título do dia (ex: Paris — Marais)" />
           </div>
-          <input type="date" class="tp-day-date" data-tp-day-date="${d.id}" value="${escapeHTML(d.date || '')}" aria-label="Data do dia" />
+          <div class="tp-day-meta">
+            <input type="date" class="tp-day-date" data-tp-day-date="${d.id}" value="${escapeHTML(d.date || '')}" aria-label="Data do dia" />
+            <input type="text" class="tp-day-city" data-tp-day-city="${d.id}" value="${escapeHTML(dayCity(d))}" placeholder="Cidade" list="tp-city-list" aria-label="Cidade do dia" />
+          </div>
         </div>
+        <textarea class="tp-day-note" data-tp-day-note="${d.id}" rows="1" placeholder="Notas do dia: transporte, cafés, dicas…">${escapeHTML(d.note || '')}</textarea>
         <div class="tp-stops">
           ${d.stops.map((s, j) => stopRow(s, j, d.id, color)).join('') || '<div class="tp-empty-day">Nenhuma parada ainda. Pesquise no mapa ou digite abaixo.</div>'}
         </div>
@@ -12847,17 +12910,21 @@ const renderTrip = (() => {
 
   function renderDays() {
     const t = T();
+    if (isCityFilter() && !cityList().includes(filterCity())) mapFilter = 'all';
+    const cityC = filterCity();
     const chips = [`<button class="btn btn-ghost ${mapFilter === 'all' ? 'active' : ''}" data-tp="map-filter" data-id="all">Tudo no mapa</button>`]
+      .concat(cityList().map(c => `<button class="btn btn-ghost tp-city-chip ${cityC === c ? 'active' : ''}" data-tp="map-filter" data-id="city:${escapeHTML(c)}">📍 ${escapeHTML(c)}</button>`))
       .concat(t.days.map((d, i) => `<button class="btn btn-ghost ${mapFilter === d.id ? 'active' : ''}" data-tp="map-filter" data-id="${d.id}"><span class="tp-chip-dot" style="background:${COLORS[i % COLORS.length]}"></span>Dia ${i + 1}</button>`))
       .concat(t.ideas.length ? [`<button class="btn btn-ghost ${mapFilter === 'ideas' ? 'active' : ''}" data-tp="map-filter" data-id="ideas"><span class="tp-chip-dot" style="background:${IDEA_COLOR}"></span>Ideias</button>`] : [])
       .concat(allStops().some(x => x.fav) ? [`<button class="btn btn-ghost ${mapFilter === 'fav' ? 'active' : ''}" data-tp="map-filter" data-id="fav"><span class="tp-fav-mark">${HEART}</span>Favoritos</button>`] : []);
     $('tp-days').innerHTML = `
       <div class="tp-days-head">
         <div class="filter-row">${chips.join('')}</div>
-        <div><button class="btn" data-tp="add-day">+ Adicionar dia</button></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">${t.importedLondon ? '' : '<button class="btn" data-tp="import-london">📍 Importar roteiro de Londres</button>'}<button class="btn" data-tp="add-day">+ Adicionar dia</button></div>
       </div>
-      ${t.days.map(dayCard).join('')}
-      <div class="tp-day ${mapFilter === 'ideas' ? 'is-focus' : ''}" id="tp-day-ideas">
+      <datalist id="tp-city-list">${cityList().map(c => `<option value="${escapeHTML(c)}"></option>`).join('')}</datalist>
+      ${t.days.map((d, i) => dayVisible(d) ? dayCard(d, i) : '').join('')}
+      <div class="tp-day ${mapFilter === 'ideas' ? 'is-focus' : ''}" id="tp-day-ideas" ${cityC ? 'hidden' : ''}>
         <div class="tp-day-head">
           <span class="tp-day-dot" style="background:${IDEA_COLOR}"></span>
           <div class="tp-day-titles">
@@ -12872,6 +12939,10 @@ const renderTrip = (() => {
           <input type="text" class="tp-add-input" data-tp-add-stop="ideas" placeholder="+ Adicionar ideia" enterkeyhint="done" />
         </div>
       </div>`;
+    sizeDayNotes();
+  }
+  function sizeDayNotes() {
+    page.querySelectorAll('.tp-day-note').forEach(ta => { ta.style.height = 'auto'; ta.style.height = ta.scrollHeight + 2 + 'px'; });
   }
 
   // ---------- mapa (MapLibre GL + OpenFreeMap, vetorial) ----------
@@ -13074,10 +13145,12 @@ const renderTrip = (() => {
     const pts = [];
     const routes = [];
     const favOnly = mapFilter === 'fav';
-    const groups = t.days.map((d, i) => ({ id: d.id, stops: d.stops, color: COLORS[i % COLORS.length], label: `Dia ${i + 1}${d.title ? ' — ' + d.title : ''}` }));
+    const cityC = filterCity();
+    const groups = t.days.map((d, i) => ({ id: d.id, city: dayCity(d), stops: d.stops, color: COLORS[i % COLORS.length], label: `Dia ${i + 1}${d.title ? ' — ' + d.title : ''}` }));
     groups.push({ id: 'ideas', stops: t.ideas, color: IDEA_COLOR, label: 'Ideias', idea: true });
     groups.forEach(g => {
-      if (mapFilter !== 'all' && !favOnly && mapFilter !== g.id) return;
+      if (cityC) { if (g.idea || g.city !== cityC) return; }
+      else if (mapFilter !== 'all' && !favOnly && mapFilter !== g.id) return;
       const line = [];
       g.stops.forEach((s, j) => {
         if (!hasCoords(s) || (favOnly && !s.fav)) return;
@@ -15433,14 +15506,17 @@ const renderTrip = (() => {
       case 'map-filter': {
         mapFilter = id;
         renderDays(); renderMap(false);
-        const g = id === 'all' ? allStops() : id === 'fav' ? allStops().filter(x => x.fav) : (stopsOf(id) || []);
+        const g = id === 'all' ? allStops() : id === 'fav' ? allStops().filter(x => x.fav)
+          : id.startsWith('city:') ? [].concat(...t.days.filter(d => dayCity(d) === id.slice(5)).map(d => d.stops))
+          : (stopsOf(id) || []);
         const pts = g.filter(hasCoords).map(s => [s.lat, s.lng]);
         fitTo(pts);
         if (id !== 'all') showMapOnMobile();
         break;
       }
       case 'focus-stop': {
-        if (mapFilter !== 'all' && mapFilter !== target) { mapFilter = 'all'; renderDays(); renderMap(false); }
+        const inCity = isCityFilter() && t.days.some(d => d.id === target && dayCity(d) === filterCity());
+        if (mapFilter !== 'all' && mapFilter !== target && !inCity) { mapFilter = 'all'; renderDays(); renderMap(false); }
         const m = stopMarkers.get(id);
         if (!m) return;
         showMapOnMobile();
@@ -15449,7 +15525,22 @@ const renderTrip = (() => {
         openMarker('s:' + id);
         break;
       }
+      case 'import-london': {
+        const n = importLondon();
+        mapFilter = 'city:Londres';
+        renderDays(); renderHeader(); renderMap(false);
+        fitTo([].concat(...t.days.filter(d => dayCity(d) === 'Londres').map(d => d.stops)).filter(hasCoords).map(s => [s.lat, s.lng]));
+        flashStatus(`Roteiro de Londres importado · ${n} lugares`);
+        break;
+      }
       case 'stop-fav': toggleFav(id); break;
+      case 'stop-rename': {
+        renamingId = id;
+        renderDays();
+        const inp = page.querySelector(`[data-tp-rename][data-id="${id}"]`);
+        if (inp) { inp.focus(); inp.select(); }
+        break;
+      }
       case 'stop-up':
       case 'stop-down': {
         const arr = stopsOf(target);
@@ -15513,6 +15604,18 @@ const renderTrip = (() => {
     if (el.matches('[data-tp-day-title]')) {
       const d = t.days.find(x => x.id === el.dataset.tpDayTitle);
       if (d) { d.title = el.value.trim(); saveState(); }
+    } else if (el.matches('[data-tp-day-city]')) {
+      const d = t.days.find(x => x.id === el.dataset.tpDayCity);
+      if (d) { d.city = el.value.trim(); saveState(); renderDays(); renderMap(false); }
+    } else if (el.matches('[data-tp-day-note]')) {
+      const d = t.days.find(x => x.id === el.dataset.tpDayNote);
+      if (d) { d.note = el.value.replace(/\s+$/, ''); saveState(); }
+    } else if (el.matches('[data-tp-rename]')) {
+      const s = (stopsOf(target) || []).find(x => x.id === id);
+      const name = el.value.trim();
+      renamingId = null;
+      if (s && name && name !== s.name) { s.name = name; saveState(); }
+      renderDays(); renderMap(false);
     } else if (el.matches('[data-tp-day-date]')) {
       const d = t.days.find(x => x.id === el.dataset.tpDayDate);
       if (d) { d.date = el.value; sortDays(); saveState(); renderDays(); renderMap(false); }
@@ -15581,10 +15684,19 @@ const renderTrip = (() => {
       if (again) again.focus();
       return;
     }
-    if (el.matches('.tp-day-title, .tp-stop-note')) el.blur();
+    if (el.matches('.tp-day-title, .tp-stop-note, .tp-day-city, .tp-stop-rename')) el.blur();
+  });
+  page.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && e.target.matches('[data-tp-rename]')) { renamingId = null; renderDays(); }
+  });
+  // Sair do campo de nome sem alterar volta ao modo normal
+  page.addEventListener('focusout', e => {
+    if (!e.target.matches('[data-tp-rename]')) return;
+    setTimeout(() => { if (renamingId === e.target.dataset.id && !document.activeElement.matches('[data-tp-rename]')) { renamingId = null; renderDays(); } }, 0);
   });
 
   page.addEventListener('input', e => {
+    if (e.target.matches('.tp-day-note')) { e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 2 + 'px'; return; }
     if (e.target.id !== 'tp-search-input') return;
     clearTimeout(searchTimer);
     const q = e.target.value.trim();
