@@ -14,7 +14,7 @@
 <meta name="apple-mobile-web-app-title" content="Órbita">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,600;1,7..72,400&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="" defer></script>
@@ -2115,6 +2115,42 @@
   html.theme-dark .pol-opt.is-right { background: #052e16; color: #bbf7d0; }
   html.theme-dark .pol-opt.is-wrong { background: #450a0a; color: #fecaca; }
 
+
+  /* Leitura estilo Kindle */
+  .pol-reader-bar { position: sticky; top: 0; z-index: 5; height: 3px; background: transparent; margin: -3px 0 0; }
+  .pol-reader-bar span { display: block; height: 100%; width: 0; background: var(--ink); transition: width .1s linear; }
+  .pol-reader { max-width: 760px; padding: 28px clamp(18px, 6vw, 64px) 36px; }
+  .pol-reader.pol-tone-sepia { background: #f8f1e3; border-color: #e8dcc4; color: #3b2f22; }
+  .pol-reader.pol-tone-sepia .pol-kicker, .pol-reader.pol-tone-sepia .pol-link, .pol-reader.pol-tone-sepia figcaption { color: #8a7458; }
+  .pol-reader-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+  .pol-reader-ctl { display: flex; gap: 4px; }
+  .pol-reader-ctl button { border: 1px solid var(--line); background: transparent; color: inherit; border-radius: 8px; padding: 5px 10px; font: 600 12px 'DM Sans', sans-serif; cursor: pointer; }
+  .pol-tone-sepia .pol-reader-ctl button { border-color: #e0d2b6; }
+  .pol-reader h2 { font: 400 clamp(26px, 4vw, 34px)/1.2 'Literata', Georgia, 'Times New Roman', serif; letter-spacing: -0.01em; margin: 8px 0 22px; }
+  .pol-reader p { font: 400 var(--pol-fs, 18px)/1.75 'Literata', Georgia, 'Times New Roman', serif; color: inherit; max-width: none; margin: 0 0 1.05em; text-align: justify; hyphens: auto; -webkit-hyphens: auto; }
+  .pol-reader:not(.pol-tone-sepia) p { color: var(--ink-soft); }
+  .pol-reader h3.pol-sec { font: 600 calc(var(--pol-fs, 18px) * 1.1)/1.3 'DM Sans', sans-serif; margin: 1.8em 0 .6em; letter-spacing: -0.01em; text-transform: none; color: inherit; }
+  .pol-fig { margin: 1.6em calc(clamp(18px, 6vw, 64px) * -0.5); }
+  .pol-fig img { display: block; width: 100%; max-height: 440px; object-fit: cover; border-radius: 10px; background: var(--line-soft); }
+  .pol-fig figcaption { font: 12.5px/1.45 'DM Sans', sans-serif; color: var(--ink-faint); margin-top: 8px; padding: 0 4px; }
+  .pol-fig figcaption a { color: inherit; text-decoration: underline; white-space: nowrap; }
+  .pol-quote { margin: 1.6em 0; padding: 4px 0 4px 20px; border-left: 3px solid currentColor; }
+  .pol-quote p { font-style: italic; font-size: calc(var(--pol-fs, 18px) * 1.12); text-align: left; margin-bottom: .4em; }
+  .pol-quote cite { font: 12.5px 'DM Sans', sans-serif; font-style: normal; opacity: .7; }
+  .pol-dates { margin: 1.8em 0; padding: 16px 18px; border: 1px solid var(--line); border-radius: 12px; }
+  .pol-tone-sepia .pol-dates, .pol-tone-sepia .pol-box { border-color: #e0d2b6; background: #f3e9d6; }
+  .pol-dates > div:not(.pol-kicker) { display: grid; grid-template-columns: 96px 1fr; gap: 10px; padding: 7px 0; border-top: 1px dashed var(--line); font: 14px/1.4 'DM Sans', sans-serif; }
+  .pol-dates > .pol-kicker { margin-bottom: 6px; }
+  .pol-dates b { font-weight: 700; }
+  .pol-box { margin: 1.8em 0 .4em; padding: 16px 18px; border-radius: 12px; background: var(--bg-card); border: 1px solid var(--line); }
+  .pol-box ul { margin: 8px 0 0 18px; padding: 0; font: 15px/1.6 'DM Sans', sans-serif; }
+  .pol-reader .pol-concepts > div { border-color: var(--line); }
+  .pol-tone-sepia .pol-concepts > div { border-color: #e0d2b6; }
+  .pol-tone-sepia .pol-concepts dd { color: #5a4a37; }
+  html.theme-dark .pol-reader.pol-tone-sepia { background: #2b2620; border-color: #3d352b; color: #e9dcc6; }
+  html.theme-dark .pol-tone-sepia .pol-dates, html.theme-dark .pol-tone-sepia .pol-box { background: #332c24; border-color: #4a4034; }
+  html.theme-dark .pol-tone-sepia .pol-concepts dd { color: #cdbfa8; }
+  @media (max-width: 760px) { .pol-reader p { text-align: left; } .pol-fig { margin-left: 0; margin-right: 0; } .pol-dates > div:not(.pol-kicker) { grid-template-columns: 82px 1fr; } }
   @media (max-width: 760px) {
     .pol-grid, .pol-result { grid-template-columns: minmax(0, 1fr); }
     .pol-card { padding: 16px; }
@@ -12576,6 +12612,7 @@ const renderPolitica = (() => {
   const TRILHAS = [
     {
       id: 'origens', emoji: '🏛️', title: 'De onde vêm "esquerda" e "direita"', era: '1789 a 1815',
+      blocks: [["img", "Tomada da Bastilha", "A Tomada da Bastilha, em 14 de julho de 1789, virou símbolo da Revolução."], ["h", "Um lugar na sala"], ["p", 0], ["h", "Girondinos, jacobinos e o Terror"], ["p", 1], ["quote", "Os homens nascem e permanecem livres e iguais em direitos.", "Declaração dos Direitos do Homem e do Cidadão, artigo 1º (1789)"], ["h", "Da Declaração a Napoleão"], ["p", 2], ["img", "Declaração dos Direitos do Homem e do Cidadão", "A Declaração de 1789, um dos textos fundadores dos direitos civis."], ["h", "O que ficou"], ["p", 3], ["dates", [["1789", "Assembleia Nacional e queda da Bastilha"], ["1792", "Convenção e proclamação da República"], ["1793 a 1794", "O Terror"], ["1799", "Golpe de Napoleão"], ["1804", "Napoleão imperador"]]], ["box", ["Os termos nasceram da disposição dos deputados em 1789.", "Esquerda: mudança e igualdade. Direita: ordem e tradição.", "O sentido mudou muito com o tempo e varia entre países."]]],
       body: [
         'Os termos nasceram na Assembleia Nacional da Revolução Francesa, em 1789. Na votação sobre o poder de veto do rei, quem defendia a monarquia e a ordem tradicional sentou-se à direita do presidente da assembleia; quem queria mudanças profundas e mais poder ao povo sentou-se à esquerda.',
         'Na Convenção (1792), a divisão ficou mais nítida: os girondinos, mais moderados e federalistas, de um lado; os jacobinos e os montanheses, radicais e centralizadores, do outro. A fase do Terror (1793 a 1794), sob Robespierre, mostrou como uma revolução feita em nome da liberdade pode suspender liberdades.',
@@ -12593,6 +12630,7 @@ const renderPolitica = (() => {
     },
     {
       id: 'liberalismo', emoji: '📜', title: 'Liberalismo clássico', era: 'Séculos XVII a XIX',
+      blocks: [["img", "John Locke", "John Locke (1632 a 1704), autor do Segundo Tratado sobre o Governo."], ["h", "Direitos antes do Estado"], ["p", 0], ["h", "O poder que freia o poder"], ["p", 1], ["img", "Montesquieu", "Montesquieu (1689 a 1755), teórico da separação dos poderes."], ["h", "A economia de Adam Smith"], ["p", 2], ["quote", "Não é da benevolência do açougueiro, do cervejeiro ou do padeiro que esperamos nosso jantar, mas da consideração que eles têm pelo próprio interesse.", "Adam Smith, A Riqueza das Nações (1776)"], ["h", "Revoluções e o princípio do dano"], ["p", 3], ["dates", [["1688", "Revolução Gloriosa"], ["1689", "Segundo Tratado, de Locke"], ["1748", "O Espírito das Leis"], ["1776", "A Riqueza das Nações"], ["1859", "Sobre a Liberdade, de Mill"]]], ["box", ["Governo existe para proteger direitos: vida, liberdade e propriedade.", "Poder dividido e limitado por leis.", "Mercado livre como motor da prosperidade."]]],
       body: [
         'O liberalismo nasceu como reação ao absolutismo. John Locke (Segundo Tratado sobre o Governo, 1689) defendeu que as pessoas têm direitos naturais à vida, à liberdade e à propriedade, e que o governo existe para protegê-los, podendo ser derrubado se os violar.',
         'Montesquieu (O Espírito das Leis, 1748) propôs a separação entre os poderes Executivo, Legislativo e Judiciário, para que um limite o outro. A ideia inspirou a Constituição dos Estados Unidos (1787) e a maioria das constituições modernas, inclusive a brasileira.',
@@ -12610,6 +12648,7 @@ const renderPolitica = (() => {
     },
     {
       id: 'conservadorismo', emoji: '⚓', title: 'Conservadorismo', era: 'A partir de 1790',
+      blocks: [["img", "Edmund Burke", "Edmund Burke (1729 a 1797), parlamentar e escritor irlandês."], ["h", "A resposta à Revolução"], ["p", 0], ["quote", "Um Estado sem meios de mudança não tem meios de se conservar.", "Edmund Burke, Reflexões sobre a Revolução na França (1790)"], ["h", "Instituições como herança"], ["p", 1], ["h", "Muitos conservadorismos"], ["p", 2], ["h", "No século XX"], ["p", 3], ["dates", [["1790", "Reflexões sobre a Revolução na França"], ["1945 em diante", "Democracia cristã governa Alemanha e Itália"], ["1953", "The Conservative Mind, de Russell Kirk"]]], ["box", ["Mudar sim, mas com prudência e gradualmente.", "Instituições guardam a experiência de gerações.", "Ceticismo diante de projetos de ruptura total."]]],
       body: [
         'O conservadorismo moderno costuma ser associado a Edmund Burke, parlamentar britânico que publicou Reflexões sobre a Revolução na França em 1790. Burke criticou a tentativa de reconstruir a sociedade a partir de princípios abstratos e previu que ela levaria à violência e à tirania.',
         'Para Burke, as instituições (família, religião, costumes, leis) acumulam a experiência de gerações e não devem ser descartadas de uma vez. A sociedade seria um contrato entre os vivos, os mortos e os que ainda vão nascer. Mudanças são necessárias, mas devem ser graduais e prudentes.',
@@ -12627,6 +12666,7 @@ const renderPolitica = (() => {
     },
     {
       id: 'socialismo', emoji: '⚙️', title: 'Socialismo e marxismo', era: 'Século XIX a 1991',
+      blocks: [["img", "Revolução Industrial", "A Revolução Industrial transformou o trabalho e as cidades no século XIX."], ["h", "A crítica nasce nas fábricas"], ["p", 0], ["h", "Marx e a luta de classes"], ["p", 1], ["quote", "A história de todas as sociedades até hoje existentes é a história das lutas de classes.", "Karl Marx e Friedrich Engels, Manifesto Comunista (1848)"], ["img", "Karl Marx", "Karl Marx (1818 a 1883)."], ["h", "1917 e a União Soviética"], ["p", 2], ["img", "Revolução Russa de 1917", "A Revolução Russa de 1917 levou os bolcheviques ao poder."], ["h", "O caminho democrático e o fim da URSS"], ["p", 3], ["dates", [["1848", "Manifesto Comunista"], ["1867", "O Capital, volume 1"], ["1917", "Revolução Russa"], ["1922", "Criação da URSS"], ["1949", "Revolução Chinesa"], ["1991", "Fim da URSS"]]], ["box", ["Crítica ao capitalismo a partir da desigualdade industrial.", "Marxismo: luta de classes e fim da propriedade privada dos meios de produção.", "Duas vias: revolucionária (com regimes de partido único) e democrática."]]],
       body: [
         'A Revolução Industrial trouxe crescimento, mas também jornadas longas, trabalho infantil e cidades insalubres. Nesse contexto surgiram críticas ao capitalismo. Os chamados socialistas utópicos, como Robert Owen e Charles Fourier, propuseram comunidades cooperativas.',
         'Karl Marx e Friedrich Engels publicaram o Manifesto Comunista em 1848. Para eles, a história é marcada pela luta de classes; no capitalismo, a burguesia (dona dos meios de produção) explora o proletariado. Marx previa que os trabalhadores tomariam o poder e caminhariam para uma sociedade sem classes. Sua obra principal, O Capital, teve o primeiro volume publicado em 1867.',
@@ -12644,6 +12684,7 @@ const renderPolitica = (() => {
     },
     {
       id: 'socialdemocracia', emoji: '🤝', title: 'Social-democracia e Estado de bem-estar', era: '1890 a 1970',
+      blocks: [["h", "Reforma em vez de revolução"], ["p", 0], ["img", "John Maynard Keynes", "John Maynard Keynes (1883 a 1946), economista britânico."], ["h", "A crise de 1929 e Keynes"], ["p", 1], ["quote", "No longo prazo, estaremos todos mortos.", "John Maynard Keynes, A Tract on Monetary Reform (1923)"], ["img", "New Deal", "O New Deal de Franklin D. Roosevelt, a partir de 1933."], ["h", "O Estado de bem-estar"], ["p", 2], ["h", "Os anos dourados e a crise"], ["p", 3], ["dates", [["1899", "Bernstein publica suas teses revisionistas"], ["1929", "Quebra da Bolsa de Nova York"], ["1933", "Início do New Deal"], ["1936", "Teoria Geral, de Keynes"], ["1942", "Relatório Beveridge"], ["1948", "Criação do NHS"]]], ["box", ["Socialismo pelo voto e por reformas graduais.", "Estado ativo para sustentar emprego e demanda.", "Proteção social universal financiada por impostos."]]],
       body: [
         'No fim do século XIX, Eduard Bernstein, do Partido Social-Democrata alemão, defendeu que o socialismo poderia ser alcançado por reformas graduais e pelo voto, e não por revolução. Esse "revisionismo" está na origem da social-democracia.',
         'A crise de 1929 abalou a confiança nos mercados autorregulados. John Maynard Keynes (Teoria Geral, 1936) argumentou que, em recessões, o Estado deve aumentar gastos para sustentar a demanda e o emprego. Nos Estados Unidos, o New Deal de Roosevelt aplicou políticas nessa linha.',
@@ -12661,6 +12702,7 @@ const renderPolitica = (() => {
     },
     {
       id: 'totalitarismo', emoji: '⚠️', title: 'Fascismo, nazismo e totalitarismo', era: '1919 a 1945',
+      blocks: [["img", "Marcha sobre Roma", "A Marcha sobre Roma, em outubro de 1922."], ["h", "O terreno do pós-guerra"], ["p", 0], ["h", "O que era o fascismo"], ["p", 1], ["quote", "Tudo no Estado, nada fora do Estado, nada contra o Estado.", "Benito Mussolini, discurso de 1925"], ["h", "Nazismo e Holocausto"], ["p", 2], ["img", "Hannah Arendt", "Hannah Arendt (1906 a 1975), filósofa que analisou o totalitarismo."], ["h", "O conceito de totalitarismo"], ["p", 3], ["dates", [["1919", "Fundação dos Fasci di Combattimento"], ["1922", "Marcha sobre Roma"], ["1933", "Hitler chega ao poder"], ["1939", "Início da Segunda Guerra"], ["1945", "Fim da guerra"], ["1951", "Origens do Totalitarismo"]]], ["box", ["Nacionalismo extremo, líder, partido único e violência política.", "O nazismo somou racismo radical e genocídio.", "Totalitarismo: controle de todas as esferas da vida."]]],
       body: [
         'Depois da Primeira Guerra Mundial, crises econômicas, medo de revoluções e ressentimento nacional favoreceram movimentos autoritários. Na Itália, Benito Mussolini fundou o fascismo e chegou ao poder após a Marcha sobre Roma, em 1922.',
         'O fascismo combinava nacionalismo extremo, culto ao líder, partido único, rejeição da democracia liberal e do marxismo, e uso da violência política. O Estado deveria subordinar indivíduos, sindicatos e empresas aos interesses da nação (o corporativismo).',
@@ -12678,6 +12720,7 @@ const renderPolitica = (() => {
     },
     {
       id: 'guerrafria', emoji: '🧱', title: 'Guerra Fria e o mundo bipolar', era: '1947 a 1991',
+      blocks: [["h", "Duas superpotências"], ["p", 0], ["quote", "De Stettin, no Báltico, a Trieste, no Adriático, uma cortina de ferro desceu sobre o continente.", "Winston Churchill, discurso em Fulton (1946)"], ["h", "Doutrinas, alianças e um muro"], ["p", 1], ["img", "Muro de Berlim", "O Muro de Berlim dividiu a cidade de 1961 a 1989."], ["h", "Guerra por outros meios"], ["p", 2], ["img", "Crise dos mísseis de Cuba", "A Crise dos Mísseis, em outubro de 1962."], ["h", "O fim"], ["p", 3], ["dates", [["1947", "Doutrina Truman e Plano Marshall"], ["1949", "Criação da OTAN"], ["1955", "Pacto de Varsóvia"], ["1961", "Muro de Berlim"], ["1962", "Crise dos Mísseis"], ["1989", "Queda do Muro"], ["1991", "Fim da URSS"]]], ["box", ["Disputa global entre EUA e URSS, sem guerra direta.", "Alianças militares, corrida nuclear e guerras em outros países.", "Terminou com a queda do Muro e o fim da URSS."]]],
       body: [
         'Após 1945, Estados Unidos e União Soviética disputaram influência global sem guerra direta entre si. De um lado, democracias liberais e economias de mercado; do outro, regimes comunistas de economia planificada.',
         'Em 1947, a Doutrina Truman prometeu apoiar países contra a expansão comunista, e o Plano Marshall financiou a reconstrução da Europa Ocidental. A OTAN foi criada em 1949 e o Pacto de Varsóvia em 1955. O Muro de Berlim, erguido em 1961, virou símbolo da divisão.',
@@ -12695,6 +12738,7 @@ const renderPolitica = (() => {
     },
     {
       id: 'neoliberalismo', emoji: '📈', title: 'Neoliberalismo e libertarianismo', era: '1940 até hoje',
+      blocks: [["img", "Friedrich Hayek", "Friedrich Hayek (1899 a 1992), Nobel de Economia em 1974."], ["h", "O alerta de Hayek"], ["p", 0], ["h", "Friedman e a Escola de Chicago"], ["p", 1], ["img", "Margaret Thatcher", "Margaret Thatcher, primeira-ministra do Reino Unido de 1979 a 1990."], ["h", "Thatcher, Reagan e o Consenso de Washington"], ["p", 2], ["quote", "Na crise atual, o governo não é a solução para o nosso problema; o governo é o problema.", "Ronald Reagan, discurso de posse (1981)"], ["h", "O Estado mínimo e o debate"], ["p", 3], ["dates", [["1944", "O Caminho da Servidão"], ["1962", "Capitalismo e Liberdade"], ["1974", "Anarquia, Estado e Utopia"], ["1979", "Thatcher no poder"], ["1981", "Reagan no poder"], ["1989", "Consenso de Washington"]]], ["box", ["Planejamento central visto como ameaça à liberdade.", "Privatizações, menos regulação e controle da inflação.", "Libertarianismo: Estado mínimo."]]],
       body: [
         'Friedrich Hayek (O Caminho da Servidão, 1944) argumentou que o planejamento central da economia concentra poder e ameaça a liberdade. Para ele, os preços de mercado transmitem informações que nenhum planejador consegue reunir.',
         'Milton Friedman, da Escola de Chicago, defendeu o controle da oferta de moeda contra a inflação, menos regulação e um papel mais limitado do Estado (Capitalismo e Liberdade, 1962). As ideias ganharam força com a estagflação dos anos 1970.',
@@ -12712,6 +12756,7 @@ const renderPolitica = (() => {
     },
     {
       id: 'brasil', emoji: '🇧🇷', title: 'Brasil: da República à Nova República', era: '1889 até hoje',
+      blocks: [["img", "Proclamação da República do Brasil", "A Proclamação da República, em 15 de novembro de 1889."], ["h", "A República Velha"], ["p", 0], ["img", "Getúlio Vargas", "Getúlio Vargas governou o Brasil de 1930 a 1945 e de 1951 a 1954."], ["h", "A Era Vargas"], ["p", 1], ["h", "Democracia e regime militar"], ["p", 2], ["img", "Diretas Já", "O movimento Diretas Já, em 1984."], ["h", "A Nova República"], ["p", 3], ["quote", "Temos ódio à ditadura. Ódio e nojo.", "Ulysses Guimarães, na promulgação da Constituição (1988)"], ["dates", [["1889", "Proclamação da República"], ["1930", "Revolução de 1930"], ["1937 a 1945", "Estado Novo"], ["1964 a 1985", "Regime militar"], ["1988", "Constituição Cidadã"], ["1994", "Plano Real"]]], ["box", ["Oligarquias na República Velha, ditadura de Vargas, democracia de 1946.", "21 anos de regime militar, de 1964 a 1985.", "Constituição de 1988 e estabilidade da moeda com o Real."]]],
       body: [
         'A República foi proclamada em 15 de novembro de 1889. Na República Velha (1889 a 1930), o poder ficou concentrado nas oligarquias de São Paulo e Minas Gerais (a "política do café com leite"), com voto aberto e baixa participação.',
         'A Revolução de 1930 levou Getúlio Vargas ao poder. Em 1937 ele instaurou o Estado Novo, uma ditadura que durou até 1945. Vargas criou a CLT (1943), a Justiça do Trabalho e empresas estatais como a CSN; voltou eleito em 1951, criou a Petrobras em 1953 e se suicidou em 1954.',
@@ -12729,6 +12774,7 @@ const renderPolitica = (() => {
     },
     {
       id: 'instituicoes', emoji: '⚖️', title: 'Democracia e instituições hoje', era: 'Conceitos atuais',
+      blocks: [["img", "Congresso Nacional do Brasil", "O Congresso Nacional, em Brasília."], ["h", "Presidencialismo e parlamentarismo"], ["p", 0], ["h", "Como os votos viram cadeiras"], ["p", 1], ["quote", "Para que não se possa abusar do poder, é preciso que, pela disposição das coisas, o poder detenha o poder.", "Montesquieu, O Espírito das Leis (1748)"], ["h", "Freios, contrapesos e erosão democrática"], ["p", 2], ["h", "Dois eixos e o populismo"], ["p", 3], ["box", ["Formas de governo e sistemas eleitorais mudam o jogo político.", "Democracia vai além do voto: precisa de instituições independentes.", "Esquerda e direita não explicam tudo: há também o eixo liberdade e autoridade."]]],
       body: [
         'Democracias diferem na forma de governo. No presidencialismo (Brasil, EUA), o presidente é eleito separadamente e é chefe de Estado e de governo. No parlamentarismo (Reino Unido, Alemanha), o governo depende da maioria no Parlamento e o primeiro-ministro pode cair por voto de desconfiança.',
         'Os sistemas eleitorais também variam: no majoritário distrital, cada distrito elege quem tiver mais votos; no proporcional, as cadeiras são distribuídas conforme a votação de cada partido. O Brasil usa o sistema proporcional de lista aberta para deputados e o majoritário para cargos executivos e senadores.',
@@ -13056,6 +13102,65 @@ const renderPolitica = (() => {
       </div>`;
   }
 
+  // ---------- leitura (blocos + imagens públicas da Wikipédia) ----------
+  let readerSize = 18, readerTone = 'claro';
+  try { readerSize = Math.min(24, Math.max(15, Number(localStorage.getItem('orbita_pol_fs')) || 18)); readerTone = localStorage.getItem('orbita_pol_tone') || 'claro'; } catch {}
+  const IMG_KEY = 'orbita_pol_img_v1';
+  let imgCache = {};
+  try { imgCache = JSON.parse(localStorage.getItem(IMG_KEY) || '{}'); } catch {}
+  const wikiURL = title => 'https://pt.wikipedia.org/wiki/' + encodeURIComponent(title.replace(/ /g, '_'));
+  function blockHTML(t, b) {
+    const [type] = b;
+    if (type === 'p') return `<p>${escapeHTML(t.body[b[1]])}</p>`;
+    if (type === 'h') return `<h3 class="pol-sec">${escapeHTML(b[1])}</h3>`;
+    if (type === 'quote') return `<blockquote class="pol-quote"><p>“${escapeHTML(b[1])}”</p><cite>${escapeHTML(b[2])}</cite></blockquote>`;
+    if (type === 'dates') return `<div class="pol-dates"><div class="pol-kicker">Datas-chave</div>${b[1].map(([y, x]) => `<div><b>${escapeHTML(y)}</b><span>${escapeHTML(x)}</span></div>`).join('')}</div>`;
+    if (type === 'box') return `<div class="pol-box"><div class="pol-kicker">Em resumo</div><ul>${b[1].map(x => `<li>${escapeHTML(x)}</li>`).join('')}</ul></div>`;
+    if (type === 'img') {
+      const c = imgCache[b[1]];
+      if (c === null) return '';
+      return `<figure class="pol-fig" data-wiki="${escapeHTML(b[1])}" ${c ? '' : 'hidden'}>
+        <img ${c ? `src="${escapeHTML(c.src)}"` : ''} alt="${escapeHTML(b[2])}" loading="lazy" referrerpolicy="no-referrer" />
+        <figcaption>${escapeHTML(b[2])} <a href="${wikiURL(b[1])}" target="_blank" rel="noopener">Imagem: Wikipédia</a></figcaption>
+      </figure>`;
+    }
+    return '';
+  }
+  // Busca a imagem principal de cada artigo (pt.wikipedia aceita só imagens livres)
+  async function loadImages(t) {
+    const titles = (t.blocks || []).filter(b => b[0] === 'img' && imgCache[b[1]] === undefined).map(b => b[1]);
+    const show = () => page.querySelectorAll('.pol-fig[hidden]').forEach(f => {
+      const c = imgCache[f.dataset.wiki];
+      if (c) { f.querySelector('img').src = c.src; f.hidden = false; } else if (c === null) f.remove();
+    });
+    if (!titles.length) { show(); return; }
+    try {
+      const u = 'https://pt.wikipedia.org/w/api.php?action=query&format=json&origin=*&redirects=1&prop=pageimages&piprop=thumbnail&pithumbsize=960&titles=' + encodeURIComponent(titles.join('|'));
+      const r = await fetch(u);
+      const j = await r.json();
+      const alias = {};
+      ((j.query && j.query.normalized) || []).concat((j.query && j.query.redirects) || []).forEach(x => { alias[x.to] = alias[x.from] || x.from; });
+      Object.values((j.query && j.query.pages) || {}).forEach(pg => {
+        let orig = pg.title; while (alias[orig] && !titles.includes(orig)) orig = alias[orig];
+        const key = titles.includes(orig) ? orig : titles.find(x => x.toLowerCase() === pg.title.toLowerCase()) || orig;
+        imgCache[key] = pg.thumbnail ? { src: pg.thumbnail.source } : null;
+      });
+      titles.forEach(x => { if (imgCache[x] === undefined) imgCache[x] = null; });
+      try { localStorage.setItem(IMG_KEY, JSON.stringify(imgCache)); } catch {}
+    } catch (e) { /* sem internet: segue só com o texto */ }
+    show();
+  }
+  function trackProgress() {
+    const bar = document.getElementById('pol-progress');
+    const art = page.querySelector('.pol-reader');
+    if (!bar || !art) return;
+    const r = art.getBoundingClientRect();
+    const total = r.height - window.innerHeight * 0.6;
+    bar.style.width = Math.min(100, Math.max(0, (-r.top + 80) / Math.max(1, total) * 100)) + '%';
+  }
+  window.addEventListener('scroll', trackProgress, { passive: true });
+  document.addEventListener('scroll', trackProgress, { passive: true, capture: true });
+
   // ---------- telas ----------
   function overviewHTML() {
     const m = mastery();
@@ -13106,12 +13211,21 @@ const renderPolitica = (() => {
     if (view.open) {
       const t = TRILHAS.find(x => x.id === view.open);
       const q = p.quiz[t.id];
+      const words = t.body.join(' ').split(/\s+/).length;
       return `
-        <div class="pol-card pol-article">
-          <button class="pol-link" data-pol="close">‹ Todas as trilhas</button>
-          <div class="pol-kicker" style="margin-top:14px">${escapeHTML(t.era)}</div>
+        <div class="pol-reader-bar"><span id="pol-progress"></span></div>
+        <div class="pol-card pol-article pol-reader pol-tone-${readerTone}" style="--pol-fs:${readerSize}px">
+          <div class="pol-reader-top">
+            <button class="pol-link" data-pol="close">‹ Todas as trilhas</button>
+            <div class="pol-reader-ctl">
+              <button data-pol="fs" data-d="-1" aria-label="Diminuir texto">A−</button>
+              <button data-pol="fs" data-d="1" aria-label="Aumentar texto">A+</button>
+              <button data-pol="tone" aria-label="Trocar fundo">${readerTone === 'sepia' ? 'Claro' : 'Sépia'}</button>
+            </div>
+          </div>
+          <div class="pol-kicker" style="margin-top:18px">${escapeHTML(t.era)} · ${Math.max(1, Math.round(words / 200))} min de leitura</div>
           <h2>${t.emoji} ${escapeHTML(t.title)}</h2>
-          ${t.body.map(par => `<p>${escapeHTML(par)}</p>`).join('')}
+          ${(t.blocks || t.body.map((x, i) => ['p', i])).map(b => blockHTML(t, b)).join('')}
           <h3>Conceitos-chave</h3>
           <dl class="pol-concepts">${t.concepts.map(([k, v]) => `<div><dt>${escapeHTML(k)}</dt><dd>${escapeHTML(v)}</dd></div>`).join('')}</dl>
           <div class="pol-actions">
@@ -13194,6 +13308,7 @@ const renderPolitica = (() => {
       </div>
       <div class="tr-tabs pol-tabs">${tabs.map(([k, l]) => `<button class="tr-tab ${view.tab === k && !view.session ? 'active' : ''}" data-pol="tab" data-tab="${k}">${l}</button>`).join('')}</div>
       <div class="pol-body">${body}</div>`;
+    if (view.tab === 'trilhas' && view.open && !view.session) { loadImages(TRILHAS.find(x => x.id === view.open)); trackProgress(); }
   }
 
   page.addEventListener('click', e => {
@@ -13212,6 +13327,14 @@ const renderPolitica = (() => {
         if (!p.read[view.open]) { p.read[view.open] = true; saveState(); }
         render(); top(); break;
       case 'close': view.open = null; render(); top(); break;
+      case 'fs':
+        readerSize = Math.min(24, Math.max(15, readerSize + Number(el.dataset.d)));
+        try { localStorage.setItem('orbita_pol_fs', readerSize); } catch {}
+        page.querySelector('.pol-reader').style.setProperty('--pol-fs', readerSize + 'px'); break;
+      case 'tone':
+        readerTone = readerTone === 'sepia' ? 'claro' : 'sepia';
+        try { localStorage.setItem('orbita_pol_tone', readerTone); } catch {}
+        render(); break;
       case 'quiz': startQuiz(el.dataset.id); render(); top(); break;
       case 'timeline': startTimeline(); render(); top(); break;
       case 'corrente': startCorrente(); render(); top(); break;
