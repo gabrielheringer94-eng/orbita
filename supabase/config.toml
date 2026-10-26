@@ -11,3 +11,6 @@ verify_jwt = true
 
 [functions.trip-assistant]
 verify_jwt = true
+
+[functions.pocket-english]
+verify_jwt = true

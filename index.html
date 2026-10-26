@@ -2006,6 +2006,10 @@
     cursor: pointer;
   }
 
+  /* ============== INGLÊS ============== */
+  .ingles-frame { display: block; width: 100%; border: 0; min-height: 520px; background: transparent; color-scheme: normal; }
+  #page-ingles .page-header { margin-bottom: 20px; }
+
   /* ============== POLÍTICA ============== */
   .pol-tabs { margin-bottom: 18px; }
   .pol-body { max-width: 900px; }
@@ -4770,13 +4774,19 @@
         <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-8H4v8"/><path d="M4 16s1.5-2 4-2 4 2 4 2 1.5-2 4-2 4 2 4 2"/><rect x="2" y="13" width="20" height="2"/><path d="M12 6v3"/><path d="M9 3l3-2 3 2"/><path d="M8 6v3"/><path d="M16 6v3"/></svg>
         Aniversários
       </div>
+      <div class="nav-item" data-page="notes">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
+        Notas
+      </div>
+
+      <div class="nav-section">Estudos</div>
       <div class="nav-item" data-page="politica">
         <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18"/><path d="M5 21V10"/><path d="M19 21V10"/><path d="M9.5 21V10"/><path d="M14.5 21V10"/><path d="M2 10l10-7 10 7z"/></svg>
         Política
       </div>
-      <div class="nav-item" data-page="notes">
-        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
-        Notas
+      <div class="nav-item" data-page="ingles">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h7"/><path d="M7.5 3v2"/><path d="M9.5 5c-.6 3.8-2.8 6.7-5.5 8"/><path d="M5.5 9c1 1.8 2.6 3.2 4.5 4"/><path d="M12 21l4.5-10 4.5 10"/><path d="M13.6 17.5h5.8"/></svg>
+        Inglês
       </div>
     </nav>
 
@@ -5135,6 +5145,17 @@
           <div class="tp-days-col" id="tp-days"></div>
         </div>
       </div>
+    </section>
+
+    <!-- INGLÊS (Pocket Phrasebook) -->
+    <section class="page" id="page-ingles">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Pocket <em>Phrasebook</em></h1>
+          <div class="page-meta">Inglês · PT ⇄ EN · inglês britânico</div>
+        </div>
+      </div>
+      <iframe id="ingles-frame" class="ingles-frame" title="Pocket Phrasebook"></iframe>
     </section>
 
     <!-- POLÍTICA -->
@@ -6548,6 +6569,7 @@ navItems.forEach(item => {
     if (target === 'birthdays') renderBirthdays();
     if (target === 'notes') renderNotes();
     if (target === 'politica') renderPolitica();
+    if (target === 'ingles') renderIngles();
   });
 });
 
@@ -12623,6 +12645,87 @@ const renderSaude = (() => {
 })();
 
 // ============== VIAGEM ==============
+// ============== INGLÊS (Pocket Phrasebook) ==============
+// O app roda num iframe (ingles.html). Esta ponte substitui o runtime do Claude:
+// db = coleções guardadas em state.pocket (sincroniza na nuvem com o resto do Órbita);
+// sample = Edge Function pocket-english (Anthropic, só com login).
+window.orbitaPocket = (() => {
+  const listeners = new Set();
+  const clone = v => v === undefined ? undefined : JSON.parse(JSON.stringify(v));
+  const isObj = v => v && typeof v === 'object' && !Array.isArray(v);
+  const store = () => { if (!state.pocket) state.pocket = {}; return state.pocket; };
+  const col = name => { const st = store(); if (!st[name]) st[name] = {}; return st[name]; };
+  function merge(t, src) {
+    Object.keys(src).forEach(k => { if (isObj(src[k]) && isObj(t[k])) merge(t[k], src[k]); else t[k] = clone(src[k]); });
+    return t;
+  }
+  let emitTimer = null; const dirty = new Set();
+  function changed(name) {
+    saveState();
+    dirty.add(name);
+    clearTimeout(emitTimer);
+    emitTimer = setTimeout(() => { const names = new Set(dirty); dirty.clear(); listeners.forEach(l => { if (names.has(l.col)) l.fire(); }); }, 0);
+  }
+  function listen(name, fire) { const l = { col: name, fire }; listeners.add(l); setTimeout(fire, 0); return () => listeners.delete(l); }
+  function query(name, field, dir, lim) {
+    const docs = () => {
+      let arr = Object.entries(col(name)).map(([id, d]) => ({ id, exists: true, data: () => clone(d) }));
+      if (field) arr.sort((a, b) => { const x = col(name)[a.id][field], y = col(name)[b.id][field]; const c = x === y ? 0 : (x === undefined ? -1 : y === undefined ? 1 : x < y ? -1 : 1); return dir === 'desc' ? -c : c; });
+      return lim ? arr.slice(0, lim) : arr;
+    };
+    return {
+      orderBy: (f, d) => query(name, f, d || 'asc', lim),
+      limit: n => query(name, field, dir, n),
+      get: async () => { const d = docs(); return { docs: d, size: d.length, empty: !d.length }; },
+      onSnapshot: (cb, err) => listen(name, () => { try { const d = docs(); cb({ docs: d, size: d.length, empty: !d.length }); } catch (e) { if (err) err(e); } }),
+    };
+  }
+  function collection(name) {
+    const q = query(name, null, 'asc', null);
+    q.doc = id => {
+      id = id || uid();
+      const snap = () => { const d = col(name)[id]; return { id, exists: !!d, data: () => clone(d) }; };
+      return {
+        id,
+        get: async () => snap(),
+        set: async v => { col(name)[id] = clone(v); changed(name); },
+        update: async v => { const c = col(name); c[id] = merge(c[id] || {}, v); changed(name); },
+        delete: async () => { delete col(name)[id]; changed(name); },
+        onSnapshot: (cb, err) => listen(name, () => { try { cb(snap()); } catch (e) { if (err) err(e); } }),
+      };
+    };
+    q.add = async v => { const ref = q.doc(); await ref.set(v); return ref; };
+    return q;
+  }
+  const db = { collection };
+  const sample = {
+    async json(prompt, opts = {}) {
+      if (opts.signal && opts.signal.aborted) throw new DOMException('Aborted', 'AbortError');
+      const call = sb.functions.invoke('pocket-english', { body: { prompt: String(prompt), quick: opts.modelTier === 'quick' } });
+      const res = opts.signal ? await Promise.race([call, new Promise((_, rej) => opts.signal.addEventListener('abort', () => rej(new DOMException('Aborted', 'AbortError')), { once: true }))]) : await call;
+      if (res.error) {
+        let msg = res.error.message || 'Falha na IA';
+        try { const body = await res.error.context.json(); if (body && body.error) msg = body.error; } catch {}
+        throw Object.assign(new Error(msg), { code: 'unavailable' });
+      }
+      if (res.data && res.data.error) throw Object.assign(new Error(res.data.error), { code: 'unavailable' });
+      return res.data ? res.data.value : null;
+    },
+  };
+  return { use: async name => name === 'db' ? db : name === 'sample' ? sample : null };
+})();
+
+function renderIngles() {
+  const fr = document.getElementById('ingles-frame');
+  if (!fr.dataset.loaded) { fr.dataset.loaded = '1'; fr.src = 'ingles.html'; }
+  const size = () => {
+    const top = fr.getBoundingClientRect().top + window.scrollY;
+    fr.style.height = Math.max(520, window.innerHeight - Math.min(top, 220) - 8) + 'px';
+  };
+  size();
+  if (!window.__inglesResize) { window.__inglesResize = true; window.addEventListener('resize', () => { if (document.getElementById('page-ingles').classList.contains('active')) size(); }); }
+}
+
 // ============== POLÍTICA ==============
 // Trilhas de história política, dinâmicas, domínio e nivelador ideológico (2 eixos).
 const renderPolitica = (() => {

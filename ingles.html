@@ -1,0 +1,2073 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<script>
+/* Órbita: liga o app ao armazenamento e à IA do Órbita (substitui o runtime do Claude) e segue o tema */
+(function(){
+  try {
+    var P = window.parent;
+    if (P && P !== window && P.orbitaPocket) window.claude = { use: function(n){ return P.orbitaPocket.use(n); } };
+    var sync = function(){ document.documentElement.setAttribute('data-theme', P.document.documentElement.classList.contains('theme-dark') ? 'dark' : 'light'); };
+    sync();
+    new P.MutationObserver(sync).observe(P.document.documentElement, { attributes: true, attributeFilter: ['class'] });
+  } catch (e) {}
+})();
+</script>
+<title>Pocket Phrasebook</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,800&display=swap">
+<style>
+/* Layout: one-column pocket app, input on top, result card, then tabs. Palette: black, white, blue, yellow. One sans family. */
+:root{
+  --bg:#FFFFFF; --surface:#FFFFFF; --ink:#000000; --muted:#5C5C5C; --line:#E2E2E2;
+  --sea:#3f3f46; --sea-soft:#F2F2F2; --sun:#d4d4d8; --sun-ink:#000000; --danger:#000000;
+  --display:"DM Sans", system-ui, -apple-system, sans-serif;
+  --body:"DM Sans", system-ui, -apple-system, sans-serif;
+  --mono:"DM Sans", system-ui, -apple-system, sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#000000; --surface:#0F0F0F; --ink:#FFFFFF; --muted:#A3A3A3; --line:#2A2A2A;
+  --sea:#5EA8F2; --sea-soft:#1A1A1A; --sun:#F2C230; --sun-ink:#000000; --danger:#FFFFFF; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#000000; --surface:#0F0F0F; --ink:#FFFFFF; --muted:#A3A3A3; --line:#2A2A2A;
+  --sea:#5EA8F2; --sea-soft:#1A1A1A; --sun:#F2C230; --sun-ink:#000000; --danger:#FFFFFF; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:12px 40px}
+.wrap{max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,textarea:focus-visible,input:focus-visible{outline:2px solid var(--sea);outline-offset:2px}
+
+header{display:flex;flex-direction:column;gap:8px;padding-top:4px}
+.brand{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+h1{font-family:var(--display);font-weight:800;font-size:1.75rem;letter-spacing:-.02em;margin:0;line-height:1.1}
+.dir{font-family:var(--mono);font-size:.75rem;color:var(--muted);letter-spacing:.06em}
+.luzzu{display:grid;grid-template-columns:3fr 1fr;height:5px;border-radius:3px;overflow:hidden}
+.luzzu i:nth-child(1){background:var(--sea)} .luzzu i:nth-child(2){background:var(--sun)}
+.luzzu i:nth-child(n+3){display:none}
+
+.ask{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:10px}
+textarea{width:100%;min-height:72px;resize:vertical;border:0;background:transparent;color:var(--ink);font:500 1.15rem/1.4 var(--body);padding:4px}
+textarea::placeholder{color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:transparent;border-radius:999px;padding:4px 11px;font-size:.82rem;color:var(--muted)}
+.chip[aria-pressed="true"]{background:var(--sea);border-color:var(--sea);color:var(--surface)}
+.row{display:flex;gap:8px;align-items:center}
+.go{margin-left:auto;background:var(--sun);color:var(--sun-ink);border:0;border-radius:10px;padding:10px 18px;font-weight:600;font-size:1rem}
+.go:disabled{opacity:.55;cursor:default}
+.ghost{background:transparent;border:1px solid var(--line);border-radius:10px;padding:8px 12px;font-size:.88rem}
+.status{font-size:.85rem;color:var(--muted);min-height:1.2em}
+.status.err{color:var(--danger)}
+
+.result{border-left:4px solid var(--sun);padding:4px 0 4px 14px;display:flex;flex-direction:column;gap:10px}
+.lang{font-family:var(--mono);font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.big{font-family:var(--display);font-weight:600;font-size:1.6rem;line-height:1.2;text-wrap:balance;margin:0}
+.pron{font-family:var(--mono);font-size:.9rem;color:var(--sea);background:var(--sea-soft);border-radius:8px;padding:6px 10px;display:inline-block}
+.alts{display:flex;flex-wrap:wrap;gap:6px}
+.alt{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:3px 9px;font-size:.88rem}
+.note{font-size:.93rem;color:var(--ink)}
+.ex{font-size:.93rem;color:var(--muted);border-top:1px dashed var(--line);padding-top:8px}
+.ex b{color:var(--ink);font-weight:500}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+.star[aria-pressed="true"]{background:var(--sun);border-color:var(--sun);color:var(--sun-ink)}
+
+nav.tabs{display:grid;grid-template-columns:repeat(5,1fr);background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:4px;gap:4px}
+nav.tabs button{border:0;background:transparent;border-radius:9px;padding:8px 1px;font-weight:600;font-size:.78rem;color:var(--muted)}
+
+.tre-head{display:flex;justify-content:space-between;align-items:flex-end;gap:12px}
+.streak{font-size:.85rem;color:var(--muted);text-align:right}
+.streak b{display:block;font-size:1.6rem;line-height:1;color:var(--ink);font-variant-numeric:tabular-nums}
+.prog{height:6px;background:var(--line);border-radius:3px;overflow:hidden}
+.prog i{display:block;height:100%;background:var(--sun);transition:width .3s}
+.ex-list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:12px}
+.exr{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.exr.done{border-color:var(--ink)}
+.q2{font-weight:600;font-size:1.1rem;text-wrap:balance}
+.built{min-height:46px;border-bottom:2px solid var(--ink);display:flex;flex-wrap:wrap;gap:6px;padding:6px 0;align-items:center}
+.built .hint{color:var(--muted);font-size:.85rem}
+.bank{display:flex;flex-wrap:wrap;gap:6px}
+.word{border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:7px 11px;font-size:.98rem}
+.built .word{background:var(--sea);border-color:var(--sea);color:var(--bg)}
+.exr textarea{border:1px solid var(--line);border-radius:10px;font-size:1rem;min-height:64px;padding:8px 10px}
+.fb{display:inline-block;font-weight:700;font-size:.85rem;border-radius:999px;padding:2px 10px}
+.fb.ok{background:var(--sea);color:var(--bg)}
+.fb.no{background:var(--sun);color:var(--sun-ink)}
+.mine{font-size:.9rem;color:var(--muted)}
+.mine s{text-decoration-color:var(--muted)}
+.lvl-top{display:flex;align-items:center;gap:16px}
+.lvl-badge{font-weight:800;font-size:2.4rem;line-height:1;background:var(--ink);color:var(--bg);border-radius:14px;padding:12px 16px;min-width:88px;text-align:center}
+.lvl-meta{display:flex;flex-direction:column;gap:2px;min-width:0}
+.lvl-score{font-size:1.4rem;font-weight:800;font-variant-numeric:tabular-nums}
+.delta{font-size:.85rem;font-weight:600}
+.areas{display:flex;flex-direction:column;gap:8px}
+.arow{display:grid;grid-template-columns:8.5rem 1fr 2.8rem;gap:10px;align-items:center;font-size:.88rem}
+.arow .track{height:8px;background:var(--line);border-radius:4px;overflow:hidden}
+.arow .track i{display:block;height:100%;background:var(--sea)}
+.arow .track i.low{background:var(--sun)}
+.arow b{text-align:right;font-variant-numeric:tabular-nums}
+.chart svg{width:100%;height:auto;display:block}
+.hist{list-style:none;margin:0;padding:0}
+.hist button{width:100%;display:grid;grid-template-columns:1fr auto auto;gap:12px;background:none;border:0;border-bottom:1px solid var(--line);padding:10px 2px;text-align:left;font-variant-numeric:tabular-nums}
+.opts{display:flex;flex-direction:column;gap:6px}
+.opt{text-align:left;border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:9px 12px;font-size:.98rem}
+.opt[aria-pressed="true"]{background:var(--sea);border-color:var(--sea);color:var(--bg)}
+.section-title{font-weight:800;font-size:1.05rem;margin-top:6px}
+.lvh{display:flex;gap:12px;align-items:flex-start;margin-top:6px}
+.lvtag{font-weight:800;font-size:1.05rem;background:var(--ink);color:var(--bg);border-radius:9px;padding:6px 9px;line-height:1;flex:none}
+.lvh .ttl{font-weight:700}
+.lvh .gse{font-size:.8rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.ladder{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.ladder li{display:grid;grid-template-columns:3rem 1fr;gap:12px;align-items:start;border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.ladder li.here{border-color:var(--sea);border-width:2px}
+.ladder li.past{opacity:.6}
+.ladder .lv{font-weight:800;font-size:1.15rem}
+.ladder .here .lv{color:var(--sea)}
+.ladder .you{display:inline-block;margin-top:4px;font-size:.78rem;font-weight:700;background:var(--sun);color:var(--sun-ink);border-radius:999px;padding:1px 8px}
+.focus{border-left:4px solid var(--sun);padding:2px 0 2px 12px;display:flex;flex-direction:column;gap:4px}
+nav.tabs button[aria-selected="true"]{background:var(--sea-soft);color:var(--sea)}
+.count{font-family:var(--mono);font-weight:400;font-size:.75rem;margin-left:4px}
+
+.search{width:100%;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:10px;padding:9px 12px;font:inherit}
+ul.list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.item{border-bottom:1px solid var(--line);padding:12px 2px;display:flex;flex-direction:column;gap:6px}
+.item-top{display:flex;gap:10px;align-items:flex-start}
+.item-main{flex:1;min-width:0;background:none;border:0;text-align:left;padding:0}
+.src{font-size:.85rem;color:var(--muted);overflow-wrap:anywhere}
+.out{font-weight:600;overflow-wrap:anywhere}
+.meta{font-family:var(--mono);font-size:.7rem;color:var(--muted);letter-spacing:.04em}
+.iconbtn{background:none;border:0;padding:4px 6px;font-size:1.05rem;line-height:1;color:var(--muted)}
+.iconbtn.on{color:var(--sun)}
+.detail{display:flex;flex-direction:column;gap:8px;padding:4px 0 2px}
+.del{color:var(--danger);border-color:var(--danger)}
+.empty{color:var(--muted);text-align:center;padding:28px 12px;border:1px dashed var(--line);border-radius:14px;font-size:.95rem}
+.empty strong{display:block;color:var(--ink);font-family:var(--display);font-size:1.1rem;margin-bottom:4px}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:28px 20px;text-align:center;display:flex;flex-direction:column;gap:14px;min-height:220px;justify-content:center}
+.card .q{font-family:var(--display);font-weight:600;font-size:1.45rem;text-wrap:balance}
+.card .a{font-size:1.15rem;color:var(--sea);font-weight:600}
+.reveal{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+/* ===== Reading track ===== */
+nav.tabs{grid-template-columns:repeat(7,1fr);gap:2px;padding:3px}
+nav.tabs button{font-size:.7rem;padding:8px 0}
+.rd{display:flex;flex-direction:column;gap:14px}
+.rd-next{display:grid;grid-template-columns:88px 1fr;gap:14px;align-items:center;border:2px solid var(--ink);border-radius:16px;padding:14px}
+.rd-next .go{margin:6px 0 0}
+.rd-next h2{margin:0;font-size:1.25rem;line-height:1.2;text-wrap:balance}
+.ba{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center;text-align:center}
+.ba .side{border:1px solid var(--line);border-radius:14px;padding:10px 6px;display:flex;flex-direction:column;gap:2px}
+.ba .big2{font-weight:800;font-size:2rem;line-height:1}
+.ba .side.now .big2{color:var(--sea)}
+.ba .arrow{font-weight:800;font-size:1.4rem;color:var(--muted)}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.stat{border:1px solid var(--line);border-radius:12px;padding:8px 6px;text-align:center}
+.stat b{display:block;font-size:1.25rem;font-variant-numeric:tabular-nums;line-height:1.2}
+.stat span{font-size:.7rem;color:var(--muted);line-height:1.2;display:block}
+.wk{display:flex;flex-direction:column;gap:6px}
+.wk-row{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 8px;scroll-snap-type:x proximity}
+.cv{flex:none;width:92px;aspect-ratio:2/3;border-radius:6px;position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:space-between;padding:7px;text-align:left;border:1px solid var(--line);scroll-snap-align:start;font-family:var(--body)}
+.rd-next .cv{width:88px}
+.cv .ttl2{font-weight:800;font-size:.68rem;line-height:1.12;text-transform:uppercase;letter-spacing:.02em;position:relative;z-index:1;overflow-wrap:anywhere}
+.cv .au{font-size:.55rem;position:relative;z-index:1;opacity:.85}
+.cv .mo{position:absolute;z-index:0}
+.cv.s0{background:#000;color:#fff;border-color:#000}.cv.s0 .mo{width:56%;aspect-ratio:1;border-radius:50%;background:#d4d4d8;left:22%;top:38%}
+.cv.s1{background:#d4d4d8;color:#000;border-color:#d4d4d8}.cv.s1 .mo{width:120%;height:30%;left:-10%;top:44%;background:repeating-linear-gradient(0deg,#000 0 3px,transparent 3px 8px)}
+.cv.s2{background:#fff;color:#000;border-color:#000}.cv.s2 .mo{width:70%;height:35%;left:15%;top:38%;background:#3f3f46;border-radius:999px 999px 0 0}
+.cv.s3{background:#3f3f46;color:#fff;border-color:#3f3f46}.cv.s3 .mo{width:44%;aspect-ratio:1;left:28%;top:40%;background:#fff;transform:rotate(45deg)}
+.cv-wrap{flex:none;display:flex;flex-direction:column;gap:4px;align-items:flex-start;background:none;border:0;padding:0;text-align:left}
+.cv-wrap .dl{font-size:.72rem;font-weight:700;font-variant-numeric:tabular-nums}
+.cv-wrap.lock .cv{opacity:.4}
+.cv-wrap.next .cv{outline:3px solid var(--sea);outline-offset:2px}
+.cv-wrap .ok2{font-size:.66rem;font-weight:700;background:var(--sea);color:var(--bg);border-radius:999px;padding:0 6px}
+.rhead{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.timer{font-variant-numeric:tabular-nums;font-weight:700;background:var(--sea-soft);border-radius:999px;padding:3px 10px;font-size:.9rem}
+.story p{font-size:1.08rem;line-height:1.7;margin:0 0 4px}
+.story .w{cursor:pointer;border-radius:3px}
+.story .w:hover{background:var(--sea-soft)}
+.story .gl{cursor:pointer;border-bottom:2px solid var(--sun);font-weight:600}
+.story .w.sel,.story .gl.sel{background:var(--sun);color:var(--sun-ink)}
+.ptools{display:flex;justify-content:flex-end;margin-bottom:10px}
+.ptools button{font-size:.78rem;padding:3px 10px}
+.pop{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--surface);border-top:2px solid var(--ink);padding:14px max(16px,env(safe-area-inset-right,0px)) calc(14px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:6px;box-shadow:0 -6px 20px rgba(0,0,0,.12)}
+.pop .pw{font-weight:800;font-size:1.25rem}
+.pop .pt2{font-size:1.05rem}
+.pop-in{max-width:560px;margin:0 auto;width:100%;display:flex;flex-direction:column;gap:8px}
+.qopt{text-align:left;border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:9px 12px;font-size:.98rem}
+.qopt.right{background:var(--sea);border-color:var(--sea);color:var(--bg)}
+.qopt.wrong{background:var(--sun);border-color:var(--sun);color:var(--sun-ink)}
+.qopt:disabled{cursor:default}
+.honest{font-size:.82rem;color:var(--muted)}
+.tbt{border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.tbt-head{width:100%;display:flex;justify-content:space-between;align-items:center;background:var(--sea-soft);border:0;padding:10px 12px;text-align:left}
+.tbt-head span{font-size:.82rem;font-weight:600;color:var(--sea)}
+.tbt-scroll{overflow-x:auto}
+.tbtab{width:100%;border-collapse:collapse;font-size:.92rem}
+.tbtab th,.tbtab td{padding:7px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+.tbtab thead th{font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.tbtab tbody th{font-weight:600;white-space:nowrap}
+.tbtab tbody td{font-weight:800;color:var(--sea)}
+.tbtab tr.x td{font-weight:600;color:var(--ink);font-size:.8rem}
+.tbtab tr.x th{font-size:.8rem;color:var(--muted)}
+.tbt-notes{padding:10px 12px;display:flex;flex-direction:column;gap:6px;font-size:.88rem}
+.tgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.tbtn{display:flex;flex-direction:column;gap:2px;text-align:left;border:0;border-radius:14px;padding:12px 10px;background:var(--sea);color:#fff}
+.tbtn b{font-size:1.05rem}.tbtn span{font-size:.78rem;line-height:1.25}.tbtn .meta{color:#fff;opacity:.8}
+.tbtn:disabled{opacity:.45;cursor:default}
+.ggrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.gcard{display:flex;flex-direction:column;gap:4px;text-align:left;border:2px solid var(--ink);border-radius:14px;padding:12px;background:var(--surface)}
+.gcard b{font-size:1.05rem}.gcard span{font-size:.85rem;line-height:1.3}
+.mgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.mcard{aspect-ratio:3/4;border-radius:12px;border:2px solid var(--ink);background:var(--ink);color:var(--bg);padding:6px;font-size:.8rem;font-weight:600;line-height:1.25;display:flex;align-items:center;justify-content:center;text-align:center;overflow-wrap:anywhere}
+.mcard .mq{font-size:1.6rem;font-weight:800;color:var(--sun)}
+.mcard.up.en{background:var(--sea);border-color:var(--sea);color:#fff;font-size:.95rem}
+.mcard.up.pt{background:var(--surface);color:var(--ink);border-color:var(--sea)}
+.mcard.matched{border-color:var(--sun);border-width:3px;opacity:.85}
+.mcard:disabled{cursor:default}
+@media (prefers-reduced-motion:no-preference){.mcard.up{animation:flip .25s ease-out}}
+@keyframes flip{from{transform:rotateY(90deg)}to{transform:none}}
+.rwcard{border:2px solid var(--ink);border-radius:16px;padding:28px 16px;text-align:center;font-weight:700;font-size:1.35rem;line-height:1.3;min-height:130px;display:flex;align-items:center;justify-content:center;text-wrap:balance}
+.rwcard.hit{border-color:var(--sea)}
+.rwbtns{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.rwb{border:0;border-radius:14px;padding:18px 8px;font-weight:800;font-size:1.15rem}
+.rwb.no{background:var(--sun);color:var(--sun-ink)}.rwb.yes{background:var(--sea);color:#fff}
+.memo{background:var(--sun);color:var(--sun-ink);border-radius:12px;padding:10px 12px;font-weight:600;font-size:.98rem;line-height:1.45;display:flex;flex-direction:column;gap:2px}
+.memo .lang{color:var(--sun-ink);opacity:.75}
+.unit{display:flex;flex-direction:column;gap:10px;border:2px solid var(--ink);border-radius:16px;padding:12px}
+.unit-top{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;background:none;border:0;padding:0;text-align:left}
+.unit-n{font-weight:800;font-size:1.6rem;line-height:1;background:var(--sea);color:var(--bg);border-radius:12px;padding:10px 14px}
+.unit-meta{display:flex;flex-direction:column;min-width:0}
+.unit-t{font-weight:800;font-size:1.25rem;line-height:1.2}
+.unit-chev{font-size:.82rem;font-weight:600;color:var(--sea)}
+.unit-q{margin:0;border-left:4px solid var(--sun);padding:2px 0 2px 12px;font-size:1.05rem;font-weight:600}
+.unit-q cite{display:block;font-style:normal;font-weight:400;font-size:.8rem;color:var(--muted)}
+.unit-secs{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.unit-secs button{width:100%;display:flex;justify-content:space-between;align-items:center;gap:10px;background:none;border:0;border-bottom:1px solid var(--line);padding:10px 2px;text-align:left}
+.unit-secs button>span:first-child{display:flex;flex-direction:column}
+.unit-c{font-variant-numeric:tabular-nums;font-weight:700;font-size:.85rem;border-radius:999px;padding:1px 9px;background:var(--sea-soft)}
+.unit-c.full{background:var(--sea);color:var(--bg)}
+@media (prefers-reduced-motion:no-preference){.result,.card{animation:in .25s ease-out}}
+@keyframes in{from{transform:translateY(4px);opacity:.6}to{transform:none;opacity:1}}
+
+/* ===== Brandbook Órbita: preto e branco, DM Sans, tema claro/escuro do app ===== */
+:root, :root[data-theme="light"]{
+  --bg:#FFFFFF; --surface:#FFFFFF; --ink:#000000; --muted:#888888; --line:#E5E5E5;
+  --sea:#000000; --sea-soft:#F5F5F5; --sun:#000000; --sun-ink:#FFFFFF; --danger:#000000; color-scheme:light }
+:root[data-theme="dark"]{
+  --bg:#18181B; --surface:#1F1F23; --ink:#FAFAFA; --muted:#A1A1AA; --line:#3F3F46;
+  --sea:#FAFAFA; --sea-soft:#27272A; --sun:#FAFAFA; --sun-ink:#18181B; --danger:#FAFAFA; color-scheme:dark }
+body{padding:4px 0 32px!important}
+.wrap{max-width:680px;margin:0}
+.wrap > header{display:none}
+.ask,.result,nav.tabs{box-shadow:0 1px 2px rgba(0,0,0,.04)}
+.go{border-radius:999px;padding:10px 22px}
+.ghost{border-radius:999px}
+.big{font-weight:500;letter-spacing:-.01em}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="brand"><h1>Pocket Phrasebook</h1><span class="dir">PT ⇄ EN</span></div>
+    <div class="luzzu" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+  </header>
+
+  <section class="ask" aria-label="Translate">
+    <div class="chips" id="mode" role="group" aria-label="Mode">
+      <button class="chip" type="button" data-m="tr" aria-pressed="true">Translate</button>
+      <button class="chip" type="button" data-m="fix" aria-pressed="false">Fix my English</button>
+    </div>
+    <textarea id="txt" placeholder="Type in Portuguese or English: a word, a sentence, something you heard..." aria-label="Text to translate"></textarea>
+    <div class="chips" id="ctx" role="group" aria-label="Situation"></div>
+    <div class="row">
+      <button class="ghost" id="clear" type="button">Clear</button>
+      <button class="go" id="go" type="button">Translate</button>
+    </div>
+    <div class="status" id="status" aria-live="polite"></div>
+  </section>
+
+  <section id="resultBox" hidden></section>
+
+  <nav class="tabs" role="tablist">
+    <button role="tab" id="t-tre" aria-selected="true" data-tab="tre">Practice</button>
+    <button role="tab" id="t-tobe" aria-selected="false" data-tab="tobe">To be</button>
+    <button role="tab" id="t-read" aria-selected="false" data-tab="read">Read</button>
+    <button role="tab" id="t-rec" aria-selected="false" data-tab="rec">Recent</button>
+    <button role="tab" id="t-all" aria-selected="false" data-tab="all">Phrases<span class="count" id="cnt"></span></button>
+    <button role="tab" id="t-rev" aria-selected="false" data-tab="rev">Review</button>
+    <button role="tab" id="t-lvl" aria-selected="false" data-tab="lvl">Level</button>
+  </nav>
+
+  <section id="panel"></section>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const CTX = ["General","Restaurant","Class","Transport","Shopping","Work","Social"];
+const CTXMAP = {Geral:"General",Restaurante:"Restaurant",Aula:"Class",Transporte:"Transport",Compras:"Shopping",Trabalho:"Work",Treino:"Practice"};
+const ctxL = c => CTXMAP[c] || c || "General";
+let mode = "tr";
+const PH = {tr:"Type in Portuguese or English: a word, a sentence, something you heard...", fix:"Write what you want to say in English, your way. You get the natural version and a short explanation."};
+$("#mode").addEventListener("click", e => { const b = e.target.closest(".chip"); if(!b) return;
+  mode = b.dataset.m; document.querySelectorAll("#mode .chip").forEach(x => x.setAttribute("aria-pressed", x.dataset.m===mode));
+  $("#txt").placeholder = PH[mode]; $("#go").textContent = mode==="fix" ? "Fix it" : "Translate"; $("#txt").focus(); });
+let ctx = "General", sample = null, col = null, items = [], tab = "tre", busy = false, ctl = null;
+let tcol = null, days = [], genBusy = false, treErr = "";
+const drafts = {}, picks = {}, checking = new Set(), retry = new Set(), tipOpen = new Set(), exErr = {};
+let open = null, confirmDel = null, query = "", onlyFav = false, card = null, shown = false;
+let dbState = "loading"; // loading | ok | off
+
+/* contexto */
+$("#ctx").innerHTML = CTX.map(c => `<button class="chip" type="button" aria-pressed="${c===ctx}" data-c="${c}">${c}</button>`).join("");
+$("#ctx").addEventListener("click", e => { const b = e.target.closest(".chip"); if(!b) return;
+  ctx = b.dataset.c; document.querySelectorAll("#ctx .chip").forEach(x => x.setAttribute("aria-pressed", x.dataset.c===ctx)); });
+
+function status(msg, err){ const s=$("#status"); s.textContent = msg||""; s.className = "status"+(err?" err":""); }
+
+/* voz */
+const canSpeak = "speechSynthesis" in window;
+function speak(t){ try{ speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(t); u.lang="en-GB"; u.rate=.9; speechSynthesis.speak(u);}catch(e){} }
+async function copy(t, btn){ try{ await navigator.clipboard.writeText(t); btn.textContent="Copied"; setTimeout(()=>btn.textContent="Copy",1200);}catch(e){ btn.textContent="Couldn't copy"; } }
+
+const norm = s => s.toLowerCase().replace(/\s+/g," ").trim();
+function idFor(s){ let h=5381; for(const ch of norm(s)) h=((h<<5)+h+ch.codePointAt(0))>>>0; return "f"+h.toString(36); }
+const enOf = r => r.kind==="fix" ? r.out : (r.from==="en" ? r.src : r.out);
+const ptOf = r => r.meaningPt || (r.from==="pt" ? r.src : r.out);
+
+/* runtime */
+(async () => {
+  if(!window.claude){ status("Abra pelo Órbita (aba Inglês) para traduzir e salvar.", true); dbState="off"; render(); return; }
+  const [s, db] = await Promise.all([claude.use("sample"), claude.use("db")]);
+  sample = s;
+  if(!sample){ $("#go").disabled = true; status("Translation isn't available in this view.", true); }
+  if(db){
+    col = db.collection("frases");
+    col.orderBy("ts","desc").limit(1000).onSnapshot(snap => {
+      items = snap.docs.map(d => ({id:d.id, ...d.data()})); dbState="ok"; render();
+    }, () => { dbState="off"; render(); });
+    tecol = db.collection("testes");
+    tecol.orderBy("date","desc").limit(60).onSnapshot(snap => {
+      tests = snap.docs.map(d => ({id:d.id, ...d.data()})); render();
+    }, () => {});
+    rcol = db.collection("leituras");
+    rcol.orderBy("day","asc").limit(40).onSnapshot(snap => {
+      reads = snap.docs.map(d => ({id:d.id, ...d.data()})); render();
+    }, () => {});
+    bcol = db.collection("dominio");
+    bcol.orderBy("started","desc").limit(60).onSnapshot(snap => {
+      bSess = snap.docs.map(d => ({id:d.id, ...d.data()})); render();
+    }, () => {});
+    tcol = db.collection("treinos");
+    tcol.doc(UNIT.id).onSnapshot(snap => { uDoc = snap.exists ? {...snap.data(), _saved:true} : null; render(); }, () => {});
+    tcol.orderBy("date","desc").limit(90).onSnapshot(snap => {
+      days = snap.docs.map(d => ({id:d.id, ...d.data()})); render();
+    }, () => {});
+  } else { dbState="off"; render(); }
+})();
+
+function prompt(text){
+  if(mode==="fix") return `Você é o professor de inglês de bolso de um brasileiro com nível B1 que está passando uma temporada em Malta (inglês britânico). Ele entende bem ouvindo e lendo, mas trava para MONTAR frases. Ele escreveu do jeito dele o que quer dizer e você devolve a versão que um nativo falaria.
+
+Situação atual: ${ctx}.
+Tentativa dele: """${text}"""
+
+Regras:
+- "translation": a frase corrigida e natural em inglês, mantendo a intenção dele. Se já estiver boa, devolva igual e diga isso na nota.
+- "note": em INGLÊS simples (nível B1, frases curtas), no máximo 2 frases, explique o principal erro (ordem das palavras, tempo verbal, preposição, palavra errada), para ele não repetir. Sem travessões.
+- "pattern": a estrutura reutilizável por trás da frase, com lacunas, ex.: "Could I ___, please?" ou "I've been ___ing for ___". Vazio se não houver.
+- "alternatives": até 2 jeitos de dizer (um mais casual, um mais formal).
+- "pronunciation": como pronunciar a frase corrigida, escrita com sons do português, sílaba tônica em MAIÚSCULAS.
+- "meaning_pt": o que ele quis dizer, em português do Brasil.
+- "example": outra frase curta usando o mesmo padrão; "example_pt": a tradução dela.
+
+Responda só com JSON:
+{"from":"en","to":"en","translation":"...","alternatives":["..."],"pronunciation":"...","note":"...","pattern":"...","meaning_pt":"...","example":"...","example_pt":"..."}`;
+  return `Você é o tradutor de bolso de um brasileiro com inglês nível B1 que está passando uma temporada em Malta (onde se fala inglês britânico). Ele usa você no meio de situações reais, então seja rápido, natural e prático.
+
+Situação atual: ${ctx}.
+Texto recebido: """${text}"""
+
+Regras:
+- Se o texto estiver em português, traduza para o inglês que um nativo realmente falaria nessa situação (ortografia britânica, registro adequado ao contexto).
+- Se estiver em inglês (ou outra língua), traduza para português do Brasil natural.
+- Palavra solta: dê a tradução mais comum e, em "alternatives", até 3 outras com sentido ou uso diferente. Frase: em "alternatives", até 2 formas de dizer a mesma coisa (mais formal ou mais casual).
+- "pronunciation": como pronunciar o lado em INGLÊS (original ou tradução), escrito com sons do português para um brasileiro ler em voz alta, sílaba tônica em MAIÚSCULAS. Ex.: "kud ai HAV dhi BIL, pliz".
+- "note": uma dica curta em INGLÊS simples (nível B1, máx. 2 frases) sobre uso, falso cognato, gíria ou armadilha comum. Sem travessões.
+- "pattern": se for frase, a estrutura em inglês reutilizável com lacunas para ele montar outras frases parecidas (ex.: "Could I have ___, please?"). Vazio para palavra solta.
+- "meaning_pt": o sentido em português do Brasil (se o original já é português, repita).
+- "example": uma frase curta em inglês usando a expressão nessa situação; "example_pt": a tradução dela.
+
+Responda só com JSON:
+{"from":"pt"|"en"|"outro","to":"en"|"pt","translation":"...","alternatives":["..."],"pronunciation":"...","note":"...","pattern":"...","meaning_pt":"...","example":"...","example_pt":"..."}`;
+}
+
+async function translate(){
+  const text = $("#txt").value.trim();
+  if(!text || busy || !sample) return;
+  busy = true; $("#go").disabled = true; status(mode==="fix" ? "Checking..." : "Translating...");
+  ctl = new AbortController();
+  try{
+    const r = await sample.json(prompt(text), {modelTier:"quick", signal: ctl.signal});
+    if(!r || typeof r.translation !== "string") throw {code:"invalid_json"};
+    const id = (mode==="fix"?"x":"") + idFor(text), prev = items.find(i => i.id===id);
+    const rec = { src:text, out:r.translation, from: mode==="fix" ? "en" : (r.from==="pt"?"pt":"en"), kind: mode,
+      pattern: String(r.pattern||""), meaningPt: String(r.meaning_pt||""),
+      alts: Array.isArray(r.alternatives)? r.alternatives.slice(0,4).map(String):[],
+      pron: String(r.pronunciation||""), note: String(r.note||""), ex: String(r.example||""), exPt: String(r.example_pt||""),
+      ctx, fav: prev?.fav||false, ts: Date.now() };
+    showResult({id, ...rec});
+    status("");
+    if(col){ try{ await col.doc(id).set(rec); }catch(e){ status(e.code==="quota_exceeded" ? "Storage is full. Delete some phrases to save new ones." : "Done, but this one couldn't be saved.", true); } }
+    else status("Done. Saving isn't available here.");
+  }catch(e){
+    const m = {not_granted:"Allow Claude access to translate.", rate_limited:"Too many requests in a row. Wait a moment and try again.",
+      invalid_json:"The answer came back incomplete. Tap again.", session_expired:"Your session expired. Sign in to Claude again.",
+      refused:"This text couldn't be translated.", cancelled:""};
+    status(m[e?.code] ?? "Connection failed. Try again.", e?.code!=="cancelled");
+    if(e?.code==="not_granted"||e?.code==="sampling_disabled") $("#go").disabled = true;
+  }finally{ busy=false; if(e_ok()) $("#go").disabled=false; }
+}
+function e_ok(){ return !!sample; }
+
+let current = null;
+function showResult(r){
+  current = r;
+  const box = $("#resultBox"); box.hidden = false;
+  box.innerHTML = `<div class="result">${detailHTML(r, true)}</div>`;
+}
+function detailHTML(r, big){
+  const to = r.kind==="fix" ? "Natural version" : (r.from==="pt" ? "English" : "Portuguese");
+  return `
+    ${big?`<div class="lang">${esc(to)} · ${esc(ctxL(r.ctx))}</div><p class="big">${esc(r.out)}</p>`:""}
+    ${r.pron?`<div><span class="pron">${esc(r.pron)}</span></div>`:""}
+    ${r.pattern?`<div class="note"><span class="lang">Pattern to reuse</span><br><b>${esc(r.pattern)}</b></div>`:""}
+    ${r.alts?.length?`<div class="alts">${r.alts.map(a=>`<span class="alt">${esc(a)}</span>`).join("")}</div>`:""}
+    ${r.note?`<div class="note">${esc(r.note)}</div>`:""}
+    ${r.ex?`<div class="ex"><b>${esc(r.ex)}</b><br>${esc(r.exPt)}</div>`:""}
+    <div class="actions">
+      ${canSpeak?`<button class="ghost" type="button" data-act="speak" data-id="${r.id}">Listen</button>`:""}
+      <button class="ghost" type="button" data-act="copy" data-id="${r.id}">Copy</button>
+      <button class="ghost star" type="button" data-act="fav" data-id="${r.id}" aria-pressed="${!!r.fav}">${r.fav?"★ Saved":"☆ Save"}</button>
+      ${big?"":`<button class="ghost del" type="button" data-act="del" data-id="${r.id}">${confirmDel===r.id?"Confirm delete":"Delete"}</button>`}
+    </div>`;
+}
+const byId = id => items.find(i=>i.id===id) || (current?.id===id ? current : null);
+
+document.addEventListener("click", async e => {
+  const b = e.target.closest("[data-act]"); if(!b) return;
+  const r = byId(b.dataset.id); if(!r) return;
+  const act = b.dataset.act;
+  if(act==="speak") speak(enOf(r));
+  if(act==="copy") copy(r.out, b);
+  if(act==="fav"){
+    const fav = !r.fav; r.fav = fav;
+    if(current?.id===r.id){ current.fav = fav; showResult(current); }
+    if(col && items.some(i=>i.id===r.id)){ try{ await col.doc(r.id).update({fav}); }catch(err){ status("Couldn't update this favourite.", true);} }
+    render();
+  }
+  if(act==="del"){
+    if(confirmDel!==r.id){ confirmDel=r.id; render(); return; }
+    confirmDel=null; open=null;
+    if(col){ try{ await col.doc(r.id).delete(); }catch(err){ status("Couldn't delete.", true);} }
+  }
+});
+
+$("#go").addEventListener("click", translate);
+$("#txt").addEventListener("keydown", e => { if(e.key==="Enter" && !e.shiftKey){ e.preventDefault(); translate(); } });
+$("#clear").addEventListener("click", () => { ctl?.abort(); $("#txt").value=""; $("#resultBox").hidden=true; current=null; status(""); $("#txt").focus(); });
+
+document.querySelector("nav.tabs").addEventListener("click", e => {
+  const b = e.target.closest("[data-tab]"); if(!b) return;
+  tab = b.dataset.tab; card=null; shown=false; if(tab!=="read"){ rPop=null; }
+  document.querySelectorAll("nav.tabs button").forEach(x => x.setAttribute("aria-selected", x.dataset.tab===tab));
+  render();
+});
+
+function listHTML(list){
+  return `<ul class="list">${list.map(r=>`
+    <li class="item">
+      <div class="item-top">
+        <button class="item-main" type="button" data-open="${r.id}" aria-expanded="${open===r.id}">
+          <div class="src">${esc(r.src)}</div><div class="out">${esc(r.out)}</div>
+          <div class="meta">${r.kind==="fix"?"Correction · ":""}${esc(ctxL(r.ctx))} · ${new Date(r.ts).toLocaleDateString("en-GB",{day:"2-digit",month:"short"})}</div>
+        </button>
+        <button class="iconbtn${r.fav?" on":""}" type="button" data-act="fav" data-id="${r.id}" aria-label="${r.fav?"Remove from favourites":"Add to favourites"}">${r.fav?"★":"☆"}</button>
+      </div>
+      ${open===r.id?`<div class="detail">${detailHTML(r,false)}</div>`:""}
+    </li>`).join("")}</ul>`;
+}
+function emptyHTML(t, s){ return `<div class="empty"><strong>${t}</strong>${s}</div>`; }
+
+function render(){
+  $("#cnt").textContent = items.length ? items.length : "";
+  const p = $("#panel");
+  if(dbState==="loading"){ p.innerHTML = emptyHTML("Loading your phrases", "One moment."); return; }
+  if(dbState==="off" && !items.length){ p.innerHTML = emptyHTML("Storage isn't available here", "Open the app in Claude, signed in to your account, to save and review."); return; }
+
+  if(tab==="rec"){
+    p.innerHTML = items.length ? listHTML(items.slice(0,6))
+      : emptyHTML("Nothing saved yet", "Every translation is saved here automatically. Tap ☆ on the ones you want to practise.");
+  }
+  if(tab==="all"){
+    const qn = norm(query);
+    const list = items.filter(r => (!onlyFav||r.fav) && (!qn || norm(r.src+" "+r.out+" "+(r.ctx||"")).includes(qn)));
+    p.innerHTML = `<div style="display:flex;flex-direction:column;gap:10px">
+      <input class="search" id="q" type="search" placeholder="Search in Portuguese or English" value="${esc(query)}" aria-label="Search phrases">
+      <div class="chips"><button class="chip" type="button" id="fAll" aria-pressed="${!onlyFav}">All</button><button class="chip" type="button" id="fFav" aria-pressed="${onlyFav}">★ Favourites</button></div>
+      ${list.length ? listHTML(list) : emptyHTML("No phrases here", onlyFav?"Tap ☆ on a translation to add it to your favourites.":"Try another search.")}
+    </div>`;
+    const q = $("#q"); q.addEventListener("input", () => { query=q.value; const pos=q.selectionStart; render(); const n=$("#q"); n.focus(); n.setSelectionRange(pos,pos); });
+    $("#fAll").onclick = () => { onlyFav=false; render(); };
+    $("#fFav").onclick = () => { onlyFav=true; render(); };
+  }
+  if(tab==="rev") renderReview(p);
+  if(tab==="tre") renderTreino(p);
+  if(tab==="lvl") renderLevel(p);
+  if(tab==="read") renderRead(p);
+  if(tab==="tobe") renderToBe(p);
+}
+
+/* ===== CEFR / GSE scale ===== */
+const CEFR = [
+  {lvl:"A1", name:"Beginner", gse:[22,29], can:"Understands very basic everyday expressions and simple sentences."},
+  {lvl:"A2", name:"Basic", gse:[30,42], can:"Understands isolated sentences and frequent expressions about routines and simple tasks."},
+  {lvl:"B1", name:"Intermediate", gse:[43,58], can:"Handles most travel situations and understands familiar topics at work or in free time."},
+  {lvl:"B2", name:"Independent user", gse:[59,75], can:"Communicates fluently and naturally with native speakers, without visible effort, even with complex texts."},
+  {lvl:"C1", name:"Effective proficiency", gse:[76,84], can:"Expresses himself fluently and spontaneously in demanding academic and professional contexts."},
+];
+const cefr = l => CEFR.find(c => c.lvl === String(l||"").replace("+","")) || null;
+const lvlFromGse = g => (CEFR.slice().reverse().find(c => g >= c.gse[0]) || CEFR[0]).lvl;
+function curLevel(){
+  const d = doneTests();
+  const last = d[d.length-1];
+  return last ? String(last.level).replace("+","") : "B1";
+}
+function levelHead(L){
+  const c = cefr(L); if(!c) return "";
+  return `<div class="lvh"><span class="lvtag">${c.lvl}</span><div><div class="ttl">${c.name} <span class="gse">· GSE ${c.gse[0]} to ${c.gse[1]}</span></div><div class="note">${esc(c.can)}</div></div></div>`;
+}
+
+/* ===== Treino diário ===== */
+const ymd = d => d.toLocaleDateString("sv-SE");
+const complete = d => Array.isArray(d.items) && Object.keys(d.answers||{}).length >= d.items.length;
+function streak(){
+  const done = new Set(days.filter(complete).map(d => d.date));
+  let n = 0; const d = new Date(); if(!done.has(ymd(d))) d.setDate(d.getDate()-1);
+  while(done.has(ymd(d))){ n++; d.setDate(d.getDate()-1); }
+  return n;
+}
+const todayDoc = () => days.find(d => d.id === ymd(new Date()));
+const cleanW = s => s.toLowerCase().replace(/[^a-z0-9'’\s]/g,"").replace(/’/g,"'").replace(/\s+/g," ").trim();
+function seeded(arr, seed){ const a = arr.slice(); let s = seed; for(let i=a.length-1;i>0;i--){ s=(s*9301+49297)%233280; const j=Math.floor(s/233280*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function wordsOf(it, i){
+  const w = it.answer.split(/\s+/).filter(Boolean);
+  let sh = seeded(w, i*97 + w.length*13 + 7);
+  if(sh.join(" ")===w.join(" ") && w.length>1) sh = sh.slice(1).concat(sh[0]);
+  return sh;
+}
+
+function levelPlan(){
+  const i = Math.max(0, CEFR.findIndex(c => c.lvl === curLevel()));
+  const below = CEFR[Math.max(0,i-1)].lvl, cur = CEFR[i].lvl, up = CEFR[Math.min(CEFR.length-1,i+1)].lvl;
+  const plan = [];
+  if(below !== cur) plan.push({lvl:below, n:1, why:"(consolidar a base)"});
+  plan.push({lvl:cur, n: below===cur ? 4 : 3, why:"(nível atual, o centro do treino)"});
+  if(up !== cur) plan.push({lvl:up, n:2, why:"(desafio para subir de nível)"});
+  else plan[plan.length-1].n += 2;
+  return plan;
+}
+function promptGen(recent){
+  return `Crie o treino diário de inglês de um brasileiro com nível B1 que está passando 3 semanas em Malta (inglês britânico). Ele entende bem ouvindo e lendo, mas trava para MONTAR frases sozinho. Rotina dele: aula de inglês de segunda a sexta das 15h às 18h40, e no resto do tempo restaurante, transporte, compras, passeios e conversa com colegas de turma.
+
+Frases que ele salvou recentemente (use para personalizar e reforçar o que ele precisou de verdade):
+${recent}
+${focusLine()}${unitLine()}${toBeLine()}
+
+Organize o treino pelos níveis do CEFR (com equivalência GSE). Nível atual dele: ${curLevel()}.
+${levelPlan().map(x => `- ${x.n} exercício(s) de nível ${x.lvl} (${cefr(x.lvl).name}, GSE ${cefr(x.lvl).gse[0]} a ${cefr(x.lvl).gse[1]}): ${cefr(x.lvl).can} ${x.why}`).join("\n")}
+Total: 6 exercícios, em ordem do nível mais fácil para o mais difícil. A dificuldade de cada um (vocabulário, tempo verbal, tamanho da frase) tem que corresponder de verdade ao nível marcado, e a situação tem que ser típica do que esse nível consegue fazer segundo a descrição.
+
+Tipos de exercício (use os três, distribuídos entre os níveis):
+- "order": "answer" é uma frase em inglês natural e útil (6 a 8 palavras no nível mais baixo, até 12 no mais alto); "pt" é uma descrição curta da situação EM INGLÊS simples, sem repetir as palavras da resposta (ex.: "At a café, asking for the bill").
+- "translate": "pt" é uma frase em português que ele precisaria dizer; "answer" é a versão natural em inglês.
+- "pattern": "pattern" é um molde útil com ___ (ex.: "I'm looking for ___"); "pt" descreve EM INGLÊS simples a situação e a ideia que ele deve dizer usando o molde; "answer" é uma resposta modelo.
+Cada exercício tem "level" (A1, A2, B1, B2 ou C1) e "tip": dica curta em INGLÊS simples (nível B1) sobre a estrutura (ordem, tempo verbal, preposição), sem travessões e sem entregar a resposta.
+
+Responda só com JSON:
+{"items":[{"level":"A2","type":"order","pt":"...","answer":"...","pattern":"","tip":"..."}]}`;
+}
+function promptCheck(it, text){
+  const task = it.type==="pattern" ? `usar o molde "${it.pattern}" para: ${it.pt}` : `dizer em inglês: ${it.pt}`;
+  return `Corrija a resposta de um aluno brasileiro de inglês nível B1 que está em Malta.
+Tarefa: ${task}
+Resposta modelo: ${it.answer}
+Resposta do aluno: """${text}"""
+
+Considere correta qualquer frase gramatical e natural que transmita a ideia, mesmo diferente do modelo. Pequenos erros de digitação não contam como erro.
+Responda só com JSON:
+{"ok":true|false,"better":"a frase dele corrigida e natural (igual, se já estiver ótima)","note":"1 frase em INGLÊS simples (nível B1): o erro principal explicado de forma simples, ou um elogio específico. Sem travessões."}`;
+}
+
+async function genTreino(){
+  if(genBusy || !sample || !tcol) return;
+  genBusy = true; treErr = ""; render();
+  const recent = items.slice(0,15).map(r => `- ${ptOf(r)} = ${enOf(r)}`).join("\n") || "(nenhuma ainda)";
+  try{
+    const r = await sample.json(promptGen(recent), {cache:false});
+    const its = (Array.isArray(r?.items) ? r.items : [])
+      .filter(x => x && typeof x.answer==="string" && ["order","translate","pattern"].includes(x.type))
+      .slice(0,8).map(x => ({type:x.type, level: cefr(x.level) ? cefr(x.level).lvl : "", pt:String(x.pt||""), answer:String(x.answer).trim(), pattern:String(x.pattern||""), tip:String(x.tip||"")}));
+    if(its.length < 3) throw {code:"invalid_json"};
+    const date = ymd(new Date());
+    await tcol.doc(date).set({date, items:its, answers:{}, created:Date.now()});
+  }catch(e){
+    treErr = ({not_granted:"Allow Claude access to create your practice.", rate_limited:"Too many requests in a row. Try again in a few minutes.", invalid_json:"The practice came back incomplete. Tap to create it again."})[e?.code] || "Couldn't create your practice right now. Try again.";
+  }finally{ genBusy = false; render(); }
+}
+
+async function saveAnswer(i, a){
+  const t = todayDoc(); if(!t) return;
+  retry.delete(i); delete exErr[i];
+  t.answers = {...(t.answers||{}), [i]: a};
+  render();
+  try{ await tcol.doc(t.id).update({answers: {[String(i)]: a}}); }catch(e){ exErr[i] = "Couldn't save this answer."; render(); }
+  if(!a.ok && col && a.text){
+    const it = t.items[i], id = "x" + idFor(a.text);
+    try{ await col.doc(id).set({src:a.text, out:a.better, from:"en", kind:"fix", pattern: it.pattern||"", meaningPt: it.pt||"",
+      alts:[], pron:"", note:a.note||"", ex:"", exPt:"", ctx:"Practice", fav:true, ts:Date.now()}); }catch(e){}
+  }
+}
+
+async function checkOrder(i){
+  const t = todayDoc(), it = t.items[i], w = wordsOf(it,i);
+  const text = (picks[i]||[]).map(k => w[k]).join(" ");
+  const ok = cleanW(text) === cleanW(it.answer);
+  await saveAnswer(i, {text, ok, better: it.answer, note: ok ? "" : (it.tip || "Compare the word order with the correct sentence.")});
+}
+async function checkWrite(i){
+  const t = todayDoc(), it = t.items[i], text = (drafts[i]||"").trim();
+  if(!text || !sample || checking.has(i)) return;
+  checking.add(i); delete exErr[i]; render();
+  try{
+    const r = await sample.json(promptCheck(it, text), {modelTier:"quick", cache:false});
+    checking.delete(i);
+    await saveAnswer(i, {text, ok: r?.ok===true, better: String(r?.better || it.answer), note: String(r?.note || "")});
+  }catch(e){
+    checking.delete(i);
+    exErr[i] = e?.code==="rate_limited" ? "Too many checks in a row. Wait a moment." : "Couldn't check it right now. Try again.";
+    render();
+  }
+}
+
+const LABEL = {order:"Build the sentence", translate:"Say it in English", pattern:"Use the pattern"};
+function exHTML(it, i, a){
+  const answered = a && !retry.has(i);
+  let body = "";
+  if(it.type==="pattern") body += `<div class="q2">${esc(it.pattern)}</div><div class="note">${esc(it.pt)}</div>`;
+  else body += `<div class="${it.type==="translate"?"q2":"note"}">${esc(it.pt)}</div>`;
+
+  if(answered){
+    body += `<div><span class="fb ${a.ok?"ok":"no"}">${a.ok?"Correct":"Almost"}</span></div>`;
+    if(!a.ok || cleanW(a.text)!==cleanW(a.better)) body += `<div class="mine">You: ${a.ok?esc(a.text):`<s>${esc(a.text)}</s>`}</div>`;
+    body += `<div class="out">${esc(a.better)}</div>`;
+    if(a.note) body += `<div class="note">${esc(a.note)}</div>`;
+    body += `<div class="actions">${canSpeak?`<button class="ghost" type="button" data-say="${i}">Listen</button>`:""}<button class="ghost" type="button" data-redo="${i}">Try again</button></div>`;
+  } else if(it.type==="order"){
+    const w = wordsOf(it,i), pk = picks[i] || [];
+    body += `<div class="built">${pk.length ? pk.map((k,n)=>`<button class="word" type="button" data-unpick="${i}:${n}">${esc(w[k])}</button>`).join("") : `<span class="hint">Tap the words in the right order</span>`}</div>
+      <div class="bank">${w.map((x,k)=> pk.includes(k) ? "" : `<button class="word" type="button" data-pick="${i}:${k}">${esc(x)}</button>`).join("")}</div>
+      <div class="actions"><button class="ghost" type="button" data-reset="${i}">Clear</button>${tipBtn(it,i)}<button class="go" type="button" data-checkord="${i}" ${pk.length===w.length?"":"disabled"}>Check</button></div>`;
+  } else {
+    body += `<textarea id="ans-${i}" data-draft="${i}" placeholder="Write in English" aria-label="Your answer">${esc(drafts[i]||"")}</textarea>
+      <div class="actions">${tipBtn(it,i)}<button class="go" type="button" data-checkw="${i}" ${checking.has(i)||!sample?"disabled":""}>${checking.has(i)?"Checking...":"Check"}</button></div>`;
+  }
+  if(tipOpen.has(i) && it.tip && !answered) body += `<div class="ex">${esc(it.tip)}</div>`;
+  if(exErr[i]) body += `<div class="status err">${esc(exErr[i])}</div>`;
+  return `<li class="exr${answered?" done":""}"><div class="lang">${it.level?it.level+" · ":""}${LABEL[it.type]}</div>${body}</li>`;
+}
+const tipBtn = (it,i) => it.tip ? `<button class="ghost" type="button" data-tip="${i}">${tipOpen.has(i)?"Hide hint":"Hint"}</button>` : "";
+
+function groupByLevel(list){
+  const gs = [];
+  list.forEach((it,i) => { const L = it.level || ""; let g = gs.find(x => x.L===L); if(!g){ g = {L, idx:[]}; gs.push(g); } g.idx.push(i); });
+  const rank = L => { const k = CEFR.findIndex(c=>c.lvl===L); return k<0 ? 99 : k; };
+  return gs.sort((a,b) => rank(a.L) - rank(b.L));
+}
+function renderTreino(p){
+  const t = todayDoc(), st = streak(), uh = unitHTML();
+  const dateTxt = new Date().toLocaleDateString("en-GB",{weekday:"long", day:"numeric", month:"long"});
+  const head = `<div class="tre-head"><div><div class="lang">Today's practice</div><div class="out">${esc(dateTxt)}</div></div>
+    <div class="streak"><b>${st}</b>${st===1?"day in a row":"days in a row"}</div></div>`;
+  if(!t){
+    p.innerHTML = `<div style="display:flex;flex-direction:column;gap:12px">${uh}${head}
+      <div class="empty"><strong>6 exercises to build sentences</strong>Word order, saying it in English and using patterns, based on the phrases you saved. About 10 minutes.
+      <div style="margin-top:14px"><button class="go" id="gen" type="button" style="margin:0" ${genBusy||!sample?"disabled":""}>${genBusy?"Creating your practice...":"Create today's practice"}</button></div>
+      ${treErr?`<div class="status err" style="margin-top:8px">${esc(treErr)}</div>`:""}</div></div>`;
+    $("#gen")?.addEventListener("click", genTreino);
+    return;
+  }
+  const ans = t.answers || {}, n = Object.keys(ans).length, total = t.items.length;
+  const okN = Object.values(ans).filter(a => a.ok).length;
+  p.innerHTML = `<div style="display:flex;flex-direction:column;gap:10px">${uh}${head}
+    <div class="prog"><i style="width:${Math.round(n/total*100)}%"></i></div>
+    <div class="meta">${n} of ${total} done${n?` · ${okN} correct`:""}${n===total?" · Today's practice is complete. Your mistakes were added to your favourites.":""}</div>
+    ${groupByLevel(t.items).map(g => `${g.L ? levelHead(g.L) : ""}<ol class="ex-list">${g.idx.map(i => exHTML(t.items[i], i, ans[i])).join("")}</ol>`).join("")}</div>`;
+}
+
+$("#panel").addEventListener("input", e => { const d = e.target.dataset.draft; if(d!==undefined) drafts[d] = e.target.value; });
+$("#panel").addEventListener("click", e => {
+  const b = e.target.closest("button"); if(!b) return; const ds = b.dataset;
+  if(ds.pick){ const [i,k] = ds.pick.split(":").map(Number); (picks[i] ||= []).push(k); render(); }
+  else if(ds.unpick){ const [i,n] = ds.unpick.split(":").map(Number); picks[i].splice(n,1); render(); }
+  else if(ds.reset){ picks[ds.reset] = []; render(); }
+  else if(ds.tip){ const i=+ds.tip; tipOpen.has(i)?tipOpen.delete(i):tipOpen.add(i); render(); }
+  else if(ds.checkord) checkOrder(+ds.checkord);
+  else if(ds.checkw) checkWrite(+ds.checkw);
+  else if(ds.redo){ const i=+ds.redo; retry.add(i); picks[i]=[]; drafts[i]=""; render(); }
+  else if(ds.say){ const a = (todayDoc()?.answers||{})[ds.say]; if(a) speak(a.better); }
+});
+
+function renderReview(p){
+  const pool = items.some(i=>i.fav) ? items.filter(i=>i.fav) : items;
+  if(!pool.length){ p.innerHTML = emptyHTML("No phrases to review", "Translate a few things first. If you mark favourites, review uses only those."); return; }
+  if(!card || !pool.some(i=>i.id===card.id)) { card = pool[Math.floor(Math.random()*pool.length)]; shown=false; }
+  const pt = ptOf(card), en = enOf(card);
+  p.innerHTML = `<div class="card">
+    <div class="lang">How do you say it in English?${items.some(i=>i.fav)?" · favourites":""}</div>
+    <div class="q">${esc(pt)}</div>
+    ${shown?`<div class="a">${esc(en)}</div>${card.pron?`<div><span class="pron">${esc(card.pron)}</span></div>`:""}`:""}
+    <div class="reveal">
+      ${shown?(canSpeak?`<button class="ghost" type="button" data-act="speak" data-id="${card.id}">Listen</button>`:""):`<button class="go" type="button" id="show" style="margin:0">Show answer</button>`}
+      <button class="ghost" type="button" id="next">Next</button>
+    </div></div>`;
+  $("#show")?.addEventListener("click", () => { shown=true; render(); });
+  $("#next").addEventListener("click", () => {
+    let n = card; if(pool.length>1) while(n.id===card.id) n = pool[Math.floor(Math.random()*pool.length)];
+    card = n; shown=false; render();
+  });
+}
+
+$("#panel").addEventListener("click", e => {
+  const b = e.target.closest("[data-open]"); if(!b) return;
+  open = open===b.dataset.open ? null : b.dataset.open; confirmDel=null; render();
+});
+
+/* ===== Weekly level test ===== */
+let tecol = null, tests = [], tGen = false, tErr = "", grading = false, viewId = null;
+const tDrafts = {}, tPicks = {};
+const AREAS = {tobe:"Verb to be", grammar:"Grammar", vocab:"Vocabulary", order:"Sentence building", writing:"Writing"};
+const doneTests = () => tests.filter(t => t.status==="done").sort((a,b) => a.date < b.date ? -1 : 1);
+const openTest = () => tests.find(t => t.status==="open");
+const daysBetween = (a,b) => Math.round((new Date(b+"T12:00:00") - new Date(a+"T12:00:00"))/864e5);
+function nextTestDate(){
+  const d = doneTests(); if(!d.length) return null;
+  const last = d[d.length-1].date, n = new Date(last+"T12:00:00"); n.setDate(n.getDate()+7);
+  return ymd(n);
+}
+const canStart = () => !openTest() && (!nextTestDate() || ymd(new Date()) >= nextTestDate());
+function focusLine(){
+  const d = doneTests(); if(!d.length) return "";
+  const t = d[d.length-1];
+  const weak = Object.entries(t.areas||{}).sort((a,b)=>a[1]-b[1]).slice(0,2).map(([k,v])=>`${AREAS[k]} (${v}%)`).join(", ");
+  return `Resultado do último teste de nível (${t.date}): nível ${t.level}${t.gse?` (GSE estimado ${t.gse})`:""}. Áreas mais fracas: ${weak}. Foco sugerido: ${t.focus||""}. Dê mais peso a essas áreas nos exercícios de hoje.`;
+}
+
+function itemPoints(it, i, t){
+  const a = (t.answers||{})[i];
+  if(it.kind==="mc") return a===it.answer ? 1 : 0;
+  if(it.kind==="order") return typeof a==="string" && cleanW(a)===cleanW(it.answer) ? 1 : 0;
+  return ((t.grades||{})[i]?.score || 0) / 2;
+}
+function scoreTest(t){
+  const sum = {}, cnt = {}, band = {A2:[0,0], B1:[0,0], B2:[0,0]};
+  let tot = 0;
+  t.items.forEach((it,i) => {
+    const p = itemPoints(it,i,t); tot += p;
+    sum[it.area] = (sum[it.area]||0) + p; cnt[it.area] = (cnt[it.area]||0) + 1;
+    if(band[it.level]){ band[it.level][0] += p; band[it.level][1]++; }
+  });
+  const areas = {}; for(const k in cnt) areas[k] = Math.round(sum[k]/cnt[k]*100);
+  const acc = l => band[l][1] ? band[l][0]/band[l][1] : 0;
+  const a2 = acc("A2"), b1 = acc("B1"), b2 = acc("B2");
+  const cl = v => Math.max(0, Math.min(1, v));
+  let gse;
+  if(a2 < .6) gse = 22 + Math.round(cl(a2/.6)*7);
+  else if(b1 < .6) gse = 30 + Math.round(cl((a2-.6)/.4*.5 + b1/.6*.5)*12);
+  else if(b2 < .6) gse = 43 + Math.round(cl((b1-.6)/.4*.5 + b2/.6*.5)*15);
+  else gse = 59 + Math.round(cl((b2-.6)/.4)*16);
+  return {overall: Math.round(tot/t.items.length*100), areas, level: lvlFromGse(gse), gse};
+}
+
+function shuffleIdx(n, seed){ return seeded([...Array(n).keys()], seed); }
+function promptTest(){
+  const prev = tests.slice(0,3).flatMap(t => (t.items||[]).map(x => "- " + x.q.slice(0,70))).slice(0,40).join("\n") || "(nenhum)";
+  return `Crie o teste semanal de nivelamento de inglês de um brasileiro adulto (31 anos, profissional de vendas) que está 3 semanas em Malta estudando inglês (inglês britânico). Nível estimado B1. Ele entende bem lendo e ouvindo, mas trava para montar frases, e nunca estudou de verdade o verbo "to be". O teste precisa ser comparável semana a semana, então siga exatamente esta estrutura de 18 questões, com situações reais (aula, restaurante, transporte, compras, colegas, trabalho):
+
+- 3 de "tobe" (kind "mc"), níveis A2, B1, B1: escolha a forma certa (am/is/are, was/were, there is/are, idade e sensações com be, perguntas com inversão).
+- 3 de "grammar" (kind "mc"), níveis A2, B1, B2: tempos verbais, preposições, comparativos, present perfect.
+- 4 de "vocab" (kind "mc"), níveis A2, B1, B1, B2: palavra ou expressão certa no contexto.
+- 4 de "order" (kind "order"), níveis A2, B1, B1, B2: "answer" é uma frase natural de 6 a 11 palavras; "q" descreve a situação em inglês simples sem usar as palavras da resposta.
+- 4 de "writing" (kind "write"): 2 de tradução (níveis B1 e B2) com "pt" contendo a frase em português e "q" = "Say it in English."; 2 perguntas abertas em inglês (níveis B1 e B2) para responder com 1 ou 2 frases, com "answer" sendo uma resposta modelo.
+
+Para "mc": "q" é a frase com ___ ou a pergunta, "options" tem 4 opções, "answer" é o ÍNDICE (0 a 3) da correta, varie a posição da correta. Tudo em inglês, exceto o campo "pt". Não repita estas questões de testes anteriores:
+${prev}
+
+Responda só com JSON:
+{"items":[{"area":"tobe","kind":"mc","level":"A2","q":"...","options":["...","...","...","..."],"answer":1,"pt":""}]}`;
+}
+function cleanItems(raw){
+  const out = [];
+  (Array.isArray(raw) ? raw : []).forEach((x,i) => {
+    if(!x || !AREAS[x.area] || !["A2","B1","B2"].includes(x.level)) return;
+    const base = {area:x.area, kind:x.kind, level:x.level, q:String(x.q||""), pt:String(x.pt||"")};
+    if(x.kind==="mc"){
+      const opts = Array.isArray(x.options) ? x.options.map(String) : [], a = Number(x.answer);
+      if(opts.length<3 || !(a>=0 && a<opts.length)) return;
+      const order = shuffleIdx(opts.length, i*31+7);
+      out.push({...base, options: order.map(k=>opts[k]), answer: order.indexOf(a)});
+    } else if((x.kind==="order" || x.kind==="write") && typeof x.answer==="string" && x.answer.trim()){
+      out.push({...base, answer: x.answer.trim()});
+    }
+  });
+  return out;
+}
+async function genTest(){
+  if(tGen || !sample || !tecol || !canStart()) return;
+  tGen = true; tErr = ""; render();
+  try{
+    const r = await sample.json(promptTest(), {cache:false});
+    const its = cleanItems(r?.items);
+    if(its.length < 14) throw {code:"invalid_json"};
+    const date = ymd(new Date());
+    await tecol.doc("t-"+date).set({date, status:"open", items:its, answers:{}, created:Date.now()});
+  }catch(e){
+    tErr = ({not_granted:"Allow Claude access to create the test.", rate_limited:"Too many requests. Try again in a few minutes.", invalid_json:"The test came back incomplete. Tap to try again."})[e?.code] || "Couldn't create the test right now. Try again.";
+  }finally{ tGen = false; render(); }
+}
+
+async function saveTAnswer(t, i, v){
+  t.answers = {...(t.answers||{}), [i]: v};
+  try{ await tecol.doc(t.id).update({answers: {[String(i)]: v}}); }catch(e){}
+}
+const tAnswered = (t,i) => { const it = t.items[i], a = (t.answers||{})[i];
+  if(it.kind==="write") return !!(tDrafts[i] ?? a ?? "").trim();
+  return a!==undefined && a!==null && a!==""; };
+
+function promptGrade(t){
+  const writes = t.items.map((it,i)=>({it,i})).filter(x=>x.it.kind==="write");
+  const wrong = t.items.map((it,i)=>({it,i})).filter(x=>x.it.kind!=="write" && itemPoints(x.it,x.i,t)===0)
+    .map(x => `- [${AREAS[x.it.area]}] ${x.it.q} | his answer: ${x.it.kind==="mc" ? x.it.options[t.answers[x.i]] : t.answers[x.i]} | correct: ${x.it.kind==="mc" ? x.it.options[x.it.answer] : x.it.answer}`).join("\n") || "(none)";
+  return `You are grading the weekly English level test of a Brazilian adult (B1, living in Malta for 3 weeks). He understands well but struggles to build sentences.
+
+Grade each writing answer: 2 = correct and natural, 1 = understandable but with grammar or word errors, 0 = wrong, off-task or not English. Accept any natural answer, not only the model. Ignore small typos.
+${writes.map((x,k)=>`${k+1}. Task: ${x.it.q}${x.it.pt?` (Portuguese: "${x.it.pt}")`:""}\n   Model: ${x.it.answer}\n   His answer: """${tDrafts[x.i] ?? t.answers[x.i] ?? ""}"""`).join("\n")}
+
+His wrong answers in the other sections:
+${wrong}
+
+Reply only with JSON:
+{"writing":[{"score":0,"better":"his answer corrected and natural","note":"one short sentence in simple English (B1) explaining the main error, or a specific compliment"}],"summary":"2 short sentences in simple English: what he does well and the main pattern in his mistakes. No dashes.","focus":"one concrete thing to practise this week, in simple English, max 12 words"}`;
+}
+async function submitTest(){
+  const t = openTest(); if(!t || grading || !sample) return;
+  if(!t.items.every((_,i)=>tAnswered(t,i))) return;
+  grading = true; tErr = ""; render();
+  const finalAns = {...(t.answers||{})};
+  t.items.forEach((it,i) => { if(it.kind==="write") finalAns[i] = (tDrafts[i] ?? finalAns[i] ?? "").trim(); });
+  t.answers = finalAns;
+  try{
+    const g = await sample.json(promptGrade(t), {cache:false});
+    const grades = {}; let k = 0;
+    t.items.forEach((it,i) => { if(it.kind!=="write") return; const w = (g?.writing||[])[k++] || {};
+      grades[i] = {score: Math.max(0, Math.min(2, Math.round(Number(w.score)||0))), better: String(w.better||it.answer), note: String(w.note||"")}; });
+    const res = scoreTest({...t, grades});
+    const ansObj = {}; for(const i in finalAns) ansObj[String(i)] = finalAns[i];
+    await tecol.doc(t.id).update({answers: ansObj, grades, status:"done", score:res.overall, areas:res.areas, level:res.level, gse:res.gse,
+      summary:String(g?.summary||""), focus:String(g?.focus||""), finished:Date.now()});
+    viewId = t.id;
+  }catch(e){
+    tErr = e?.code==="rate_limited" ? "Too many requests. Wait a moment and tap Finish again." : "Couldn't grade the test right now. Your answers are kept. Tap Finish again.";
+  }finally{ grading = false; render(); }
+}
+
+function chartSVG(list){
+  const L = list.slice(-8).map(t => ({...t, v: t.gse || null})).filter(t => t.v);
+  if(!L.length) return "";
+  const W = 320, H = 190, padL = 30, padR = 10, top = 14, bot = 30;
+  const lo = Math.max(22, Math.min(...L.map(t=>t.v)) - 10), hi = Math.min(84, Math.max(...L.map(t=>t.v)) + 10);
+  const y = v => top + (hi - v)/(hi - lo)*(H - top - bot);
+  const step = (W-padL-padR)/Math.max(1, L.length), x = k => padL + step*k + step/2;
+  let g = "";
+  CEFR.forEach(c => {
+    const a = Math.max(lo, c.gse[0]), b = Math.min(hi, c.gse[1]+1); if(a >= b) return;
+    g += `<line x1="${padL}" x2="${W-padR}" y1="${y(a)}" y2="${y(a)}" stroke="var(--line)" stroke-dasharray="3 3"/>
+      <text x="${padL-6}" y="${(y(a)+y(b))/2+4}" font-size="11" font-weight="700" text-anchor="end" fill="var(--muted)">${c.lvl}</text>`;
+  });
+  const pts = L.map((t,k) => `${x(k)},${y(t.v)}`).join(" ");
+  if(L.length > 1) g += `<polyline points="${pts}" fill="none" stroke="var(--sea)" stroke-width="2.5" stroke-linejoin="round"/>`;
+  L.forEach((t,k) => { const last = k===L.length-1;
+    g += `<circle cx="${x(k)}" cy="${y(t.v)}" r="${last?6:4.5}" fill="${last?"var(--sea)":"var(--surface)"}" stroke="var(--sea)" stroke-width="2"/>
+      <text x="${x(k)}" y="${y(t.v)-11}" font-size="11" font-weight="700" text-anchor="middle" fill="var(--ink)">${t.v}</text>
+      <text x="${x(k)}" y="${H-10}" font-size="9" text-anchor="middle" fill="var(--muted)">${new Date(t.date+"T12:00:00").toLocaleDateString("en-GB",{day:"numeric",month:"short"})}</text>`; });
+  return `<div class="chart"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="GSE score per test with CEFR levels">${g}</svg></div>`;
+}
+function nextLevelHTML(t){
+  const c = cefr(t.level); if(!c || !t.gse) return "";
+  const k = CEFR.indexOf(c), nx = CEFR[k+1];
+  const pct = Math.round((t.gse - c.gse[0]) / (c.gse[1] - c.gse[0] + 1) * 100);
+  return `<div class="areas"><div class="arow"><span>Inside ${c.lvl}</span><div class="track"><i style="width:${Math.max(4,pct)}%"></i></div><b>${pct}%</b></div></div>
+    <div class="meta">${nx ? `${nx.gse[0] - t.gse} GSE points to reach ${nx.lvl} (${nx.name}).` : "Top of the scale in this test."}</div>`;
+}
+
+function resultsHTML(t){
+  const d = doneTests(), idx = d.findIndex(x=>x.id===t.id), prev = idx>0 ? d[idx-1] : null;
+  const delta = prev ? (t.gse && prev.gse ? t.gse - prev.gse : t.score - prev.score) : null;
+  const up = prev && cefr(prev.level) && cefr(t.level) && CEFR.indexOf(cefr(t.level)) > CEFR.indexOf(cefr(prev.level));
+  let h = `<div class="lvl-top"><div class="lvl-badge">${esc(t.level)}</div><div class="lvl-meta">
+      <div class="lang">Test ${idx+1} · ${new Date(t.date+"T12:00:00").toLocaleDateString("en-GB",{day:"numeric",month:"long"})}</div>
+      <div class="lvl-score">${t.gse?`GSE ${t.gse}`:`${t.score}%`}</div>
+      <div class="meta">${t.score}% correct${cefr(t.level)?` · ${cefr(t.level).name}`:""}</div>
+      ${delta!==null?`<div class="delta">${delta>0?"+":""}${delta} GSE points vs last test${up?` · You moved up to ${esc(t.level)}`:""}</div>`:`<div class="meta">First test. This is your baseline.</div>`}
+    </div></div>
+    ${nextLevelHTML(t)}
+    <div class="areas">${Object.keys(AREAS).filter(k=>t.areas?.[k]!==undefined).map(k=>`<div class="arow"><span>${AREAS[k]}</span><div class="track"><i class="${t.areas[k]<60?"low":""}" style="width:${t.areas[k]}%"></i></div><b>${t.areas[k]}%</b></div>`).join("")}</div>`;
+  if(t.summary || t.focus) h += `<div class="focus">${t.summary?`<div class="note">${esc(t.summary)}</div>`:""}${t.focus?`<div><span class="lang">Focus this week</span><br><b>${esc(t.focus)}</b></div>`:""}</div>`;
+  const review = t.items.map((it,i)=>({it,i})).filter(x => itemPoints(x.it,x.i,t) < 1);
+  if(review.length){
+    h += `<div class="section-title">Review your mistakes</div><ol class="ex-list">` + review.map(({it,i}) => {
+      const a = (t.answers||{})[i], gr = (t.grades||{})[i];
+      const mine = it.kind==="mc" ? it.options[a] : a;
+      const right = it.kind==="mc" ? it.options[it.answer] : (gr?.better || it.answer);
+      return `<li class="exr"><div class="lang">${AREAS[it.area]} · ${it.level}</div>
+        <div class="note">${esc(it.q)}${it.pt?`<br><b>${esc(it.pt)}</b>`:""}</div>
+        <div class="mine">You: <s>${esc(mine||"")}</s></div><div class="out">${esc(right)}</div>
+        ${gr?.note?`<div class="note">${esc(gr.note)}</div>`:""}</li>`; }).join("") + `</ol>`;
+  } else h += `<div class="note">No mistakes this time.</div>`;
+  return h;
+}
+
+function testItemHTML(t, it, i){
+  const a = (t.answers||{})[i];
+  let b = `<div class="lang">${i+1} · ${AREAS[it.area]}</div>`;
+  if(it.kind==="mc"){
+    b += `<div class="q2">${esc(it.q)}</div><div class="opts">${it.options.map((o,k)=>`<button class="opt" type="button" data-tmc="${i}:${k}" aria-pressed="${a===k}">${esc(o)}</button>`).join("")}</div>`;
+  } else if(it.kind==="order"){
+    b += `<div class="note">${esc(it.q)}</div>`;
+    const w = wordsOf(it, i+50);
+    if(tPicks[i]===undefined && typeof a==="string" && a){
+      b += `<div class="built"><span class="out">${esc(a)}</span></div><div class="actions"><button class="ghost" type="button" data-treset="${i}">Change</button></div>`;
+    } else {
+      const pk = tPicks[i] || [];
+      b += `<div class="built">${pk.length ? pk.map((k,n)=>`<button class="word" type="button" data-tunpick="${i}:${n}">${esc(w[k])}</button>`).join("") : `<span class="hint">Tap the words in the right order</span>`}</div>
+        <div class="bank">${w.map((x,k)=> pk.includes(k) ? "" : `<button class="word" type="button" data-tpick="${i}:${k}">${esc(x)}</button>`).join("")}</div>`;
+    }
+  } else {
+    b += `<div class="q2">${esc(it.q)}</div>${it.pt?`<div class="note"><b>${esc(it.pt)}</b></div>`:""}
+      <textarea id="tw-${i}" data-tdraft="${i}" placeholder="Write in English" aria-label="Your answer">${esc(tDrafts[i] ?? a ?? "")}</textarea>`;
+  }
+  return `<li class="exr${tAnswered(t,i)?" done":""}">${b}</li>`;
+}
+
+function ladderHTML(t){
+  const here = t ? String(t.level).replace("+","") : null, hi = CEFR.findIndex(c=>c.lvl===here);
+  return `<ol class="ladder">${CEFR.map((c,k)=>`<li class="${k===hi?"here":hi>=0&&k<hi?"past":""}"><div class="lv">${c.lvl}</div><div><b>${c.name}</b> <span class="gse">· GSE ${c.gse[0]} to ${c.gse[1]}</span><div class="note">${esc(c.can)}</div>${k===hi?`<span class="you">You are here${t.gse?` · GSE ${t.gse}`:""}</span>`:""}</div></li>`).join("")}</ol>
+    <div class="meta">Your GSE number is an estimate from this app's test, not an official Pearson score.</div>`;
+}
+function renderLevel(p){
+  const d = doneTests(), open = openTest();
+  if(open){
+    const n = open.items.filter((_,i)=>tAnswered(open,i)).length, total = open.items.length;
+    p.innerHTML = `<div style="display:flex;flex-direction:column;gap:10px">
+      <div class="tre-head"><div><div class="lang">Level test ${d.length+1}</div><div class="out">${total} questions · about 15 minutes</div></div></div>
+      <div class="note">Answer on your own, without the translator. This shows your real level and how it changes each week.</div>
+      <div class="prog"><i style="width:${Math.round(n/total*100)}%"></i></div><div class="meta">${n} of ${total} answered</div>
+      <ol class="ex-list">${open.items.map((it,i)=>testItemHTML(open,it,i)).join("")}</ol>
+      <button class="go" type="button" id="tfinish" style="margin:0" ${n<total||grading||!sample?"disabled":""}>${grading?"Grading your test...":n<total?`Answer all questions (${total-n} left)`:"Finish and see my level"}</button>
+      ${tErr?`<div class="status err">${esc(tErr)}</div>`:""}</div>`;
+    $("#tfinish")?.addEventListener("click", submitTest);
+    return;
+  }
+  const view = (viewId && d.find(t=>t.id===viewId)) || d[d.length-1];
+  let h = `<div style="display:flex;flex-direction:column;gap:14px">`;
+  if(view) h += resultsHTML(view);
+  h += `<div class="section-title">CEFR levels and GSE</div>${ladderHTML(view)}`;
+  if(d.length) h += `<div class="section-title">Your progress</div>${chartSVG(d)}
+    <ul class="hist">${d.slice().reverse().map((t,k)=>`<li><button type="button" data-tview="${t.id}"><span>Test ${d.length-k} · ${new Date(t.date+"T12:00:00").toLocaleDateString("en-GB",{day:"numeric",month:"short"})}</span><b>${esc(t.level)}</b><span>${t.gse?`GSE ${t.gse}`:`${t.score}%`}</span></button></li>`).join("")}</ul>`;
+  const nx = nextTestDate();
+  if(canStart()){
+    h += `<div class="empty"><strong>${d.length?"This week's level test":"Your first level test"}</strong>18 questions on the verb to be, grammar, vocabulary, sentence building and writing. About 15 minutes. Do one each week to track your progress.
+      <div style="margin-top:14px"><button class="go" id="tstart" type="button" style="margin:0" ${tGen||!sample?"disabled":""}>${tGen?"Creating your test...":"Start the test"}</button></div>
+      ${tErr?`<div class="status err" style="margin-top:8px">${esc(tErr)}</div>`:""}</div>`;
+  } else if(nx){
+    h += `<div class="meta">Next test available on ${new Date(nx+"T12:00:00").toLocaleDateString("en-GB",{weekday:"long", day:"numeric", month:"long"})}.</div>`;
+  }
+  p.innerHTML = h + `</div>`;
+  $("#tstart")?.addEventListener("click", genTest);
+}
+
+$("#panel").addEventListener("input", e => { const d = e.target.dataset.tdraft; if(d!==undefined){ tDrafts[d] = e.target.value; } });
+$("#panel").addEventListener("change", e => { const d = e.target.dataset.tdraft; const t = openTest(); if(d!==undefined && t){ saveTAnswer(t, +d, e.target.value.trim()); render(); } });
+$("#panel").addEventListener("click", e => {
+  const b = e.target.closest("button"); if(!b) return; const ds = b.dataset, t = openTest();
+  if(ds.tview){ viewId = ds.tview; render(); window.scrollTo({top: $("#panel").offsetTop - 10}); return; }
+  if(!t) return;
+  if(ds.tmc){ const [i,k] = ds.tmc.split(":").map(Number); saveTAnswer(t,i,k); render(); }
+  else if(ds.tpick){ const [i,k] = ds.tpick.split(":").map(Number); (tPicks[i] ||= []).push(k);
+    const w = wordsOf(t.items[i], i+50); if(tPicks[i].length===w.length) saveTAnswer(t,i,tPicks[i].map(x=>w[x]).join(" ")); render(); }
+  else if(ds.tunpick){ const [i,n] = ds.tunpick.split(":").map(Number); tPicks[i].splice(n,1); if((t.answers||{})[i]) saveTAnswer(t,i,""); render(); }
+  else if(ds.treset){ const i = +ds.treset; tPicks[i] = []; saveTAnswer(t,i,""); render(); }
+});
+
+/* ===== 28-day reading track ===== */
+const BOOKS = [
+  {t:"The Adventures of Tom Sawyer", a:"Mark Twain", y:1876},
+  {t:"Alice's Adventures in Wonderland", a:"Lewis Carroll", y:1865},
+  {t:"The Wonderful Wizard of Oz", a:"L. Frank Baum", y:1900},
+  {t:"Little Women", a:"Louisa May Alcott", y:1868},
+  {t:"White Fang", a:"Jack London", y:1906},
+  {t:"Peter Pan", a:"J. M. Barrie", y:1911},
+  {t:"A Christmas Carol", a:"Charles Dickens", y:1843},
+  {t:"Treasure Island", a:"Robert Louis Stevenson", y:1883},
+  {t:"The Secret Garden", a:"Frances Hodgson Burnett", y:1911},
+  {t:"Around the World in Eighty Days", a:"Jules Verne", y:1873},
+  {t:"The Call of the Wild", a:"Jack London", y:1903},
+  {t:"A Scandal in Bohemia", a:"Arthur Conan Doyle", y:1891},
+  {t:"Jane Eyre", a:"Charlotte Brontë", y:1847},
+  {t:"Robinson Crusoe", a:"Daniel Defoe", y:1719},
+  {t:"The Time Machine", a:"H. G. Wells", y:1895},
+  {t:"Pride and Prejudice", a:"Jane Austen", y:1813},
+  {t:"The Hound of the Baskervilles", a:"Arthur Conan Doyle", y:1902},
+  {t:"Strange Case of Dr Jekyll and Mr Hyde", a:"Robert Louis Stevenson", y:1886},
+  {t:"The Fall of the House of Usher", a:"Edgar Allan Poe", y:1839},
+  {t:"The Phantom of the Opera", a:"Gaston Leroux", y:1910},
+  {t:"Frankenstein", a:"Mary Shelley", y:1818},
+  {t:"Wuthering Heights", a:"Emily Brontë", y:1847},
+  {t:"Twelve Years a Slave", a:"Solomon Northup", y:1853},
+  {t:"Dracula", a:"Bram Stoker", y:1897},
+  {t:"The Picture of Dorian Gray", a:"Oscar Wilde", y:1890},
+  {t:"The Secret of Chimneys", a:"Agatha Christie", y:1925},
+  {t:"The Great Gatsby", a:"F. Scott Fitzgerald", y:1925},
+  {t:"The Maltese Falcon", a:"Dashiell Hammett", y:1930},
+];
+const WEEKS = ["Week 1 · Warm up","Week 2 · Longer texts","Week 3 · One step up","Week 4 · Stretch"];
+function dayPlan(d){
+  const base = Math.max(0, CEFR.findIndex(c => c.lvl === curLevel()));
+  const wk = Math.ceil(d/7);
+  const L = CEFR[Math.min(CEFR.length-1, base + (wk>=3 ? 1 : 0))].lvl;
+  const min = [10,12,14,15][wk-1];
+  const words = ["170 a 210","220 a 260","260 a 300","300 a 340"][wk-1];
+  return {L, min, words, wk};
+}
+let rcol = null, reads = [], rDay = null, rGen = false, rErr = "", rStart = 0, rTick = null;
+let rPop = null, rDraft = "", rChecking = false, rWErr = "";
+const rCache = {};
+const rid = d => "d" + String(d).padStart(2,"0");
+const rDoc = d => reads.find(x => x.id === rid(d));
+const rDone = d => rDoc(d)?.status === "done";
+const rNext = () => { for(let d=1; d<=28; d++) if(!rDone(d)) return d; return null; };
+const rOpenable = d => rDone(d) || d === rNext() || !!rDoc(d);
+
+function coverHTML(d, small){
+  const b = BOOKS[d-1];
+  return `<div class="cv s${(d-1)%4}" aria-hidden="true"><span class="ttl2">${esc(b.t)}</span><span class="mo"></span><span class="au">${esc(b.a)}</span></div>`;
+}
+
+function promptRead(d){
+  const b = BOOKS[d-1], P = dayPlan(d), c = cefr(P.L);
+  return `Escreva a leitura do Dia ${d} de uma trilha de 28 dias de leitura em inglês para um brasileiro adulto que está em Malta estudando inglês (inglês britânico). Nível atual dele no teste semanal: ${curLevel()}. Ele entende bem lendo, mas trava para MONTAR frases, então o texto deve mostrar estruturas que ele possa reaproveitar ao falar.
+
+Obra do dia: "${b.t}", de ${b.a} (${b.y}), em domínio público.
+Escreva uma ADAPTAÇÃO ORIGINAL, recontando com suas próprias palavras um trecho marcante da obra, em inglês nível ${c.lvl} (${c.name}, GSE ${c.gse[0]} a ${c.gse[1]}): ${c.can}
+Não copie frases do texto original. Tamanho total: ${P.words} palavras, em 4 a 6 parágrafos curtos. Ortografia britânica. Inclua com naturalidade pelo menos 3 estruturas úteis na conversa do dia a dia (ex.: there is/are, verbo to be, present perfect, could/would, phrasal verbs comuns). Leitura de cerca de ${P.min} minutos somando texto e exercícios.
+
+Regras dos campos:
+- "intro": 1 a 2 frases em inglês simples situando a história (quem, onde), sem estragar o final.
+- "paras": os parágrafos do texto.
+- "glossary": 8 a 10 itens com as palavras ou expressões mais úteis ou difíceis do texto. "w" exatamente como aparece no texto; "pt" tradução no contexto em português do Brasil; "pron" pronúncia escrita com sons do português, sílaba tônica em MAIÚSCULAS.
+- "questions": 4 perguntas em inglês (compreensão literal, vocabulário no contexto e inferência), cada uma com 3 opções curtas; "a" é o índice da certa (varie a posição); "why" é 1 frase em inglês simples explicando com base no texto.
+- "write": "pt" é uma frase em português ligada à história que ele deve dizer em inglês, usando uma das estruturas do texto; "model" a versão natural em inglês; "pattern" o molde reutilizável com ___.
+Nenhum campo pode ter travessões.
+
+Responda só com JSON:
+{"intro":"...","paras":["..."],"glossary":[{"w":"...","pt":"...","pron":"..."}],"questions":[{"q":"...","opts":["...","...","..."],"a":0,"why":"..."}],"write":{"pt":"...","model":"...","pattern":"..."}}`;
+}
+
+async function genRead(d){
+  if(rGen || !sample || !rcol) return;
+  rGen = true; rErr = ""; render();
+  try{
+    const r = await sample.json(promptRead(d), {cache:false});
+    const paras = (Array.isArray(r?.paras) ? r.paras : []).map(String).filter(s => s.trim()).slice(0,8);
+    const qs = (Array.isArray(r?.questions) ? r.questions : [])
+      .filter(q => q && typeof q.q==="string" && Array.isArray(q.opts) && q.opts.length>=2 && Number.isInteger(q.a) && q.a>=0 && q.a<q.opts.length)
+      .slice(0,5).map(q => ({q:q.q, opts:q.opts.slice(0,4).map(String), a:q.a, why:String(q.why||"")}));
+    const gl = (Array.isArray(r?.glossary) ? r.glossary : []).filter(g => g && typeof g.w==="string" && g.w.trim())
+      .slice(0,12).map(g => ({w:g.w.trim(), pt:String(g.pt||""), pron:String(g.pron||"")}));
+    const w = r?.write && typeof r.write.pt==="string" ? {pt:r.write.pt, model:String(r.write.model||""), pattern:String(r.write.pattern||"")} : null;
+    if(paras.length < 2 || qs.length < 2) throw {code:"invalid_json"};
+    const P = dayPlan(d), b = BOOKS[d-1];
+    await rcol.doc(rid(d)).set({day:d, book:b.t, author:b.a, lvl:P.L, min:P.min, intro:String(r.intro||""), paras, glossary:gl, questions:qs, write:w,
+      answers:{}, wres:null, status:"open", secs:0, created:Date.now(), date:ymd(new Date())});
+    openDay(d);
+  }catch(e){
+    rErr = ({not_granted:"Allow Claude access to create your reading.", rate_limited:"Too many requests in a row. Try again in a few minutes.", invalid_json:"The reading came back incomplete. Tap to create it again."})[e?.code] || "Couldn't create today's reading right now. Try again.";
+  }finally{ rGen = false; render(); }
+}
+
+function openDay(d){
+  rDay = d; rPop = null; rDraft = ""; rWErr = "";
+  rStart = rDone(d) ? 0 : Date.now();
+  render(); window.scrollTo({top: $("#panel").offsetTop - 10});
+}
+function closeDay(){
+  const doc = rDoc(rDay);
+  if(doc && rStart && doc.status!=="done"){ const secs = Math.round((doc.secs||0) + (Date.now()-rStart)/1000); doc.secs = secs; rcol?.doc(doc.id).update({secs}).catch(()=>{}); }
+  rDay = null; rPop = null; rStart = 0; render();
+}
+
+function fmtT(s){ s = Math.max(0, Math.round(s)); return Math.floor(s/60) + ":" + String(s%60).padStart(2,"0"); }
+function startTick(){
+  clearInterval(rTick);
+  rTick = setInterval(() => { const el = document.getElementById("rtime"); if(!el){ clearInterval(rTick); return; }
+    const doc = rDoc(rDay); el.textContent = fmtT((doc?.secs||0) + (rStart ? (Date.now()-rStart)/1000 : 0)); }, 1000);
+}
+
+function reEsc(s){ return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); }
+function storyHTML(doc){
+  const gl = (doc.glossary||[]).slice().sort((a,b) => b.w.length - a.w.length);
+  const re = gl.length ? new RegExp("(" + gl.map(g => "\\b" + reEsc(g.w) + "\\b").join("|") + ")", "i") : null;
+  let wi = 0;
+  const wordsHTML = txt => txt.split(/(\s+)/).map(tok => {
+    if(!tok.trim()) return tok;
+    const m = tok.match(/^([^A-Za-zÀ-ÿ'’]*)([A-Za-zÀ-ÿ'’-]+)([^A-Za-zÀ-ÿ'’]*)$/);
+    if(!m) return esc(tok);
+    const id = "w" + (wi++);
+    return `${esc(m[1])}<span class="w${rPop?.id===id?" sel":""}" data-rw="${esc(m[2])}" data-wid="${id}">${esc(m[2])}</span>${esc(m[3])}`;
+  }).join("");
+  return doc.paras.map((p, pi) => {
+    let out = "";
+    if(re){
+      const parts = p.split(re);
+      parts.forEach((part, k) => {
+        if(k % 2 === 1){
+          const g = gl.findIndex(x => x.w.toLowerCase() === part.toLowerCase());
+          const id = "g" + pi + "-" + k;
+          out += `<span class="gl${rPop?.id===id?" sel":""}" data-rg="${g}" data-wid="${id}">${esc(part)}</span>`;
+        } else out += wordsHTML(part);
+      });
+    } else out = wordsHTML(p);
+    return `<p data-p="${pi}">${out}</p>${canSpeak?`<div class="ptools"><button class="ghost" type="button" data-rsay="${pi}">Listen</button></div>`:""}`;
+  }).join("");
+}
+
+function sentenceOf(doc, word){
+  const all = doc.paras.join(" ");
+  const s = all.split(/(?<=[.!?])\s+/).find(x => x.toLowerCase().includes(word.toLowerCase()));
+  return s || "";
+}
+async function lookupWord(word, id){
+  const doc = rDoc(rDay); if(!doc) return;
+  const key = word.toLowerCase(), sent = sentenceOf(doc, word);
+  rPop = {id, w:word, sent, loading:true}; render();
+  if(rCache[key]){ rPop = {...rPop, ...rCache[key], loading:false}; render(); return; }
+  if(!sample){ rPop = {...rPop, loading:false, err:"Translation isn't available here."}; render(); return; }
+  try{
+    const r = await sample.json(`Um brasileiro (inglês B1) está lendo um texto em inglês e tocou na palavra "${word}". Frase do texto: """${sent}"""
+Dê o sentido NESTE contexto. Responda só com JSON:
+{"pt":"tradução curta em português do Brasil","pron":"pronúncia com sons do português, sílaba tônica em MAIÚSCULAS","note":"no máximo 1 frase em inglês simples sobre uso, se útil; senão vazio. Sem travessões."}`, {modelTier:"quick"});
+    const v = {pt:String(r?.pt||""), pron:String(r?.pron||""), note:String(r?.note||"")};
+    rCache[key] = v;
+    if(rPop?.id === id){ rPop = {...rPop, ...v, loading:false}; render(); }
+  }catch(e){
+    if(rPop?.id === id){ rPop = {...rPop, loading:false, err: e?.code==="rate_limited" ? "Too many lookups in a row. Wait a moment." : "Couldn't translate this word. Tap it again."}; render(); }
+  }
+}
+async function saveWord(){
+  if(!rPop || !col || !rPop.pt) return;
+  const id = idFor(rPop.w);
+  try{
+    await col.doc(id).set({src:rPop.w, out:rPop.pt, from:"en", kind:"tr", pattern:"", meaningPt:rPop.pt, alts:[], pron:rPop.pron||"",
+      note:rPop.note||"", ex:rPop.sent||"", exPt:"", ctx:"Reading", fav:true, ts:Date.now()});
+    rPop = {...rPop, saved:true}; render();
+  }catch(e){ rPop = {...rPop, err:"Couldn't save this word."}; render(); }
+}
+
+async function answerQ(qi, k){
+  const doc = rDoc(rDay); if(!doc || (doc.answers||{})[qi] !== undefined) return;
+  doc.answers = {...(doc.answers||{}), [qi]:k}; render();
+  try{ await rcol.doc(doc.id).update({answers:{[String(qi)]:k}}); }catch(e){}
+}
+async function checkRWrite(){
+  const doc = rDoc(rDay), w = doc?.write, text = rDraft.trim();
+  if(!w || !text || !sample || rChecking) return;
+  rChecking = true; rWErr = ""; render();
+  try{
+    const r = await sample.json(promptCheck({type:"translate", pt:w.pt, answer:w.model, pattern:w.pattern}, text), {modelTier:"quick", cache:false});
+    const res = {text, ok: r?.ok===true, better:String(r?.better || w.model), note:String(r?.note||"")};
+    doc.wres = res; rChecking = false; render();
+    await rcol.doc(doc.id).update({wres:res});
+    if(!res.ok && col){ try{ await col.doc("x"+idFor(text)).set({src:text, out:res.better, from:"en", kind:"fix", pattern:w.pattern||"", meaningPt:w.pt,
+      alts:[], pron:"", note:res.note, ex:"", exPt:"", ctx:"Reading", fav:true, ts:Date.now()}); }catch(e){} }
+  }catch(e){ rChecking = false; rWErr = e?.code==="rate_limited" ? "Too many checks in a row. Wait a moment." : "Couldn't check it right now. Try again."; render(); }
+}
+function rScore(doc){
+  const qs = doc.questions||[], a = doc.answers||{};
+  const right = qs.filter((q,i) => a[i] === q.a).length + (doc.wres?.ok ? 1 : 0);
+  return {right, total: qs.length + (doc.write ? 1 : 0)};
+}
+async function finishDay(){
+  const doc = rDoc(rDay); if(!doc) return;
+  const secs = Math.round((doc.secs||0) + (rStart ? (Date.now()-rStart)/1000 : 0));
+  const s = rScore(doc);
+  try{
+    await rcol.doc(doc.id).update({status:"done", secs, score: s.total ? Math.round(s.right/s.total*100) : 0, doneAt:Date.now()});
+    rStart = 0; rDay = null; render(); window.scrollTo({top: $("#panel").offsetTop - 10});
+  }catch(e){ rWErr = "Couldn't save your progress. Try again."; render(); }
+}
+
+function renderRead(p){
+  if(rDay){ renderDay(p); return; }
+  const done = reads.filter(r => r.status==="done");
+  const nx = rNext();
+  const secs = done.reduce((s,r) => s + (r.secs||0), 0);
+  const sc = done.filter(r => typeof r.score==="number");
+  const avg = sc.length ? Math.round(sc.reduce((s,r)=>s+r.score,0)/sc.length) : null;
+  const saved = items.filter(i => i.ctx==="Reading").length;
+  const dt = doneTests(), first = dt[0], last = dt[dt.length-1];
+  const startL = reads.find(r => r.day===1)?.lvl || (first ? String(first.level).replace("+","") : curLevel());
+  let h = `<div class="rd"><div><div class="lang">28-day reading track</div><div class="out">One classic a day, retold at your level</div></div>`;
+  if(nx){
+    const P = dayPlan(nx), has = rDoc(nx);
+    h += `<div class="rd-next">${coverHTML(nx)}<div><div class="lang">Day ${nx} · ${has?.lvl||P.L} · about ${has?.min||P.min} min</div>
+      <h2>${esc(BOOKS[nx-1].t)}</h2><div class="meta">${esc(BOOKS[nx-1].a)} · ${BOOKS[nx-1].y}</div>
+      ${has ? `<button class="go" type="button" data-rday="${nx}">Continue reading</button>`
+            : `<button class="go" type="button" id="rgen" ${rGen||!sample||!rcol?"disabled":""}>${rGen?"Writing your story...":"Start day "+nx}</button>`}
+      ${rErr?`<div class="status err">${esc(rErr)}</div>`:""}</div></div>`;
+  } else {
+    h += `<div class="empty"><strong>Track complete</strong>You read all 28 days. Open any book below to read it again.</div>`;
+  }
+  h += `<div class="ba"><div class="side"><span class="lang">Start</span><span class="big2">${esc(startL)}</span></div><span class="arrow" aria-hidden="true">→</span>
+    <div class="side now"><span class="lang">Now</span><span class="big2">${esc(curLevel())}</span></div></div>
+    <div class="honest">Your level comes from the weekly test in the Level tab${last?`, last taken ${new Date(last.date+"T12:00:00").toLocaleDateString("en-GB",{day:"numeric",month:"short"})}`:""}. Reading moves it when the test confirms it.</div>
+    <div class="stats"><div class="stat"><b>${done.length}/28</b><span>days read</span></div>
+      <div class="stat"><b>${avg===null?"–":avg+"%"}</b><span>understood</span></div>
+      <div class="stat"><b>${Math.round(secs/60)}</b><span>minutes</span></div>
+      <div class="stat"><b>${saved}</b><span>words saved</span></div></div>`;
+  for(let w=0; w<4; w++){
+    h += `<div class="wk"><div class="lang">${WEEKS[w]} · ${[10,12,14,15][w]} min a day</div><div class="wk-row">`;
+    for(let d=w*7+1; d<=w*7+7; d++){
+      const ok = rOpenable(d), dn = rDone(d), doc = rDoc(d);
+      h += `<button class="cv-wrap${ok?"":" lock"}${d===nx?" next":""}" type="button" ${ok && (doc||d!==nx) ? `data-rday="${d}"` : d===nx ? `data-rstart="${d}"` : "disabled"} aria-label="Day ${d}, ${esc(BOOKS[d-1].t)}${dn?", read":ok?"":", locked"}">
+        ${coverHTML(d)}<span class="dl">Day ${d} ${dn?`<span class="ok2">${doc.score??""}${typeof doc.score==="number"?"%":"✓"}</span>`:""}</span></button>`;
+    }
+    h += `</div></div>`;
+  }
+  p.innerHTML = h + `</div>`;
+  $("#rgen")?.addEventListener("click", () => genRead(nx));
+}
+
+function renderDay(p){
+  const doc = rDoc(rDay), b = BOOKS[rDay-1];
+  if(!doc){ rDay = null; renderRead(p); return; }
+  const a = doc.answers||{}, qs = doc.questions||[], dn = doc.status==="done";
+  const allQ = qs.every((q,i) => a[i] !== undefined), wDone = !doc.write || !!doc.wres;
+  const s = rScore(doc);
+  let h = `<div class="rd"><div class="rhead"><button class="ghost" type="button" id="rback">← All days</button>
+    <span class="timer" ${dn?"":`id="rtime"`}>${fmtT((doc.secs||0) + (rStart ? (Date.now()-rStart)/1000 : 0))}</span></div>
+    <div class="rd-next" style="border-width:1px">${coverHTML(rDay)}<div><div class="lang">Day ${rDay} · ${esc(doc.lvl)} · about ${doc.min} min</div>
+      <h2>${esc(b.t)}</h2><div class="meta">${esc(b.a)} · ${b.y} · retold for learners</div></div></div>
+    ${doc.intro?`<div class="focus"><div class="note">${esc(doc.intro)}</div></div>`:""}
+    <div class="honest">Tap any word to see its meaning. Underlined words are today's key vocabulary.</div>
+    <div class="story">${storyHTML(doc)}</div>`;
+  if(doc.glossary?.length){
+    h += `<div class="section-title">Key words</div><ul class="list">${doc.glossary.map((g,i)=>`<li class="item"><div class="item-top"><div class="item-main"><div class="out">${esc(g.w)}</div><div class="src">${esc(g.pt)}${g.pron?` · <span style="color:var(--sea)">${esc(g.pron)}</span>`:""}</div></div>
+      <button class="iconbtn${items.some(x=>x.id===idFor(g.w))?" on":""}" type="button" data-rgsave="${i}" aria-label="Save ${esc(g.w)}">${items.some(x=>x.id===idFor(g.w))?"★":"☆"}</button></div></li>`).join("")}</ul>`;
+  }
+  h += `<div class="section-title">Check your understanding</div><ol class="ex-list">`;
+  qs.forEach((q,i) => {
+    const ans = a[i];
+    h += `<li class="exr${ans!==undefined?" done":""}"><div class="q2">${esc(q.q)}</div><div class="opts">${q.opts.map((o,k)=>{
+      const cls = ans===undefined ? "" : k===q.a ? " right" : k===ans ? " wrong" : "";
+      return `<button class="qopt${cls}" type="button" data-rq="${i}:${k}" ${ans!==undefined?"disabled":""}>${esc(o)}</button>`; }).join("")}</div>
+      ${ans!==undefined?`<div><span class="fb ${ans===q.a?"ok":"no"}">${ans===q.a?"Correct":"Not quite"}</span></div>${q.why?`<div class="note">${esc(q.why)}</div>`:""}`:""}</li>`;
+  });
+  h += `</ol>`;
+  if(doc.write){
+    const w = doc.write, r = doc.wres;
+    h += `<div class="section-title">Say it in English</div><div class="exr${r?" done":""}"><div class="lang">${w.pattern?"Pattern · "+esc(w.pattern):"From the story"}</div><div class="q2">${esc(w.pt)}</div>`;
+    if(r){
+      h += `<div><span class="fb ${r.ok?"ok":"no"}">${r.ok?"Correct":"Almost"}</span></div>
+        ${cleanW(r.text)!==cleanW(r.better)?`<div class="mine">You: ${r.ok?esc(r.text):`<s>${esc(r.text)}</s>`}</div>`:""}
+        <div class="out">${esc(r.better)}</div>${r.note?`<div class="note">${esc(r.note)}</div>`:""}
+        ${dn?"":`<div class="actions"><button class="ghost" type="button" id="rredo">Try again</button></div>`}`;
+    } else {
+      h += `<textarea id="rwrite" data-rdraft="1" placeholder="Write it in English" aria-label="Your sentence">${esc(rDraft)}</textarea>
+        <div class="actions"><button class="go" type="button" id="rcheck" ${rChecking||!sample?"disabled":""}>${rChecking?"Checking...":"Check"}</button></div>`;
+    }
+    if(rWErr) h += `<div class="status err">${esc(rWErr)}</div>`;
+    h += `</div>`;
+  }
+  if(dn){
+    h += `<div class="empty"><strong>Day ${rDay} read · ${doc.score??0}% understood</strong>${fmtT(doc.secs||0)} minutes. New words you saved now appear in Review and in your daily practice.</div>`;
+  } else {
+    h += `<button class="go" type="button" id="rfinish" style="margin:4px 0 0;align-self:stretch" ${allQ&&wDone?"":"disabled"}>${allQ&&wDone?`Finish day ${rDay} · ${s.right} of ${s.total} right`:"Answer the questions to finish"}</button>`;
+  }
+  h += `</div>`;
+  if(rPop){
+    h += `<div class="pop" role="dialog" aria-label="Word meaning"><div class="pop-in"><div class="rhead"><span class="pw">${esc(rPop.w)}</span><button class="iconbtn" type="button" id="rpclose" aria-label="Close">✕</button></div>
+      ${rPop.loading?`<div class="meta">Translating...</div>`:rPop.err?`<div class="status err">${esc(rPop.err)}</div>`:`
+      <div class="pt2">${esc(rPop.pt)}</div>${rPop.pron?`<div><span class="pron">${esc(rPop.pron)}</span></div>`:""}${rPop.note?`<div class="note">${esc(rPop.note)}</div>`:""}
+      <div class="actions">${canSpeak?`<button class="ghost" type="button" id="rpsay">Listen</button>`:""}<button class="ghost star" type="button" id="rpsave" aria-pressed="${!!rPop.saved}" ${rPop.saved||!col?"disabled":""}>${rPop.saved?"★ Saved":"☆ Save to phrases"}</button></div>`}</div></div>`;
+  }
+  p.innerHTML = h;
+  if(!dn && rStart) startTick();
+}
+
+$("#panel").addEventListener("input", e => { if(e.target.dataset.rdraft) rDraft = e.target.value; });
+$("#panel").addEventListener("click", e => {
+  if(tab !== "read") return;
+  const sp = e.target.closest("[data-rw],[data-rg]");
+  if(sp){
+    const doc = rDoc(rDay); if(!doc) return;
+    if(sp.dataset.rg !== undefined){ const g = doc.glossary[+sp.dataset.rg]; if(g){ rPop = {id:sp.dataset.wid, w:g.w, pt:g.pt, pron:g.pron, sent:sentenceOf(doc,g.w), saved: items.some(x=>x.id===idFor(g.w))}; render(); } }
+    else lookupWord(sp.dataset.rw, sp.dataset.wid);
+    return;
+  }
+  const b = e.target.closest("button"); if(!b) return; const ds = b.dataset;
+  if(ds.rday){ openDay(+ds.rday); }
+  else if(ds.rstart){ genRead(+ds.rstart); }
+  else if(ds.rq){ const [i,k] = ds.rq.split(":").map(Number); answerQ(i,k); }
+  else if(ds.rsay){ const doc = rDoc(rDay); if(doc) speak(doc.paras[+ds.rsay]); }
+  else if(ds.rgsave){ const doc = rDoc(rDay), g = doc?.glossary[+ds.rgsave]; if(g && col && !items.some(x=>x.id===idFor(g.w))){
+      col.doc(idFor(g.w)).set({src:g.w, out:g.pt, from:"en", kind:"tr", pattern:"", meaningPt:g.pt, alts:[], pron:g.pron||"", note:"", ex:sentenceOf(doc,g.w), exPt:"", ctx:"Reading", fav:true, ts:Date.now()}).catch(()=>{}); } }
+  else if(b.id==="rback") closeDay();
+  else if(b.id==="rcheck") checkRWrite();
+  else if(b.id==="rredo"){ const doc = rDoc(rDay); if(doc){ doc.wres = null; rDraft = ""; rcol.doc(doc.id).update({wres:null}).catch(()=>{}); render(); } }
+  else if(b.id==="rfinish") finishDay();
+  else if(b.id==="rpclose"){ rPop = null; render(); }
+  else if(b.id==="rpsay"){ if(rPop) speak(rPop.w); }
+  else if(b.id==="rpsave") saveWord();
+});
+
+
+/* ===== Class unit of the week: Unit 9 Money ===== */
+const UNIT = {id:"unit-09-money", n:9, title:"Money", from:"2026-10-26", to:"2026-11-01",
+  quote:"Money often costs too much.", author:"Ralph Waldo Emerson",
+  sections:[
+  {key:"att", title:"Attitudes to money", sub:"Spend, save, afford, borrow, lend, owe", items:[
+    {k:"mc", q:"I can't ___ a new car right now. It's too expensive.", o:["afford","spend","pay"], a:0, why:"Afford = ter dinheiro suficiente para algo. Usually with can / can't."},
+    {k:"mc", q:"Could you ___ me €20 until Friday?", o:["borrow","lend","owe"], a:1, why:"Lend = emprestar PARA alguém. Borrow = pegar emprestado DE alguém."},
+    {k:"mc", q:"I need to ___ some money from the bank.", o:["lend","earn","borrow"], a:2, why:"You borrow FROM someone. The bank lends TO you."},
+    {k:"mc", q:"I still ___ my brother €50. I must pay him back.", o:["owe","lend","save"], a:0, why:"Owe = dever dinheiro a alguém."},
+    {k:"mc", q:"That phone was a ___ of money. It broke after a week.", o:["cost","waste","save"], a:1, why:"A waste of money = dinheiro jogado fora."},
+    {k:"mc", q:"I ___ too much money on clothes.", o:["spend","pay","cost"], a:0, why:"Spend money ON something. Pay FOR something. Something costs money."},
+    {k:"mc", q:"How much did the jacket ___?", o:["pay","spend","cost"], a:2, why:"The thing costs. The person spends or pays. Past of cost is cost."},
+    {k:"mc", q:"I'm ___ this month, so I can't go out.", o:["broke","generous","wealthy"], a:0, why:"Broke (informal) = sem dinheiro, duro."},
+    {k:"mc", q:"She's very ___. She always pays for everyone's coffee.", o:["mean","generous","tight"], a:1, why:"Generous = generoso. Mean and tight (British) = mão de vaca."},
+    {k:"mc", q:"Can I pay ___ card?", o:["with","by","in"], a:1, why:"Pay by card, pay in cash. Not \"pay with cash\" in British English."},
+  ]},
+  {key:"cha", title:"Philanthropy and charities", sub:"Donate, raise money, volunteer", items:[
+    {k:"mc", q:"The school is ___ money for the local hospital.", o:["raising","rising","earning"], a:0, why:"Raise money = arrecadar. Rise has no object: prices rise."},
+    {k:"mc", q:"I ___ €10 to a charity every month.", o:["borrow","donate","lend"], a:1, why:"Donate something TO a charity."},
+    {k:"mc", q:"She works as a ___ at an animal shelter. She doesn't get paid.", o:["customer","volunteer","donor"], a:1, why:"Volunteer = voluntário, trabalha sem receber."},
+    {k:"mc", q:"A ___ is a rich person who gives a lot of money to good causes.", o:["philanthropist","shop assistant","borrower"], a:0, why:"Philanthropist: fi-LAN-thro-pist. Philanthropy = filantropia."},
+    {k:"mc", q:"They organised a ___ to help families after the storm.", o:["refund","receipt","fundraiser"], a:2, why:"Fundraiser = evento para arrecadar dinheiro."},
+    {k:"order", en:"I give money to charity every month", pt:"Talking about a monthly habit of giving"},
+    {k:"order", en:"Have you ever volunteered for a charity", pt:"Asking a classmate about their experience"},
+  ]},
+  {key:"skl", title:"Your skills and helping others", sub:"I'm good at... so I could...", items:[
+    {k:"write", pattern:"I'm good at ___, so I could help by ___ing.", pt:"Say one skill you have and how it could help a charity.", model:"I'm good at selling, so I could help by finding new donors for the charity."},
+    {k:"write", pattern:"I could teach ___ to ___.", pt:"Say something you could teach and to whom.", model:"I could teach basic sales skills to young people looking for their first job."},
+    {k:"write", pattern:"I'd be happy to ___ for free.", pt:"Offer to do something useful without being paid.", model:"I'd be happy to help a small charity organise its fundraising for free."},
+  ]},
+  {key:"shp", title:"Shopping for clothes and refunds", sub:"Try on, size, fit, receipt, refund", items:[
+    {k:"order", en:"Could I try this jacket on, please", pt:"In a shop, you want to use the changing room"},
+    {k:"order", en:"Do you have this in a medium", pt:"Asking for a different size"},
+    {k:"order", en:"It doesn't fit, so I'd like a refund", pt:"Returning clothes and asking for your money back"},
+    {k:"order", en:"Have you got the receipt", pt:"The shop assistant asks for proof of purchase"},
+    {k:"mc", q:"It's too ___. Have you got a bigger size?", o:["tight","loose","long"], a:0, why:"Tight = apertado. Loose = folgado."},
+    {k:"mc", q:"That colour really ___ you!", o:["fits","suits","matches"], a:1, why:"Suit = ficar bem (estilo, cor). Fit = servir (tamanho)."},
+    {k:"mc", q:"Can I ___ it for a different colour?", o:["exchange","refund","return back"], a:0, why:"Exchange = trocar. Refund is the money you get back."},
+    {k:"write", pattern:"", pt:"Você comprou uma camisa ontem, ela está com um furo e você quer o dinheiro de volta.", model:"I bought this shirt yesterday, but it has a hole in it. Could I have a refund, please?"},
+  ]},
+  {key:"adv", title:"Write a 'for sale' advert", sub:"For sale, good condition, nearest offer", items:[
+    {k:"mc", q:"\"Hardly used\" means...", o:["used a lot","used very little","broken"], a:1, why:"Hardly = quase nada. Hardly used = pouco usado."},
+    {k:"mc", q:"\"€40 o.n.o.\" means €40 or ___", o:["nearest offer","next order","new object"], a:0, why:"O.n.o. = or nearest offer: o preço é negociável."},
+    {k:"write", pattern:"FOR SALE: ___. ___ condition. €___ o.n.o.", pt:"Write a short advert (3 to 5 sentences) to sell a bicycle: what it is, condition, price, how to contact you.", model:"FOR SALE: Blue city bike, 21 gears. Excellent condition, hardly used. Comes with a lock and lights. €120 o.n.o. Collection from Sliema. Message me for photos."},
+  ]},
+  {key:"spk", title:"Speaking: discuss with a partner", sub:"The 3 questions on page 81", items:[
+    {k:"write", open:true, pattern:"I think money is important because ___, but it can't ___.", pt:"Is money important?", model:"I think money is important because it gives you security and freedom, but it can't buy health or real friends."},
+    {k:"write", open:true, pattern:"I think he meant that ___. I (don't) agree because ___.", pt:"\"Money often costs too much.\" What did Emerson mean? Do you agree?", model:"I think he meant that we sometimes pay too high a price for money, like our time, health or family. I agree because many people work too much and forget what really matters."},
+    {k:"write", open:true, pattern:"I spend money on ___ almost every day.", pt:"Do you spend money every day? What do you buy?", model:"Yes, I spend money almost every day. I usually buy coffee before class and sometimes lunch near the school."},
+  ]},
+]};
+let uDoc = null, uOpen = false, uSec = null;
+const uDrafts = {}, uPicks = {}, uChecking = new Set(), uRetry = new Set(), uErr = {}, uTip = new Set();
+const unitActive = () => { const d = ymd(new Date()); return d >= UNIT.from && d <= UNIT.to; };
+const uKey = (s,i) => s+"-"+i;
+const uItem = key => { const [s,i] = key.split("-"); return UNIT.sections.find(x=>x.key===s).items[+i]; };
+const uAnsAll = () => (uDoc && uDoc.answers) || {};
+function uWords(it, key){ const w = it.en.split(/\s+/); let sh = seeded(w, key.length*31 + w.length*17 + 3); if(sh.join(" ")===w.join(" ")) sh = sh.slice(1).concat(sh[0]); return sh; }
+const uTotal = () => UNIT.sections.reduce((n,s)=>n+s.items.length,0);
+
+function unitLine(){
+  if(!unitActive()) return "";
+  return `\nTema da aula desta semana (Unit ${UNIT.n}: ${UNIT.title}): atitudes em relação a dinheiro e gastos (spend, save, afford, borrow, lend, owe, waste), filantropia e caridade (donate, raise money, volunteer, fundraiser), habilidades para ajudar os outros, comprar roupas e pedir reembolso (try on, size, fit, suit, receipt, refund, exchange) e anúncio de venda ("for sale", condition, o.n.o.). Use esse tema em pelo menos 4 dos 6 exercícios de hoje, sem repetir exatamente as frases da apostila.`;
+}
+
+async function uSave(key, a){
+  uRetry.delete(key); delete uErr[key];
+  const all = {...uAnsAll(), [key]: a};
+  uDoc = {...(uDoc||{}), unit:UNIT.n, answers: all};
+  render();
+  if(!tcol) return;
+  try{
+    if(uDoc._saved) await tcol.doc(UNIT.id).update({answers:{[key]:a}, updated:Date.now()});
+    else { await tcol.doc(UNIT.id).set({unit:UNIT.n, title:UNIT.title, answers:all, updated:Date.now()}); uDoc._saved = true; }
+  }catch(e){ uErr[key] = "Couldn't save this answer."; render(); }
+  if(!a.ok && col && a.text && a.better){
+    const id = "x" + idFor(a.text);
+    try{ await col.doc(id).set({src:a.text, out:a.better, from:"en", kind:"fix", pattern:a.pattern||"", meaningPt:a.pt||"",
+      alts:[], pron:"", note:a.note||"", ex:"", exPt:"", ctx:"Class", fav:true, ts:Date.now()}); }catch(e){}
+  }
+}
+function uPrompt(it, text){
+  return `Corrija a resposta de um aluno brasileiro de inglês nível B1 que está em Malta (inglês britânico). Tema da aula: Unit ${UNIT.n} Money.
+Tarefa: ${it.pt}${it.pattern?`\nMolde sugerido: ${it.pattern}`:""}
+Resposta modelo: ${it.model}
+Resposta do aluno: """${text}"""
+
+${it.open ? "É uma pergunta de opinião para conversa: qualquer opinião vale. Avalie só se o inglês está gramatical e natural e se responde à pergunta." : "Considere correta qualquer frase gramatical e natural que cumpra a tarefa, mesmo diferente do modelo."} Pequenos erros de digitação não contam.
+Responda só com JSON:
+{"ok":true|false,"better":"a resposta dele corrigida e natural, mantendo as ideias dele (igual, se já estiver ótima)","note":"1 ou 2 frases em INGLÊS simples (nível B1): o erro principal ou um elogio específico. Sem travessões."}`;
+}
+async function uCheckWrite(key){
+  const it = uItem(key), text = (uDrafts[key]||"").trim();
+  if(!text || !sample || uChecking.has(key)) return;
+  uChecking.add(key); delete uErr[key]; render();
+  try{
+    const r = await sample.json(uPrompt(it, text), {modelTier:"quick", cache:false});
+    uChecking.delete(key);
+    await uSave(key, {text, ok: r?.ok===true, better:String(r?.better||it.model), note:String(r?.note||""), pattern:it.pattern||"", pt:it.pt});
+  }catch(e){
+    uChecking.delete(key);
+    uErr[key] = e?.code==="rate_limited" ? "Too many checks in a row. Wait a moment." : "Couldn't check it right now. Try again.";
+    render();
+  }
+}
+
+function uItemHTML(it, key){
+  const a = uAnsAll()[key], done = a && !uRetry.has(key);
+  let b = "", label = it.k==="mc" ? "Choose the right word" : it.k==="order" ? "Build the sentence" : (it.open ? "Answer the question" : "Write it in English");
+  if(it.k==="mc"){
+    b += `<div class="q2">${esc(it.q)}</div><div class="opts">${it.o.map((o,j)=>{
+      let cls = "qopt"; if(done){ if(j===it.a) cls+=" right"; else if(j===a.pick) cls+=" wrong"; }
+      return `<button class="${cls}" type="button" data-umc="${key}:${j}" ${done?"disabled":""}>${esc(o)}</button>`; }).join("")}</div>`;
+    if(done) b += `<div><span class="fb ${a.ok?"ok":"no"}">${a.ok?"Correct":"Not quite"}</span></div><div class="note">${esc(it.why)}</div>
+      <div class="actions"><button class="ghost" type="button" data-uredo="${key}">Try again</button></div>`;
+  } else if(it.k==="order"){
+    b += `<div class="note">${esc(it.pt)}</div>`;
+    if(done){
+      b += `<div><span class="fb ${a.ok?"ok":"no"}">${a.ok?"Correct":"Almost"}</span></div>${a.ok?"":`<div class="mine">You: <s>${esc(a.text)}</s></div>`}
+        <div class="out">${esc(it.en)}${/^(could|do|have|can|what|where|how|is|are|did)\b/i.test(it.en)?"?":"."}</div>
+        <div class="actions">${canSpeak?`<button class="ghost" type="button" data-usay="${esc(it.en)}">Listen</button>`:""}<button class="ghost" type="button" data-uredo="${key}">Try again</button></div>`;
+    } else {
+      const w = uWords(it,key), pk = uPicks[key]||[];
+      b += `<div class="built">${pk.length ? pk.map((k,n)=>`<button class="word" type="button" data-uunpick="${key}:${n}">${esc(w[k])}</button>`).join("") : `<span class="hint">Tap the words in the right order</span>`}</div>
+        <div class="bank">${w.map((x,k)=> pk.includes(k) ? "" : `<button class="word" type="button" data-upick="${key}:${k}">${esc(x)}</button>`).join("")}</div>
+        <div class="actions"><button class="ghost" type="button" data-ureset="${key}">Clear</button><button class="go" type="button" data-uord="${key}" ${pk.length===w.length?"":"disabled"}>Check</button></div>`;
+    }
+  } else {
+    b += `<div class="q2">${esc(it.pt)}</div>${it.pattern?`<div class="note"><span class="lang">Pattern</span><br><b>${esc(it.pattern)}</b></div>`:""}`;
+    if(done){
+      b += `<div><span class="fb ${a.ok?"ok":"no"}">${a.ok?"Good":"Almost"}</span></div>
+        ${cleanW(a.text)!==cleanW(a.better)?`<div class="mine">You: ${a.ok?esc(a.text):`<s>${esc(a.text)}</s>`}</div>`:""}
+        <div class="out">${esc(a.better)}</div>${a.note?`<div class="note">${esc(a.note)}</div>`:""}
+        <div class="ex"><span class="lang">Model answer</span><br><b>${esc(it.model)}</b></div>
+        <div class="actions">${canSpeak?`<button class="ghost" type="button" data-usay="${esc(a.better)}">Listen</button>`:""}<button class="ghost" type="button" data-uredo="${key}">Try again</button></div>`;
+    } else {
+      b += `<textarea data-udraft="${key}" placeholder="Write in English" aria-label="Your answer">${esc(uDrafts[key]||"")}</textarea>
+        <div class="actions"><button class="ghost" type="button" data-utip="${key}">${uTip.has(key)?"Hide model":"See model"}</button><button class="go" type="button" data-uwrite="${key}" ${uChecking.has(key)||!sample?"disabled":""}>${uChecking.has(key)?"Checking...":"Check"}</button></div>
+        ${uTip.has(key)?`<div class="ex"><b>${esc(it.model)}</b></div>`:""}`;
+    }
+  }
+  if(uErr[key]) b += `<div class="status err">${esc(uErr[key])}</div>`;
+  return `<li class="exr${done?" done":""}"><div class="lang">${label}</div>${b}</li>`;
+}
+
+function unitHTML(){
+  if(!unitActive()) return "";
+  const ans = uAnsAll(), keys = Object.keys(ans), total = uTotal();
+  const done = keys.length, ok = keys.filter(k=>ans[k].ok).length;
+  let h = `<section class="unit"><button class="unit-top" type="button" data-utoggle="1" aria-expanded="${uOpen}">
+    <span class="unit-n">${UNIT.n}</span><span class="unit-meta"><span class="lang">This week in class</span><span class="unit-t">${esc(UNIT.title)}</span>
+    <span class="meta">${done} of ${total} done${done?` · ${ok} correct`:""}</span></span><span class="unit-chev">${uOpen?"Close":"Open"}</span></button>
+    <div class="prog"><i style="width:${Math.round(done/total*100)}%"></i></div>`;
+  if(uOpen){
+    if(!uSec){
+      h += `<blockquote class="unit-q">${esc(UNIT.quote)}<cite>${esc(UNIT.author)}</cite></blockquote>
+        <ul class="unit-secs">${UNIT.sections.map(s => { const n = s.items.length, d = s.items.filter((_,i)=>ans[uKey(s.key,i)]).length;
+        return `<li><button type="button" data-usec="${s.key}"><span><b>${esc(s.title)}</b><span class="meta">${esc(s.sub)}</span></span><span class="unit-c${d===n?" full":""}">${d}/${n}</span></button></li>`; }).join("")}</ul>`;
+    } else {
+      const s = UNIT.sections.find(x=>x.key===uSec), idx = UNIT.sections.indexOf(s), nx = UNIT.sections[idx+1];
+      h += `<div class="rhead"><button class="ghost" type="button" data-usec="">← All topics</button><span class="meta">${idx+1} of ${UNIT.sections.length}</span></div>
+        <div class="section-title">${esc(s.title)}</div>
+        <ol class="ex-list">${s.items.map((it,i)=>uItemHTML(it, uKey(s.key,i))).join("")}</ol>
+        ${nx?`<button class="go" type="button" data-usec="${nx.key}" style="margin:0;align-self:flex-end">Next: ${esc(nx.title)}</button>`:`<button class="ghost" type="button" data-usec="">Back to all topics</button>`}`;
+    }
+  }
+  return h + `</section>`;
+}
+
+$("#panel").addEventListener("input", e => { const d = e.target.dataset.udraft; if(d!==undefined) uDrafts[d] = e.target.value; });
+$("#panel").addEventListener("click", e => {
+  const b = e.target.closest("button"); if(!b) return; const ds = b.dataset;
+  if(ds.utoggle){ uOpen = !uOpen; if(!uOpen) uSec = null; render(); }
+  else if(ds.usec!==undefined){ uSec = ds.usec || null; render(); document.querySelector(".unit")?.scrollIntoView({block:"start"}); }
+  else if(ds.umc){ const [key,j] = ds.umc.split(":"); const it = uItem(key); uSave(key, {pick:+j, ok:+j===it.a}); }
+  else if(ds.upick){ const [key,k] = ds.upick.split(":"); (uPicks[key] ||= []).push(+k); render(); }
+  else if(ds.uunpick){ const [key,n] = ds.uunpick.split(":"); uPicks[key].splice(+n,1); render(); }
+  else if(ds.ureset){ uPicks[ds.ureset] = []; render(); }
+  else if(ds.uord){ const key = ds.uord, it = uItem(key), w = uWords(it,key), text = (uPicks[key]||[]).map(k=>w[k]).join(" ");
+    uSave(key, {text, ok: cleanW(text)===cleanW(it.en)}); }
+  else if(ds.uwrite) uCheckWrite(ds.uwrite);
+  else if(ds.utip){ uTip.has(ds.utip) ? uTip.delete(ds.utip) : uTip.add(ds.utip); render(); }
+  else if(ds.uredo){ uRetry.add(ds.uredo); uPicks[ds.uredo] = []; uDrafts[ds.uredo] = ""; render(); }
+  else if(ds.usay) speak(ds.usay);
+});
+
+
+/* ===== Verb to be mastery ===== */
+const TB_CATS = [
+  {k:"present", s:"am / is / are", name:"Present: am, is, are", rule:"I am; he/she/it is; you/we/they are. Formas curtas: I'm, he's, they're. O verbo muda conforme o sujeito.", pt:"Ser e estar são o mesmo verbo em inglês: be."},
+  {k:"neg", s:"Negatives", name:"Negatives", rule:"Para negar, coloque not depois do be: I'm not, he isn't, they aren't. Nunca \"I no am\" nem \"I don't am\".", pt:"Com be, a negação é só be + not. Sem do/don't."},
+  {k:"q", s:"Questions", name:"Questions and short answers", rule:"Na pergunta, o be vai antes do sujeito: Are you ready? Na resposta curta, repita o be: Yes, I am. No, she isn't.", pt:"Na pergunta, o be vem antes do sujeito. Não se usa contração na resposta curta afirmativa (Yes, it is)."},
+  {k:"past", s:"was / were", name:"Past: was, were", rule:"No passado: was para I, he, she, it; were para you, we, they. Negativa: wasn't, weren't.", pt:"Era/estava/foi = was ou were, conforme o sujeito."},
+  {k:"there", s:"there is / are", name:"There is, there are", rule:"There is + singular, there are + plural; no passado, there was / there were. Significa \"tem\" ou \"há\" no sentido de existir.", pt:"\"Tem muita gente\" = There are a lot of people. Não use \"have\" para dizer que algo existe."},
+  {k:"do", s:"be vs do", name:"Be or do? (auxiliaries)", rule:"Be acompanha adjetivo, lugar, substantivo e verbo+ing: Are you tired? Do/does/did acompanham os outros verbos: Do you work? Nunca misture os dois.", pt:"Esse é o erro mais comum de brasileiros: \"I'm agree\", \"Do you are\". Verbo de ação pede do; estado pede be."},
+  {k:"have", s:"be vs have", name:"Be, not have (age and feelings)", rule:"Para idade e sensações o inglês usa BE, não have: I'm 31, I'm hungry, I'm cold, I'm right, I'm scared.", pt:"Onde o português usa \"ter\" ou \"estar com\" (fome, frio, medo, X anos), o inglês usa be."},
+  {k:"cont", s:"be + -ing", name:"Continuous: be + verb-ing", rule:"Para ação acontecendo: be + verbo-ing. I'm working now (estou trabalhando). I was sleeping when you called (eu estava dormindo).", pt:"\"Estou fazendo\" = I'm doing. O be nunca pode faltar: \"I studying\" está errado."},
+  {k:"fut", s:"Future", name:"Future: will be, going to", rule:"will be para previsão e promessa: It'll be fine (vai ficar tudo bem). be going to para planos: I'm going to visit Gozo.", pt:"\"Vou estar\" = I'll be. \"Vou fazer\" (plano) = I'm going to do."},
+  {k:"perf", s:"been, passive", name:"Been, passive and modals", rule:"been é o particípio de be: I've been to Rome. Voz passiva = be + particípio: It was built in 1990. Depois de modal (should, can, must) use be puro: You should be careful.", pt:"\"Já estive em\" = I've been to. \"É falado\" = is spoken."},
+];
+const TB = [
+  {id:"p1",c:"present",t:"mc",q:"My sister ___ a teacher.",o:["am","is","are"],a:1},
+  {id:"p2",c:"present",t:"mc",q:"We ___ from Brazil.",o:["is","are","am"],a:1},
+  {id:"p3",c:"present",t:"type",q:"I ___ in Malta for three weeks.",acc:["am"]},
+  {id:"p4",c:"present",t:"type",q:"The classes ___ really good.",acc:["are"]},
+  {id:"p5",c:"present",t:"pick",o:["My friends is very nice.","My friends are very nice.","My friends be very nice."],a:1},
+  {id:"p6",c:"present",t:"tr",q:"A comida aqui é cara.",acc:["The food here is expensive.","Food here is expensive.","The food is expensive here."]},
+  {id:"p7",c:"present",t:"mc",q:"The keys ___ on the table.",o:["is","are","am"],a:1,w:"Keys está no plural, então usa are."},
+  {id:"n1",c:"neg",t:"mc",q:"I ___ ready yet.",o:["don't","am not","not"],a:1},
+  {id:"n2",c:"neg",t:"mc",q:"This restaurant ___ expensive.",o:["isn't","doesn't","don't"],a:0},
+  {id:"n3",c:"neg",t:"type",q:"They ___ at home now. (negative)",acc:["aren't","are not"]},
+  {id:"n4",c:"neg",t:"pick",o:["I no am tired.","I'm not tired.","I don't tired."],a:1},
+  {id:"n5",c:"neg",t:"tr",q:"Ela não está aqui.",acc:["She isn't here.","She is not here."]},
+  {id:"n6",c:"neg",t:"mc",q:"We ___ late, don't worry.",o:["aren't","don't","isn't"],a:0},
+  {id:"q1",c:"q",t:"mc",q:"___ you hungry?",o:["Do","Are","Is"],a:1},
+  {id:"q2",c:"q",t:"mc",q:"Is your hotel near the school? Yes, it ___.",o:["is","does","'s"],a:0,w:"Resposta curta afirmativa nunca termina com contração: Yes, it is (e não Yes, it's)."},
+  {id:"q3",c:"q",t:"type",q:"Where ___ the bus stop?",acc:["is"]},
+  {id:"q4",c:"q",t:"pick",o:["Where you are from?","Where are you from?","Where do you are from?"],a:1},
+  {id:"q5",c:"q",t:"tr",q:"Você está cansado?",acc:["Are you tired?"]},
+  {id:"q6",c:"q",t:"mc",q:"Are they your classmates? No, they ___.",o:["don't","aren't","isn't"],a:1},
+  {id:"q7",c:"q",t:"mc",q:"You're from São Paulo, ___ you?",o:["don't","aren't","isn't"],a:1,w:"A question tag (né?) repete o auxiliar da frase na forma oposta: You're... aren't you?"},
+  {id:"pa1",c:"past",t:"mc",q:"Yesterday ___ a great day.",o:["was","were","is"],a:0},
+  {id:"pa2",c:"past",t:"mc",q:"We ___ at the beach on Sunday.",o:["was","were","are"],a:1},
+  {id:"pa3",c:"past",t:"type",q:"___ you at school yesterday?",acc:["were"]},
+  {id:"pa4",c:"past",t:"pick",o:["I was tired after class.","I were tired after class.","I am tired after class yesterday."],a:0},
+  {id:"pa5",c:"past",t:"tr",q:"Onde você estava ontem à noite?",acc:["Where were you last night?"]},
+  {id:"pa6",c:"past",t:"mc",q:"The museum ___ open last Monday.",o:["didn't","wasn't","weren't"],a:1},
+  {id:"t1",c:"there",t:"mc",q:"___ a pharmacy near here?",o:["Is there","Has","There is"],a:0},
+  {id:"t2",c:"there",t:"mc",q:"There ___ a lot of tourists in Valletta.",o:["is","are","has"],a:1},
+  {id:"t3",c:"there",t:"pick",o:["Has a problem with my room.","There is a problem with my room.","It has a problem with my room."],a:1},
+  {id:"t4",c:"there",t:"type",q:"There ___ a party at the school last Friday.",acc:["was"]},
+  {id:"t5",c:"there",t:"tr",q:"Tem muitas pessoas na fila.",acc:["There are a lot of people in the queue.","There are many people in the queue.","There are lots of people in the queue."]},
+  {id:"t6",c:"there",t:"mc",q:"There ___ any buses after midnight.",o:["isn't","aren't","don't"],a:1},
+  {id:"d1",c:"do",t:"mc",q:"___ you like Maltese food?",o:["Are","Do","Is"],a:1},
+  {id:"d2",c:"do",t:"mc",q:"___ you tired after class?",o:["Do","Are","Did"],a:1},
+  {id:"d3",c:"do",t:"mc",q:"She ___ work on Sundays.",o:["isn't","doesn't","not"],a:1},
+  {id:"d4",c:"do",t:"mc",q:"She ___ working today.",o:["isn't","doesn't","don't"],a:0},
+  {id:"d5",c:"do",t:"pick",o:["I'm agree with you.","I agree with you.","I am agreeing with you."],a:1,w:"Agree já é verbo (concordar), então não leva be: I agree. \"I'm agree\" é um erro clássico de brasileiro."},
+  {id:"d6",c:"do",t:"type",q:"___ you go to the beach yesterday?",acc:["did"]},
+  {id:"d7",c:"do",t:"pick",o:["Do you happy here?","Are you happy here?","You are happy here do?"],a:1},
+  {id:"d8",c:"do",t:"tr",q:"Você gosta de trabalhar aqui?",acc:["Do you like working here?","Do you like to work here?"]},
+  {id:"h1",c:"have",t:"mc",q:"I ___ 31 years old.",o:["have","am","has"],a:1},
+  {id:"h2",c:"have",t:"mc",q:"I ___ hungry. Let's eat.",o:["have","am","do"],a:1},
+  {id:"h3",c:"have",t:"pick",o:["I have cold, can you close the window?","I'm cold, can you close the window?","I'm with cold, can you close the window?"],a:1,w:"I have a cold significa estar resfriado. Sentir frio é I'm cold."},
+  {id:"h4",c:"have",t:"type",q:"You ___ right. The bus is late again.",acc:["are"]},
+  {id:"h5",c:"have",t:"tr",q:"Estou com medo.",acc:["I'm scared.","I'm afraid.","I'm frightened."]},
+  {id:"h6",c:"have",t:"mc",q:"How old ___ your brother?",o:["has","is","does"],a:1},
+  {id:"h7",c:"have",t:"tr",q:"Estou com sede.",acc:["I'm thirsty."]},
+  {id:"c1",c:"cont",t:"mc",q:"Shh! The teacher ___ talking.",o:["is","does","are"],a:0},
+  {id:"c2",c:"cont",t:"mc",q:"What ___ you doing right now?",o:["do","are","is"],a:1},
+  {id:"c3",c:"cont",t:"type",q:"I ___ sleeping when you called me.",acc:["was"]},
+  {id:"c4",c:"cont",t:"pick",o:["I studying English in Malta.","I'm studying English in Malta.","I'm study English in Malta."],a:1},
+  {id:"c5",c:"cont",t:"tr",q:"Estamos esperando o ônibus.",acc:["We're waiting for the bus."]},
+  {id:"c6",c:"cont",t:"mc",q:"They ___ having dinner at 8pm yesterday.",o:["was","were","are"],a:1},
+  {id:"f1",c:"fut",t:"mc",q:"Tomorrow ___ sunny.",o:["will be","will","is be"],a:0},
+  {id:"f2",c:"fut",t:"mc",q:"I'm ___ to visit Gozo on Saturday.",o:["go","going","will"],a:1},
+  {id:"f3",c:"fut",t:"type",q:"Don't worry, it ___ be fine.",acc:["will"]},
+  {id:"f4",c:"fut",t:"pick",o:["I going to call you later.","I'm going to call you later.","I'm go to call you later."],a:1},
+  {id:"f5",c:"fut",t:"tr",q:"Vou estar em casa às 19h.",acc:["I'll be at home at 7pm.","I'll be home at 7pm.","I'll be at home at 7.","I'll be home at 7."]},
+  {id:"f6",c:"fut",t:"mc",q:"___ you be at the party tonight?",o:["Are","Will","Do"],a:1},
+  {id:"e1",c:"perf",t:"mc",q:"Have you ever ___ to Rome?",o:["be","been","was"],a:1},
+  {id:"e2",c:"perf",t:"mc",q:"I've ___ in Malta since October.",o:["been","be","being"],a:0},
+  {id:"e3",c:"perf",t:"mc",q:"This church ___ built in the 16th century.",o:["is","was","were"],a:1},
+  {id:"e4",c:"perf",t:"pick",o:["English is speak in Malta.","English is spoken in Malta.","English speaks in Malta."],a:1},
+  {id:"e5",c:"perf",t:"type",q:"The room ___ cleaned every day.",acc:["is"]},
+  {id:"e6",c:"perf",t:"tr",q:"Eu nunca estive em Londres.",acc:["I've never been to London."]},
+  {id:"e7",c:"perf",t:"mc",q:"You should ___ careful at night.",o:["are","be","being"],a:1},
+  {id:"f7",c:"fut",t:"mc",q:"Sorry, I ___ be late tonight.",o:["will","am","going"],a:0},
+  {id:"f8",c:"fut",t:"mc",q:"Look at the sky. It ___ going to rain.",o:["is","will","does"],a:0},
+  {id:"f9",c:"fut",t:"type",q:"We ___ going to have dinner at 8.",acc:["are"]},
+  {id:"f10",c:"fut",t:"pick",o:["She will be here at 6.","She will is here at 6.","She be will here at 6."],a:0},
+  {id:"f11",c:"fut",t:"tr",q:"Eles vão estar cansados amanhã.",acc:["They'll be tired tomorrow.","They're going to be tired tomorrow."]},
+  {id:"f12",c:"fut",t:"mc",q:"I ___ be at class tomorrow. I have an appointment.",o:["won't","don't","am not"],a:0},
+  {id:"f13",c:"fut",t:"mc",q:"___ it be cold in Malta in December?",o:["Is","Will","Does"],a:1},
+  {id:"pa7",c:"there",t:"mc",q:"There ___ many people at the party.",o:["was","were","is"],a:1},
+  {id:"pa8",c:"past",t:"type",q:"I ___ at home last night. (negative)",acc:["wasn't"]},
+  {id:"pa9",c:"past",t:"tr",q:"Nós estávamos na praia.",acc:["We were at the beach."]},
+  {id:"pa10",c:"past",t:"mc",q:"How ___ your weekend?",o:["was","were","did"],a:0},
+  {id:"pa11",c:"past",t:"pick",o:["Were you at the party?","Was you at the party?","Did you were at the party?"],a:0},
+];
+const TB_MEMO = {
+  present:"AM é do I, IS é de UM, ARE é do resto. Só o I tem par exclusivo (I am). Um só (he, she, it, my sister) é IS. Mais de um, ou you, é ARE.",
+  neg:"O be é autossuficiente: ele se nega sozinho. Não chame o do para ajudar, só grude o NOT nele: is + not = isn't, are + not = aren't, am + not = I'm not.",
+  q:"Pergunta com be é só trocar de lugar: You ARE tired → ARE you tired? O be pula para a frente. Na resposta curta ele volta inteiro: Yes, I AM.",
+  past:"Passado é só envelhecer o verbo: IS vira WAS, AM vira WAS, ARE vira WERE. Quem era is ou am no presente é was no passado. Quem era are é were.",
+  there:"\"Tem\" de existir = THERE + be. Olhe o que vem depois: um → there IS, vários → there ARE. HAVE é só para posse: \"eu tenho\".",
+  do:"Teste do ser/estar: se em português a frase usa ser ou estar (cansado, aqui, feliz, trabalhando), é BE. Se é ação (gostar, trabalhar, concordar, ir), é DO. Be e do nunca andam juntos.",
+  have:"Em inglês você não TEM fome, você ESTÁ com fome: I AM hungry. Fome, sede, frio, calor, medo, razão e idade: tudo com BE. Lista para decorar: hungry, thirsty, cold, hot, scared, right, 31.",
+  cont:"Estou trabalhANDO = I AM workING. São sempre duas peças: o ESTOU (am/is/are) e o -ANDO (-ing). Faltou uma das duas, a frase quebrou.",
+  fut:"WILL BE = \"vai ser / vai estar\" (previsão, promessa). GOING TO = \"vou\" com plano já decidido. E o going to nunca anda sozinho: sempre I'M going to.",
+  perf:"O be tem 3 roupas: BE (base), WAS/WERE (passado) e BEEN (particípio). Depois de HAVE vem BEEN. Depois de modal (should, can, will, must) vem BE puro. \"É falado\" = IS SPOKEN (be + particípio).",
+};
+const tbMemo = k => TB_MEMO[k] ? `<div class="memo"><span class="lang">Para gravar</span>${esc(TB_MEMO[k])}</div>` : "";
+const TB_PAST = ["t4","d6","c3","c6","e3","pa7"], TB_PERF = ["e1","e2","e6"];
+const TENSES = [
+  {k:"present", name:"Present", pt:"sou / estou", ex:"I am · he is · they are"},
+  {k:"past", name:"Past", pt:"era / estava / fui", ex:"I was · they were"},
+  {k:"future", name:"Future", pt:"vou ser / vou estar", ex:"I will be · I'm going to"},
+];
+function tbTense(it){
+  if(it.c==="fut") return "future";
+  if(it.c==="past" || TB_PAST.includes(it.id)) return "past";
+  if(TB_PERF.includes(it.id) || it.id==="e7") return "other";
+  return "present";
+}
+const TB_DRILL = 10;
+let tbTableOpen = (() => { try{ return localStorage.getItem("tb-table") !== "0"; }catch(e){ return true; } })();
+function tbTableHTML(){
+  const rows = [["I","am","was","will be"],["you","are","were","will be"],["he / she / it","is","was","will be"],["we","are","were","will be"],["they","are","were","will be"]];
+  const extra = [["Negative","I'm not · isn't · aren't","wasn't · weren't","won't be"],["Question","Am I? Is he? Are you?","Was he? Were you?","Will you be?"],["Em português","sou / estou","era / estava / fui","vou ser / vou estar"]];
+  return `<div class="tbt"><button type="button" class="tbt-head" data-ttable="1" aria-expanded="${tbTableOpen}"><b>Verb to be table</b><span>${tbTableOpen?"Hide":"Show"}</span></button>
+    ${tbTableOpen?`<div class="tbt-scroll"><table class="tbtab"><thead><tr><th></th><th>Present</th><th>Past</th><th>Future</th></tr></thead>
+      <tbody>${rows.map(r => `<tr><th>${r[0]}</th>${r.slice(1).map(x => `<td>${x}</td>`).join("")}</tr>`).join("")}
+      ${extra.map(r => `<tr class="x"><th>${r[0]}</th>${r.slice(1).map(x => `<td>${x}</td>`).join("")}</tr>`).join("")}</tbody></table></div>
+      <div class="tbt-notes"><div><b>Present perfect:</b> I / you / we / they <b>have been</b> · he / she / it <b>has been</b> <span class="meta">(já estive, tenho estado)</span></div>
+      <div><b>Continuous:</b> be + -ing em qualquer tempo: I <b>am</b> working · I <b>was</b> working · I <b>will be</b> working</div>
+      <div><b>Going to:</b> o be muda com o sujeito: I'<b>m</b> / he'<b>s</b> / they'<b>re</b> going to</div></div>`:""}</div>`;
+}
+function tenseHTML(o){
+  const cnt = k => TB.filter(it => tbTense(it)===k).length;
+  return `<div class="section-title">Practise one tense</div>
+    <div class="tgrid">${TENSES.map(t => `<button type="button" class="tbtn" data-tdrill="${t.k}" ${o||bBusy||!bcol?"disabled":""}><b>${t.name}</b><span>${t.pt}</span><span class="meta">${TB_DRILL} questions</span></button>`).join("")}</div>
+    ${o?`<div class="meta">Finish or discard your open session to start a new one.</div>`:""}`;
+}
+async function bDrill(k){
+  if(!bcol || bBusy || openB()) return;
+  bBusy = true; bErr = ""; render();
+  const seen = {}; bSess.forEach(s => (s.ids||[]).forEach(id => seen[id] = (seen[id]||0) + 1));
+  const seed = Date.now() % 233280;
+  const ids = seeded(seeded(TB.filter(it => tbTense(it)===k), seed).sort((a,b) => (seen[a.id]||0) - (seen[b.id]||0)).slice(0, TB_DRILL), seed+1).map(x => x.id);
+  try{ await bcol.doc("s-" + Date.now()).set({started:Date.now(), date:ymd(new Date()), status:"open", kind:"tense", tense:k, ids, answers:{}}); bFb = null; bInput = ""; bView = "q"; }
+  catch(e){ bErr = "Couldn't start the practice. Try again."; }
+  finally{ bBusy = false; render(); }
+}
+const tbSessName = s => s.kind==="tense" ? `${(TENSES.find(t=>t.k===s.tense)||{}).name||""} practice` : "Full check";
+$("#panel").addEventListener("click", e => {
+  const b = e.target.closest("button"); if(!b) return; const ds = b.dataset;
+  if(ds.ttable){ tbTableOpen = !tbTableOpen; try{ localStorage.setItem("tb-table", tbTableOpen?"1":"0"); }catch(err){} render(); }
+  else if(ds.tdrill) bDrill(ds.tdrill);
+});
+const TB_PER = 3, TB_LAST = 12;
+let bcol = null, bSess = [], bView = "home", bFb = null, bInput = "", bChecking = false, bErr = "", bBusy = false, bViewId = null, bConfirm = false;
+const tbItem = id => TB.find(x => x.id === id);
+const tbCat = k => TB_CATS.find(c => c.k === k);
+const openB = () => bSess.find(s => s.status === "open");
+const doneB = () => bSess.filter(s => s.status === "done").sort((a,b) => a.started - b.started);
+function tbNorm(s){
+  return String(s||"").toLowerCase().replace(/[’‘`]/g,"'")
+    .replace(/\bwon't\b/g,"will not").replace(/\bcan't\b/g,"can not").replace(/n't\b/g," not")
+    .replace(/'m\b/g," am").replace(/'re\b/g," are").replace(/'s\b/g," is").replace(/'ll\b/g," will").replace(/'ve\b/g," have").replace(/'d\b/g," would")
+    .replace(/(\d)\s*(am|pm)\b/g,"$1$2").replace(/[^a-z0-9'\s]/g," ").replace(/\s+/g," ").trim();
+}
+const fillBlank = (q, w) => q.replace(/\s*\((negative)\)$/,"").replace("___", w);
+function tbRight(it){
+  if(it.t==="mc") return fillBlank(it.q, it.o[it.a]);
+  if(it.t==="pick") return it.o[it.a];
+  if(it.t==="type") return fillBlank(it.q, it.acc[0]);
+  return it.acc[0];
+}
+function tbScore(s){
+  const cats = {}; let ok = 0, n = 0;
+  (s.ids||[]).forEach((id,i) => { const a = (s.answers||{})[i]; const it = tbItem(id); if(!a || !it) return;
+    const c = cats[it.c] ||= {r:0,n:0}; c.n++; n++; if(a.ok){ c.r++; ok++; } });
+  return {ok, n, pct: n ? Math.round(ok/n*100) : 0, cats};
+}
+function tbMastery(){
+  const hist = {};
+  bSess.slice().sort((a,b)=>a.started-b.started).forEach(s => (s.ids||[]).forEach((id,i) => {
+    const a = (s.answers||{})[i], it = tbItem(id); if(a && it) (hist[it.c] ||= []).push(a.ok?1:0); }));
+  const cats = {}; let sum = 0, k = 0;
+  TB_CATS.forEach(c => { const h = (hist[c.k]||[]).slice(-TB_LAST); if(!h.length) return;
+    const pct = Math.round(h.reduce((x,y)=>x+y,0)/h.length*100); cats[c.k] = {pct, n:h.length}; sum += pct; k++; });
+  return {cats, overall: k ? Math.round(sum/k) : null, covered:k};
+}
+const tbLabel = p => p>=85 ? "Mastered" : p>=70 ? "Good" : p>=50 ? "Developing" : "Not yet";
+function toBeLine(){
+  const m = tbMastery();
+  const w = TB_CATS.filter(c => m.cats[c.k]?.n >= 3 && m.cats[c.k].pct < 85).sort((a,b) => m.cats[a.k].pct - m.cats[b.k].pct).slice(0,2);
+  if(!w.length) return "";
+  return `\nDomínio do verbo to be (resultado da aba To be): pontos mais fracos: ${w.map(c => `${c.name} (${m.cats[c.k].pct}%)`).join(", ")}. Inclua pelo menos 2 exercícios que treinem exatamente esses pontos.`;
+}
+
+async function bStart(){
+  if(!bcol || bBusy || openB()) return;
+  bBusy = true; bErr = ""; render();
+  const seen = {}; bSess.forEach(s => (s.ids||[]).forEach(id => seen[id] = (seen[id]||0) + 1));
+  const seed = Date.now() % 233280;
+  let ids = [];
+  TB_CATS.forEach((c,ci) => {
+    const pool = seeded(TB.filter(x => x.c===c.k), seed + ci*7).sort((a,b) => (seen[a.id]||0) - (seen[b.id]||0));
+    ids.push(...pool.slice(0, TB_PER).map(x => x.id));
+  });
+  ids = seeded(ids, seed + 1);
+  try{ await bcol.doc("s-" + Date.now()).set({started:Date.now(), date:ymd(new Date()), status:"open", ids, answers:{}}); bFb = null; bInput = ""; bView = "q"; }
+  catch(e){ bErr = e?.code==="quota_exceeded" ? "Storage is full." : "Couldn't start the check. Try again."; }
+  finally{ bBusy = false; render(); }
+}
+function tbPrompt(it, given){
+  return `Avalie a tradução de um aluno brasileiro de inglês (nível B1, morando em Malta, inglês britânico). O foco do exercício é o verbo to be e os auxiliares.
+Frase em português: "${it.q}"
+Resposta modelo: "${it.acc[0]}"
+Resposta do aluno: """${given}"""
+Considere correta qualquer frase gramatical e natural com o mesmo sentido, mesmo diferente do modelo. Pequenos erros de digitação não contam como erro.
+Responda só com JSON:
+{"ok":true|false,"better":"a frase dele corrigida e natural (igual, se já estiver ótima)","note":"1 ou 2 frases em PORTUGUÊS do Brasil explicando o erro principal e a regra por trás dele (ou elogiando algo específico, se estiver certo). Cite as palavras em inglês entre aspas. Sem travessões."}`;
+}
+async function bAnswer(given){
+  const s = openB(); if(!s || bChecking) return;
+  const i = Object.keys(s.answers||{}).length, it = tbItem(s.ids[i]); if(!it) return;
+  let ok = false, extra = {};
+  if(it.t==="mc" || it.t==="pick") ok = given === it.a;
+  else {
+    given = String(given).trim(); if(!given) return;
+    const g = tbNorm(given); ok = it.acc.some(x => tbNorm(x) === g);
+    if(!ok && it.t==="tr"){
+      if(sample){
+        bChecking = true; render();
+        try{ const r = await sample.json(tbPrompt(it, given), {modelTier:"quick", cache:false});
+          ok = r?.ok === true; if(r?.better) extra.better = String(r.better); if(r?.note) extra.note = String(r.note); }
+        catch(e){ extra.note = "Não foi possível corrigir com o Claude agora, então a resposta foi comparada só com o modelo."; }
+        finally{ bChecking = false; }
+      }
+    }
+  }
+  const a = {g: given, ok, ...extra};
+  s.answers = {...(s.answers||{}), [i]: a}; bFb = i; bInput = ""; render();
+  try{ await bcol.doc(s.id).update({answers: {[String(i)]: a}}); }catch(e){ bErr = "Couldn't save this answer."; render(); }
+  if(!ok && it.t==="tr" && col){
+    try{ await col.doc("x" + idFor(given)).set({src:given, out:extra.better || it.acc[0], from:"en", kind:"fix", pattern:"", meaningPt:it.q,
+      alts:[], pron:"", note:extra.note || tbCat(it.c).rule, ex:"", exPt:"", ctx:"Practice", fav:true, ts:Date.now()}); }catch(e){}
+  }
+}
+async function bFinish(){
+  const s = openB(); if(!s) return;
+  const sc = tbScore(s), cats = {};
+  for(const k in sc.cats) cats[k] = Math.round(sc.cats[k].r / sc.cats[k].n * 100);
+  try{ await bcol.doc(s.id).update({status:"done", finished:Date.now(), score:sc.pct, ok:sc.ok, total:sc.n, cats}); bViewId = s.id; bView = "res"; bFb = null; }
+  catch(e){ bErr = "Couldn't save the result. Try again."; }
+  render();
+}
+async function bDiscard(){
+  const s = openB(); if(!s) return;
+  bConfirm = false;
+  try{ await bcol.doc(s.id).delete(); }catch(e){ bErr = "Couldn't discard it."; }
+  bView = "home"; render();
+}
+
+function tbBars(cats, sub){
+  return `<div class="areas">${TB_CATS.map(c => { const v = cats[c.k]; if(v===undefined) return "";
+    const p = typeof v === "number" ? v : v.pct;
+    return `<div class="arow"><span>${esc(c.s)}${sub && v.n?` <span class="meta">${v.n}</span>`:""}</span><span class="track"><i class="${p<70?"low":""}" style="width:${p}%"></i></span><b>${p}%</b></div>`; }).join("")}</div>`;
+}
+function tbHome(p){
+  const m = tbMastery(), o = openB(), done = doneB();
+  let h = `<div class="tre-head"><div><div class="lang">Mastery check</div><div class="out">Verb to be and auxiliaries</div></div></div>${tbTableHTML()}${tenseHTML(o)}`;
+  if(m.overall === null){
+    h += `<div class="empty"><strong>How well do you know \"to be\"?</strong>${TB_CATS.length * TB_PER} questions across ${TB_CATS.length} topics: am/is/are, negatives, questions, was/were, there is, be vs do, be vs have, -ing, future and been/passive. About 10 minutes. You get a mastery score for each topic.</div>`;
+  } else {
+    h += `<div class="lvl-top"><div class="lvl-badge">${m.overall}%</div><div class="lvl-meta"><div class="lvl-score">${tbLabel(m.overall)}</div>
+      <div class="meta">Your last ${TB_LAST} answers in each topic · ${done.length} check${done.length===1?"":"s"} done</div></div></div>
+      ${gamesHome()}
+      <div class="section-title">Mastery by topic</div>${tbBars(m.cats, false)}
+      <div class="meta">Mastered 85%+ · Good 70%+ · Developing 50%+ · Not yet below 50%</div>`;
+    const weak = TB_CATS.filter(c => m.cats[c.k] && m.cats[c.k].pct < 85).sort((a,b) => m.cats[a.k].pct - m.cats[b.k].pct).slice(0,2);
+    if(weak.length) h += `<div class="section-title">Focus on</div>${weak.map(c => `<div class="focus"><b>${esc(c.name)} · ${m.cats[c.k].pct}%</b><div class="note">${esc(c.rule)}</div>${tbMemo(c.k)}</div>`).join("")}
+      <div class="honest">Your daily practice now includes exercises on these topics.</div>`;
+  }
+  if(o){
+    const n = Object.keys(o.answers||{}).length;
+    h += `<div class="actions"><button class="go" type="button" data-bgo="q" style="margin:0">Continue (${n} of ${o.ids.length})</button>
+      <button class="ghost del" type="button" data-bdiscard="1">${bConfirm?"Confirm discard":"Discard"}</button></div>`;
+  } else h += `<div><button class="go" type="button" data-bstart="1" style="margin:0" ${bBusy||!bcol?"disabled":""}>${bBusy?"Preparing...":done.length?"Start a new check":"Start the check"}</button></div>`;
+  if(bErr) h += `<div class="status err">${esc(bErr)}</div>`;
+  if(m.overall === null) h += gamesHome();
+  if(done.length){
+    const rev = done.slice().reverse();
+    h += `<div class="section-title">History</div><ul class="hist">${rev.map((s,j) => { const prev = rev[j+1];
+      const d = prev ? s.score - prev.score : null;
+      return `<li><button type="button" data-bres="${s.id}"><span>${new Date(s.started).toLocaleDateString("en-GB",{day:"2-digit",month:"short"})} <span class="meta">${esc(tbSessName(s))}</span></span>
+        <span>${s.ok}/${s.total}</span><b>${s.score}%${d!==null?` <span class="delta">${d>0?"+":""}${d}</span>`:""}</b></button></li>`; }).join("")}</ul>`;
+  }
+  p.innerHTML = `<div style="display:flex;flex-direction:column;gap:12px">${h}</div>`;
+}
+function tbQuestion(p){
+  const s = openB(); if(!s){ bView = "home"; return tbHome(p); }
+  const ans = s.answers || {}, n = Object.keys(ans).length, total = s.ids.length;
+  const i = bFb !== null ? bFb : n;
+  if(i >= total){ p.innerHTML = `<div class="empty"><strong>All ${total} answered</strong><div style="margin-top:12px"><button class="go" type="button" data-bfinish="1" style="margin:0">See my result</button></div>${bErr?`<div class="status err">${esc(bErr)}</div>`:""}</div>`; return; }
+  const it = tbItem(s.ids[i]), c = tbCat(it.c), a = bFb !== null ? ans[i] : null;
+  let b = "";
+  const lab = {mc:"Choose the right word", pick:"Which sentence is correct?", type:"Write the missing word", tr:"Say it in English"}[it.t];
+  if(it.t==="mc" || it.t==="pick"){
+    if(it.t==="mc") b += `<div class="q2">${esc(it.q)}</div>`;
+    b += `<div class="opts">${it.o.map((o,j) => { let cls = "qopt"; if(a){ if(j===it.a) cls += " right"; else if(j===a.g) cls += " wrong"; }
+      return `<button class="${cls}" type="button" data-bpick="${j}" ${a?"disabled":""}>${esc(o)}</button>`; }).join("")}</div>`;
+  } else {
+    b += `<div class="q2">${esc(it.q)}</div>`;
+    if(!a) b += `<input class="search" id="tbIn" data-binput="1" type="text" autocomplete="off" autocapitalize="${it.t==="tr"?"sentences":"none"}" spellcheck="false" placeholder="${it.t==="tr"?"Write the sentence in English":"One or two words"}" value="${esc(bInput)}" aria-label="Your answer">
+      <div class="actions"><button class="go" type="button" data-bcheck="1" style="margin-left:auto" ${bChecking?"disabled":""}>${bChecking?"Checking...":"Check"}</button></div>`;
+  }
+  if(a){
+    b += `<div><span class="fb ${a.ok?"ok":"no"}">${a.ok?"Correct":"Not quite"}</span></div>`;
+    if(it.t==="type" || it.t==="tr") b += `<div class="mine">You: ${a.ok?esc(a.g):`<s>${esc(a.g)}</s>`}</div>`;
+    const right = a.better && it.t==="tr" ? a.better : tbRight(it);
+    if(!(a.ok && (it.t==="mc"||it.t==="pick"))) b += `<div class="out">${esc(right)}</div>`;
+    if(a.note) b += `<div class="note">${esc(a.note)}</div>`;
+    b += `${tbMemo(it.c)}<div class="ex">${it.w?`<b>${esc(it.w)}</b><br>`:""}${esc(c.rule)}<br><span class="meta">${esc(c.pt)}</span></div>
+      <div class="actions">${canSpeak?`<button class="ghost" type="button" data-bsay="${esc(right)}">Listen</button>`:""}
+      <button class="go" type="button" data-bnext="1">${i+1>=total?"See my result":"Next"}</button></div>`;
+  }
+  const done = n;
+  p.innerHTML = `<div style="display:flex;flex-direction:column;gap:10px">
+    <div class="rhead"><button class="ghost" type="button" data-bgo="home">Pause</button><span class="meta">Question ${i+1} of ${total}</span></div>
+    <div class="prog"><i style="width:${Math.round(done/total*100)}%"></i></div>
+    <div class="exr${a?" done":""}"><div class="lang">${esc(c.s)} · ${lab}</div>${b}</div>
+    ${bErr?`<div class="status err">${esc(bErr)}</div>`:""}</div>`;
+}
+function tbResult(p){
+  const s = bSess.find(x => x.id === bViewId); if(!s || s.status!=="done"){ bView = "home"; return tbHome(p); }
+  const done = doneB(), k = done.findIndex(x => x.id===s.id), prev = k>0 ? done[k-1] : null;
+  const d = prev ? s.score - prev.score : null;
+  const wrong = s.ids.map((id,i) => ({it:tbItem(id), a:(s.answers||{})[i]})).filter(x => x.it && x.a && !x.a.ok);
+  p.innerHTML = `<div style="display:flex;flex-direction:column;gap:12px">
+    <div class="rhead"><button class="ghost" type="button" data-bgo="home">← Mastery</button><span class="meta">${new Date(s.started).toLocaleDateString("en-GB",{weekday:"short",day:"numeric",month:"short"})}</span></div>
+    <div class="lvl-top"><div class="lvl-badge">${s.score}%</div><div class="lvl-meta"><div class="lvl-score">${s.ok} of ${s.total} correct</div><div class="meta">${esc(tbSessName(s))}</div>
+      <div class="meta">${tbLabel(s.score)}${d!==null?` · <span class="delta">${d>0?"+":""}${d} points vs last check</span>`:""}</div></div></div>
+    <div class="section-title">This check by topic</div>${tbBars(s.cats||{}, false)}
+    ${wrong.length?`<div class="section-title">Your mistakes (${wrong.length})</div><ul class="ex-list">${wrong.map(({it,a}) => `<li class="exr">
+      <div class="lang">${esc(tbCat(it.c).s)}</div>
+      ${it.t==="type"||it.t==="tr"?`<div class="mine">You: <s>${esc(a.g)}</s></div>`:it.t==="mc"?`<div class="mine">You: <s>${esc(fillBlank(it.q, it.o[a.g]))}</s></div>`:`<div class="mine">You: <s>${esc(it.o[a.g])}</s></div>`}
+      <div class="out">${esc(a.better && it.t==="tr" ? a.better : tbRight(it))}</div>
+      <div class="note">${esc(it.w || tbCat(it.c).rule)}</div>${tbMemo(it.c)}</li>`).join("")}</ul>`:`<div class="empty"><strong>No mistakes</strong>Every answer was right this time.</div>`}
+    <div><button class="go" type="button" data-bgo="home" style="margin:0">Back to mastery</button></div></div>`;
+}
+function renderToBe(p){
+  if(!bcol){ p.innerHTML = emptyHTML("Storage isn't available here", "Open the app in Claude, signed in to your account, to take the check."); return; }
+  const f = document.activeElement?.id === "tbIn", pos = f ? document.activeElement.selectionStart : 0;
+  if(bView === "q") tbQuestion(p); else if(bView === "res") tbResult(p); else if(bView === "mem") p.innerHTML = `<div style="display:flex;flex-direction:column;gap:12px">${memHTML()}</div>`; else if(bView === "rw") p.innerHTML = `<div style="display:flex;flex-direction:column;gap:12px">${rwHTML()}</div>`; else tbHome(p);
+  if(f){ const n = $("#tbIn"); if(n){ n.focus(); n.setSelectionRange(pos,pos); } }
+}
+$("#panel").addEventListener("input", e => { if(e.target.dataset.binput) bInput = e.target.value; });
+$("#panel").addEventListener("keydown", e => { if(e.target.id==="tbIn" && e.key==="Enter"){ e.preventDefault(); bAnswer(bInput); } });
+$("#panel").addEventListener("click", e => {
+  const b = e.target.closest("button"); if(!b) return; const ds = b.dataset;
+  if(ds.bstart) bStart();
+  else if(ds.bgo){ bView = ds.bgo; bErr = ""; bConfirm = false; render(); }
+  else if(ds.bpick !== undefined) bAnswer(+ds.bpick);
+  else if(ds.bcheck) bAnswer(bInput);
+  else if(ds.bnext){ const s = openB(); bFb = null; bErr = ""; if(s && Object.keys(s.answers||{}).length >= s.ids.length) bFinish(); else { render(); setTimeout(() => $("#tbIn")?.focus(), 0); } }
+  else if(ds.bfinish) bFinish();
+  else if(ds.bres){ bViewId = ds.bres; bView = "res"; render(); }
+  else if(ds.bdiscard){ if(!bConfirm){ bConfirm = true; render(); } else bDiscard(); }
+  else if(ds.bsay) speak(ds.bsay);
+});
+
+
+/* ===== To be games: memory + right or wrong ===== */
+const TB_PAIRS = {
+  present:[["I am","Eu sou / eu estou"],["he / she / it is","Um só: ele, ela, isso é ou está"],["you / we / they are","Vocês, nós, eles são ou estão"]],
+  neg:[["I'm not","Eu não sou / não estou"],["isn't","is + not: um só, negando"],["aren't","are + not: vários, negando"]],
+  q:[["Are you...?","Pergunta: o be vem antes do sujeito"],["Yes, I am.","Resposta curta: repete o be, sem contração"],["..., aren't you?","\"Né?\": repete o auxiliar ao contrário"]],
+  past:[["was","Passado de am e is (I, he, she, it)"],["were","Passado de are (you, we, they)"],["wasn't / weren't","Não era / não estava"]],
+  there:[["there is","Tem UM (existe uma coisa)"],["there are","Tem VÁRIOS (existem coisas)"],["there was / were","Tinha / havia (no passado)"]],
+  do:[["Are you tired?","Estado (ser ou estar) pede BE"],["Do you work?","Ação (verbo) pede DO"],["I agree","Concordar já é verbo: sem be"]],
+  have:[["I'm hungry","Estou com fome (be, não have)"],["I'm 31","Tenho 31 anos (be, não have)"],["I have a cold","Estou resfriado"]],
+  cont:[["I'm working","Estou trabalhando agora"],["I was sleeping","Eu estava dormindo"],["be + -ing","Duas peças: estou + -ando"]],
+  fut:[["will be","Vai ser / vai estar (previsão)"],["I'm going to","Vou (plano já decidido)"],["Will you be...?","Você vai estar...?"]],
+  perf:[["been","Particípio de be: vem depois de have"],["I've been to","Já estive em / já fui a"],["is spoken","Passiva: é falado (be + particípio)"],["should be","Depois de modal: be puro"]],
+};
+const RW_SKIP = {q2:"all", t1:[2], pa6:[0], e3:[0], t6:[0]};
+let gMode = "weak", mem = null, memLock = false, rw = null, rwTimer = null;
+const lsGet = k => { try{ return JSON.parse(localStorage.getItem(k)); }catch(e){ return null; } };
+const lsSet = (k,v) => { try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} };
+function tbWeakCats(n){
+  const m = tbMastery();
+  if(!m.covered) return seeded(TB_CATS.map(c=>c.k), Date.now()%233280).slice(0,n);
+  const sc = k => m.cats[k] ? m.cats[k].pct : 50;
+  return TB_CATS.map(c=>c.k).sort((a,b) => sc(a) - sc(b)).slice(0,n);
+}
+const gCats = () => gMode==="weak" ? tbWeakCats(3) : TB_CATS.map(c=>c.k);
+
+function memNew(){
+  const seed = Date.now()%233280, cats = gCats();
+  let pairs = [];
+  if(gMode==="weak") cats.forEach((k,i) => seeded(TB_PAIRS[k], seed+i).slice(0,2).forEach(p => pairs.push({c:k, en:p[0], pt:p[1]})));
+  else seeded(cats, seed).slice(0,6).forEach((k,i) => { const p = seeded(TB_PAIRS[k], seed+i)[0]; pairs.push({c:k, en:p[0], pt:p[1]}); });
+  pairs = pairs.slice(0,6);
+  const cards = seeded(pairs.flatMap((p,i) => [{pid:i, side:"en", text:p.en, c:p.c}, {pid:i, side:"pt", text:p.pt, c:p.c}]), seed+99);
+  mem = {pairs, cards, open:[], matched:[], moves:0, start:Date.now(), msg:null, done:false, cats};
+  memLock = false;
+}
+function memFlip(i){
+  if(!mem || memLock || mem.done || mem.open.includes(i) || mem.matched.includes(mem.cards[i].pid)) return;
+  mem.open.push(i);
+  if(mem.open.length === 2){
+    mem.moves++;
+    const [a,b] = mem.open.map(k => mem.cards[k]);
+    if(a.pid === b.pid){
+      mem.matched.push(a.pid); mem.open = []; mem.msg = {ok:true, pid:a.pid};
+      if(mem.matched.length === mem.pairs.length){
+        mem.done = true; mem.secs = Math.round((Date.now()-mem.start)/1000);
+        const best = lsGet("tb-mem-best");
+        mem.record = !best || mem.moves < best.moves || (mem.moves===best.moves && mem.secs < best.secs);
+        if(mem.record) lsSet("tb-mem-best", {moves:mem.moves, secs:mem.secs});
+      }
+    } else {
+      mem.msg = {ok:false}; memLock = true;
+      setTimeout(() => { if(mem){ mem.open = []; memLock = false; render(); } }, 1100);
+    }
+  } else mem.msg = null;
+  render();
+}
+function memHTML(){
+  if(!mem) memNew();
+  const names = mem.cats.slice(0,3).map(k => tbCat(k).s).join(", ");
+  let h = `<div class="rhead"><button class="ghost" type="button" data-bgo="home">← Mastery</button><span class="meta">${mem.matched.length} of ${mem.pairs.length} pairs · ${mem.moves} moves</span></div>
+    <div><div class="lang">Memory game</div><div class="out">Match the English with when to use it</div><div class="meta">${gMode==="weak"?`Your weakest topics: ${esc(names)}`:"All topics"}</div></div>
+    <div class="mgrid">${mem.cards.map((c,i) => { const m = mem.matched.includes(c.pid), up = m || mem.open.includes(i);
+      return `<button type="button" class="mcard ${up?"up "+c.side:""}${m?" matched":""}" data-gflip="${i}" aria-label="${up?esc(c.text):"Hidden card"}" ${m?"disabled":""}>${up?esc(c.text):`<span class="mq">?</span>`}</button>`; }).join("")}</div>`;
+  if(mem.msg?.ok){ const p = mem.pairs[mem.msg.pid];
+    h += `<div class="focus"><b>${esc(p.en)} = ${esc(p.pt)}</b></div>${tbMemo(p.c)}`; }
+  else if(mem.msg && !mem.msg.ok) h += `<div class="meta">Not a pair. Try to remember where each card is.</div>`;
+  if(mem.done){ const best = lsGet("tb-mem-best");
+    h += `<div class="empty"><strong>All pairs found</strong>${mem.moves} moves in ${mem.secs}s${mem.record?" · New record!":best?` · Your best: ${best.moves} moves`:""}. Perfect is ${mem.pairs.length} moves.
+      <div style="margin-top:12px"><button class="go" type="button" data-gmem="new" style="margin:0">Play again</button></div></div>`; }
+  else h += `<div class="actions"><button class="ghost" type="button" data-gmem="new">New cards</button></div>`;
+  return h;
+}
+
+function rwPool(){
+  const cats = gCats(), out = [];
+  TB.filter(it => cats.includes(it.c) && RW_SKIP[it.id] !== "all").forEach(it => {
+    const skip = Array.isArray(RW_SKIP[it.id]) ? RW_SKIP[it.id] : [];
+    if(it.t==="mc") it.o.forEach((o,j) => { if(!skip.includes(j)) out.push({it, s:fillBlank(it.q, o), ok:j===it.a}); });
+    else if(it.t==="pick") it.o.forEach((o,j) => { if(!skip.includes(j)) out.push({it, s:o, ok:j===it.a}); });
+    else out.push({it, s:tbRight(it), ok:true});
+  });
+  const seed = Date.now()%233280;
+  const right = seeded(out.filter(x=>x.ok), seed), wrong = seeded(out.filter(x=>!x.ok), seed+3);
+  const n = Math.min(right.length, wrong.length, 20);
+  return seeded(right.slice(0, n).concat(wrong.slice(0, n)), seed+7);
+}
+function rwNew(){
+  rw = {pool:rwPool(), i:0, score:0, wrong:[], left:60, fb:null, done:false, streak:0, best:0, started:false};
+}
+function rwTick(){
+  if(!rw || rw.done || !rw.started){ clearInterval(rwTimer); rwTimer = null; return; }
+  if(tab!=="tobe" || bView!=="rw" || rw.fb) return;
+  rw.left--;
+  const t = $("#rwTime"); if(t) t.textContent = rw.left + "s";
+  if(rw.left <= 0) rwEnd();
+}
+function rwStart(){ rw.started = true; clearInterval(rwTimer); rwTimer = setInterval(rwTick, 1000); render(); }
+function rwEnd(){
+  rw.done = true; clearInterval(rwTimer); rwTimer = null;
+  const best = lsGet("tb-rw-best"); rw.prevBest = best;
+  if(best===null || rw.score > best) lsSet("tb-rw-best", rw.score);
+  render();
+}
+function rwAnswer(says){
+  if(!rw || rw.done || rw.fb) return;
+  const x = rw.pool[rw.i]; if(!x) return rwEnd();
+  if(says === x.ok){ rw.score++; rw.streak++; rw.best = Math.max(rw.best, rw.streak); rw.flash = true; rwNext(); }
+  else { rw.streak = 0; rw.fb = x; rw.wrong.push(x); render(); }
+}
+function rwNext(){ rw.fb = null; rw.i++; if(rw.i >= rw.pool.length) return rwEnd(); render(); setTimeout(() => { if(rw) rw.flash = false; }, 300); }
+function rwHTML(){
+  if(!rw) rwNew();
+  const names = gMode==="weak" ? tbWeakCats(3).map(k => tbCat(k).s).join(", ") : "All topics";
+  let h = `<div class="rhead"><button class="ghost" type="button" data-bgo="home">← Mastery</button><span class="timer" id="rwTime">${rw.left}s</span></div>
+    <div><div class="lang">Right or wrong?</div><div class="out">Is this sentence correct English?</div><div class="meta">${esc(names)}</div></div>`;
+  if(!rw.started && !rw.done){
+    return h + `<div class="empty"><strong>60 seconds</strong>A sentence appears. Tap Right or Wrong as fast as you can. When you miss, the clock stops and you see the rule.
+      <div style="margin-top:12px"><button class="go" type="button" data-grw="start" style="margin:0">Start</button></div></div>`;
+  }
+  if(rw.done){
+    const pb = rw.prevBest;
+    h += `<div class="lvl-top"><div class="lvl-badge">${rw.score}</div><div class="lvl-meta"><div class="lvl-score">${rw.score} right</div>
+      <div class="meta">${rw.wrong.length} wrong · best streak ${rw.best}${pb===null?"":rw.score>pb?" · New record!":` · Your record: ${pb}`}</div></div></div>`;
+    if(rw.wrong.length) h += `<div class="section-title">Review your misses</div><ul class="ex-list">${rw.wrong.map(x => `<li class="exr">
+      <div class="lang">${esc(tbCat(x.it.c).s)} · this sentence is ${x.ok?"RIGHT":"WRONG"}</div>
+      ${x.ok?`<div class="out">${esc(x.s)}</div>`:`<div class="mine"><s>${esc(x.s)}</s></div><div class="out">${esc(tbRight(x.it))}</div>`}
+      ${tbMemo(x.it.c)}</li>`).join("")}</ul>`;
+    return h + `<div><button class="go" type="button" data-grw="new" style="margin:0">Play again</button></div>`;
+  }
+  const x = rw.pool[rw.i];
+  h += `<div class="meta">Score ${rw.score} · streak ${rw.streak}</div>
+    <div class="rwcard${rw.flash?" hit":""}">${esc(x.s)}</div>`;
+  if(rw.fb){
+    h += `<div><span class="fb no">Missed: it's ${x.ok?"RIGHT":"WRONG"}</span></div>
+      ${x.ok?"":`<div class="out">${esc(tbRight(x.it))}</div>`}${tbMemo(x.it.c)}
+      <div class="actions"><button class="go" type="button" data-grw="next" style="margin-left:auto">Got it, continue</button></div>`;
+  } else h += `<div class="rwbtns"><button type="button" class="rwb no" data-grw="wrong">✗ Wrong</button><button type="button" class="rwb yes" data-grw="right">✓ Right</button></div>`;
+  return h;
+}
+function gamesHome(){
+  const names = tbWeakCats(3).map(k => tbCat(k).s).join(", ");
+  const mb = lsGet("tb-mem-best"), rb = lsGet("tb-rw-best");
+  return `<div class="section-title">Games to fix the rules</div>
+    <div class="chips"><button class="chip" type="button" data-gmode="weak" aria-pressed="${gMode==="weak"}">My weakest topics</button><button class="chip" type="button" data-gmode="all" aria-pressed="${gMode==="all"}">All topics</button></div>
+    ${gMode==="weak"?`<div class="meta">Now: ${esc(names)}</div>`:""}
+    <div class="ggrid">
+      <button type="button" class="gcard" data-ggo="mem"><b>Memory</b><span>Match each form with when to use it</span><span class="meta">${mb?`Best: ${mb.moves} moves`:"6 pairs"}</span></button>
+      <button type="button" class="gcard" data-ggo="rw"><b>Right or wrong?</b><span>60 seconds, judge each sentence</span><span class="meta">${rb!==null?`Record: ${rb}`:"Beat the clock"}</span></button>
+    </div>`;
+}
+$("#panel").addEventListener("click", e => {
+  const b = e.target.closest("button"); if(!b) return; const ds = b.dataset;
+  if(ds.gmode){ gMode = ds.gmode; mem = null; rw = null; render(); }
+  else if(ds.ggo){ if(ds.ggo==="mem") memNew(); else { clearInterval(rwTimer); rwNew(); } bView = ds.ggo; render(); window.scrollTo({top: document.querySelector("nav.tabs").offsetTop - 8}); }
+  else if(ds.gflip !== undefined) memFlip(+ds.gflip);
+  else if(ds.gmem){ memNew(); render(); }
+  else if(ds.grw==="start") rwStart();
+  else if(ds.grw==="right") rwAnswer(true);
+  else if(ds.grw==="wrong") rwAnswer(false);
+  else if(ds.grw==="next") rwNext();
+  else if(ds.grw==="new"){ rwNew(); rwStart(); }
+});
+
+render();
+</script>
+
+</body></html>
