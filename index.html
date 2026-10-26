@@ -2150,6 +2150,25 @@
   html.theme-dark .pol-reader.pol-tone-sepia { background: #2b2620; border-color: #3d352b; color: #e9dcc6; }
   html.theme-dark .pol-tone-sepia .pol-dates, html.theme-dark .pol-tone-sepia .pol-box { background: #332c24; border-color: #4a4034; }
   html.theme-dark .pol-tone-sepia .pol-concepts dd { color: #cdbfa8; }
+  .pol-toc { margin: 0 0 1.6em; border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; font: 14px/1.5 'DM Sans', sans-serif; }
+  .pol-toc summary { cursor: pointer; font-weight: 600; }
+  .pol-toc ol { margin: 8px 0 2px 20px; padding: 0; }
+  .pol-toc a { color: inherit; text-decoration: none; }
+  .pol-toc a:hover { text-decoration: underline; }
+  .pol-debate { margin: 2em 0 1em; padding: 18px; border-radius: 12px; border: 1px solid var(--line); }
+  .pol-debate-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 10px; }
+  .pol-debate b { font: 600 14px 'DM Sans', sans-serif; }
+  .pol-debate ul { margin: 8px 0 0 18px; padding: 0; font: 14.5px/1.6 'DM Sans', sans-serif; }
+  .pol-debate li { margin-bottom: 6px; }
+  .pol-read { margin: 1.6em 0; padding: 16px 18px; border-radius: 12px; border: 1px solid var(--line); font-family: 'DM Sans', sans-serif; }
+  .pol-read > div:not(.pol-kicker) { padding: 9px 0; border-top: 1px dashed var(--line); font-size: 14.5px; line-height: 1.45; }
+  .pol-read > .pol-kicker { margin-bottom: 4px; }
+  .pol-read span { color: var(--ink-faint); font-size: 13px; }
+  .pol-read em { display: block; font-style: normal; font-size: 13px; color: var(--ink-soft); margin-top: 2px; }
+  .pol-tone-sepia .pol-toc, .pol-tone-sepia .pol-debate, .pol-tone-sepia .pol-read { border-color: #e0d2b6; }
+  .pol-tone-sepia .pol-read span, .pol-tone-sepia .pol-read em { color: #7a6650; }
+  .pol-reader h3.pol-sec { scroll-margin-top: 70px; }
+  @media (max-width: 760px) { .pol-debate-cols { grid-template-columns: 1fr; } }
   @media (max-width: 760px) { .pol-reader p { text-align: left; } .pol-fig { margin-left: 0; margin-right: 0; } .pol-dates > div:not(.pol-kicker) { grid-template-columns: 82px 1fr; } }
   @media (max-width: 760px) {
     .pol-grid, .pol-result { grid-template-columns: minmax(0, 1fr); }
@@ -12912,7 +12931,7 @@ const renderPolitica = (() => {
   // ---------- sessões de perguntas (quiz, linha do tempo, corrente) ----------
   function startQuiz(id) {
     const t = TRILHAS.find(x => x.id === id);
-    const items = shuffle(t.quiz).map(([q, opts, a, exp]) => {
+    const items = shuffle(t.quiz).slice(0, 5).map(([q, opts, a, exp]) => {
       const order = shuffle(opts.map((o, i) => i));
       return { q, opts: order.map(i => opts[i]), a: order.indexOf(a), exp };
     });
@@ -13111,8 +13130,12 @@ const renderPolitica = (() => {
   const wikiURL = title => 'https://pt.wikipedia.org/wiki/' + encodeURIComponent(title.replace(/ /g, '_'));
   function blockHTML(t, b) {
     const [type] = b;
-    if (type === 'p') return `<p>${escapeHTML(t.body[b[1]])}</p>`;
-    if (type === 'h') return `<h3 class="pol-sec">${escapeHTML(b[1])}</h3>`;
+    if (type === 'p') return `<p>${escapeHTML(typeof b[1] === 'string' ? b[1] : t.body[b[1]])}</p>`;
+    if (type === 'h') return `<h3 class="pol-sec" id="pol-sec-${t.blocks.indexOf(b)}">${escapeHTML(b[1])}</h3>`;
+    if (type === 'debate') return `<div class="pol-debate"><div class="pol-kicker">O debate</div><div class="pol-debate-cols">
+      <div><b>O que defensores argumentam</b><ul>${b[1].map(x => `<li>${escapeHTML(x)}</li>`).join('')}</ul></div>
+      <div><b>O que críticos apontam</b><ul>${b[2].map(x => `<li>${escapeHTML(x)}</li>`).join('')}</ul></div></div></div>`;
+    if (type === 'read') return `<div class="pol-read"><div class="pol-kicker">Para ir além</div>${b[1].map(([ti, au, yr, why]) => `<div><b>${escapeHTML(ti)}</b> <span>${escapeHTML(au)}, ${escapeHTML(String(yr))}</span><em>${escapeHTML(why)}</em></div>`).join('')}</div>`;
     if (type === 'quote') return `<blockquote class="pol-quote"><p>“${escapeHTML(b[1])}”</p><cite>${escapeHTML(b[2])}</cite></blockquote>`;
     if (type === 'dates') return `<div class="pol-dates"><div class="pol-kicker">Datas-chave</div>${b[1].map(([y, x]) => `<div><b>${escapeHTML(y)}</b><span>${escapeHTML(x)}</span></div>`).join('')}</div>`;
     if (type === 'box') return `<div class="pol-box"><div class="pol-kicker">Em resumo</div><ul>${b[1].map(x => `<li>${escapeHTML(x)}</li>`).join('')}</ul></div>`;
@@ -13211,7 +13234,8 @@ const renderPolitica = (() => {
     if (view.open) {
       const t = TRILHAS.find(x => x.id === view.open);
       const q = p.quiz[t.id];
-      const words = t.body.join(' ').split(/\s+/).length;
+      const words = (t.blocks ? t.blocks.filter(b => b[0] === 'p').map(b => typeof b[1] === 'string' ? b[1] : t.body[b[1]]) : t.body).join(' ').split(/\s+/).length;
+      const secs = (t.blocks || []).map((b, i) => b[0] === 'h' ? [i, b[1]] : null).filter(Boolean);
       return `
         <div class="pol-reader-bar"><span id="pol-progress"></span></div>
         <div class="pol-card pol-article pol-reader pol-tone-${readerTone}" style="--pol-fs:${readerSize}px">
@@ -13225,11 +13249,12 @@ const renderPolitica = (() => {
           </div>
           <div class="pol-kicker" style="margin-top:18px">${escapeHTML(t.era)} · ${Math.max(1, Math.round(words / 200))} min de leitura</div>
           <h2>${t.emoji} ${escapeHTML(t.title)}</h2>
+          ${secs.length > 3 ? `<details class="pol-toc"><summary>Sumário · ${secs.length} seções</summary><ol>${secs.map(([i, h]) => `<li><a href="#pol-sec-${i}" data-pol="toc" data-i="${i}">${escapeHTML(h)}</a></li>`).join('')}</ol></details>` : ''}
           ${(t.blocks || t.body.map((x, i) => ['p', i])).map(b => blockHTML(t, b)).join('')}
           <h3>Conceitos-chave</h3>
           <dl class="pol-concepts">${t.concepts.map(([k, v]) => `<div><dt>${escapeHTML(k)}</dt><dd>${escapeHTML(v)}</dd></div>`).join('')}</dl>
           <div class="pol-actions">
-            <button class="btn" data-pol="quiz" data-id="${t.id}">${q ? `Refazer o quiz (recorde ${q.best}%)` : 'Fazer o quiz · 5 perguntas'}</button>
+            <button class="btn" data-pol="quiz" data-id="${t.id}">${q ? `Refazer o quiz (recorde ${q.best}%)` : 'Fazer o quiz · 5 perguntas sorteadas'}</button>
             ${(() => { const i = TRILHAS.indexOf(t); return i < TRILHAS.length - 1 ? `<button class="btn btn-ghost" data-pol="open" data-id="${TRILHAS[i + 1].id}">Próxima trilha ›</button>` : ''; })()}
           </div>
         </div>`;
@@ -13327,6 +13352,12 @@ const renderPolitica = (() => {
         if (!p.read[view.open]) { p.read[view.open] = true; saveState(); }
         render(); top(); break;
       case 'close': view.open = null; render(); top(); break;
+      case 'toc': {
+        e.preventDefault();
+        const h = document.getElementById('pol-sec-' + el.dataset.i);
+        if (h) h.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        break;
+      }
       case 'fs':
         readerSize = Math.min(24, Math.max(15, readerSize + Number(el.dataset.d)));
         try { localStorage.setItem('orbita_pol_fs', readerSize); } catch {}
