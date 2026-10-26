@@ -2006,6 +2006,124 @@
     cursor: pointer;
   }
 
+  /* ============== POLÍTICA ============== */
+  .pol-tabs { margin-bottom: 18px; }
+  .pol-body { max-width: 900px; }
+  .pol-card { display: block; width: 100%; text-align: left; background: var(--bg-elevated); border: 1px solid var(--line); border-radius: 14px; padding: 20px 22px; margin-bottom: 14px; box-shadow: var(--shadow-sm); color: var(--ink); font: inherit; }
+  .pol-kicker { font: 600 10px 'DM Sans', sans-serif; text-transform: uppercase; letter-spacing: 0.15em; color: var(--ink-faint); }
+  .pol-muted { font-size: 13px; color: var(--ink-faint); line-height: 1.5; }
+  .pol-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+  .pol-grid > .pol-card { margin-bottom: 0; }
+  .pol-grid + .pol-card { margin-top: 14px; }
+  .pol-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 16px; }
+  .pol-link { background: none; border: none; padding: 0; color: var(--ink-soft); font: 600 12px 'DM Sans', sans-serif; cursor: pointer; }
+  .pol-link:hover { color: var(--ink); text-decoration: underline; }
+  .pol-bar { height: 6px; border-radius: 99px; background: var(--line-soft); overflow: hidden; margin: 10px 0 2px; }
+  .pol-bar.thin { height: 4px; margin: 6px 0 0; display: block; }
+  .pol-bar > span { display: block; height: 100%; background: var(--ink); border-radius: 99px; transition: width .3s ease; }
+  .pol-pill { display: inline-block; font: 600 11px 'DM Sans', sans-serif; padding: 3px 9px; border-radius: 99px; background: var(--ink); color: var(--bg); }
+  .pol-pill.ghost { background: transparent; color: var(--ink-faint); border: 1px solid var(--line); }
+
+  .pol-hero { display: flex; flex-direction: column; gap: 14px; }
+  .pol-ring { --v: 0; width: 148px; height: 148px; border-radius: 50%; margin: 4px auto 0; background: conic-gradient(var(--ink) calc(var(--v) * 1%), var(--line-soft) 0); display: grid; place-items: center; }
+  .pol-ring > div { width: 118px; height: 118px; border-radius: 50%; background: var(--bg-elevated); display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+  .pol-ring b { font: 300 34px 'DM Sans', sans-serif; letter-spacing: -0.03em; }
+  .pol-ring span { font-size: 11px; color: var(--ink-faint); padding: 0 8px; }
+  .pol-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; text-align: center; }
+  .pol-stats b { display: block; font: 600 18px 'DM Sans', sans-serif; }
+  .pol-stats span { font-size: 11px; color: var(--ink-faint); }
+
+  .pol-row { display: flex; align-items: center; gap: 12px; width: 100%; padding: 10px 0; background: none; border: none; border-top: 1px solid var(--line-soft); color: var(--ink); font: 14px 'DM Sans', sans-serif; text-align: left; cursor: pointer; }
+  .pol-row:first-of-type { margin-top: 8px; }
+  .pol-row:hover .pol-row-main > span:first-child { text-decoration: underline; text-underline-offset: 3px; }
+  .pol-row-emoji { width: 22px; text-align: center; }
+  .pol-row-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .pol-row-val { font: 600 12px 'DM Sans', sans-serif; color: var(--ink-soft); min-width: 38px; text-align: right; }
+  .pol-log { display: grid; grid-template-columns: 56px 1fr auto; gap: 10px; font-size: 13px; padding: 8px 0; border-top: 1px solid var(--line-soft); }
+  .pol-log:first-of-type { margin-top: 8px; }
+  .pol-log span:first-child { color: var(--ink-faint); }
+
+  .pol-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px; }
+  .pol-tcard { margin: 0; cursor: pointer; transition: border-color .15s, transform .15s; display: flex; flex-direction: column; gap: 6px; }
+  .pol-tcard:hover { border-color: var(--ink); transform: translateY(-1px); }
+  .pol-tcard-top { display: flex; justify-content: space-between; align-items: center; font-size: 18px; }
+  .pol-num { font: 600 11px 'DM Sans', sans-serif; color: var(--ink-faint); letter-spacing: 0.1em; }
+  .pol-tcard-title { font: 600 16px/1.3 'DM Sans', sans-serif; }
+  .pol-tcard-foot { margin-top: auto; padding-top: 8px; }
+
+  .pol-article h2, .pol-intro h2 { font: 300 28px/1.2 'DM Sans', sans-serif; letter-spacing: -0.02em; margin: 6px 0 14px; }
+  .pol-article h3 { font: 600 13px 'DM Sans', sans-serif; text-transform: uppercase; letter-spacing: 0.12em; color: var(--ink-faint); margin: 22px 0 8px; }
+  .pol-article p, .pol-intro p, .pol-method p, .pol-match p { font-size: 15px; line-height: 1.65; color: var(--ink-soft); margin: 0 0 12px; max-width: 68ch; }
+  .pol-intro ul { margin: 0 0 4px 18px; padding: 0; color: var(--ink-soft); font-size: 14px; line-height: 1.7; }
+  .pol-concepts { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px; margin: 0; }
+  .pol-concepts > div { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; }
+  .pol-concepts dt { font-weight: 600; font-size: 14px; }
+  .pol-concepts dd { margin: 4px 0 0; font-size: 13px; color: var(--ink-soft); line-height: 1.5; }
+
+  .pol-session { max-width: 680px; }
+  .pol-session-head { display: flex; justify-content: space-between; align-items: center; }
+  .pol-q { font: 500 19px/1.45 'DM Sans', sans-serif; margin: 18px 0 16px; }
+  .pol-opts { display: flex; flex-direction: column; gap: 8px; }
+  .pol-opt { text-align: left; padding: 13px 15px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); font: 15px/1.4 'DM Sans', sans-serif; cursor: pointer; transition: border-color .15s; }
+  .pol-opt:hover:not([disabled]) { border-color: var(--ink); }
+  .pol-opt[disabled] { cursor: default; }
+  .pol-opt.is-right { border-color: #16a34a; background: #f0fdf4; color: #14532d; font-weight: 600; }
+  .pol-opt.is-wrong { border-color: #dc2626; background: #fef2f2; color: #7f1d1d; }
+  .pol-opt.is-dim { opacity: .5; }
+  .pol-feedback { margin-top: 14px; padding: 12px 14px; border-radius: 10px; font-size: 14px; line-height: 1.5; background: var(--bg-card); border-left: 3px solid var(--ink-faint); }
+  .pol-feedback.ok { border-left-color: #16a34a; }
+  .pol-feedback.no { border-left-color: #dc2626; }
+  .pol-score-big { font: 300 56px 'DM Sans', sans-serif; letter-spacing: -0.04em; margin: 6px 0 2px; }
+  .pol-review { margin-top: 16px; }
+  .pol-review-row { display: grid; grid-template-columns: 20px 1fr; gap: 8px; padding: 9px 0; border-top: 1px solid var(--line-soft); font-size: 14px; line-height: 1.45; }
+  .pol-review-row.ok > span { color: #16a34a; font-weight: 700; }
+  .pol-review-row.no > span { color: #dc2626; font-weight: 700; }
+
+  .pol-likert { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+  .pol-lk { padding: 12px 6px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); font: 600 12.5px/1.25 'DM Sans', sans-serif; cursor: pointer; min-height: 56px; }
+  .pol-lk:hover { border-color: var(--ink); }
+  .pol-lk.is-on { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+
+  .pol-result { display: grid; grid-template-columns: minmax(0, 340px) minmax(0, 1fr); gap: 22px; align-items: center; margin-top: 8px; }
+  .pol-compass { width: 100%; max-width: 340px; height: auto; display: block; margin: 6px auto; }
+  .pol-q1 { fill: var(--bg-card); }
+  .pol-q2 { fill: var(--line-soft); }
+  .pol-axis { stroke: var(--line); stroke-width: 1; }
+  .pol-axis-t { font: 600 9.5px 'DM Sans', sans-serif; fill: var(--ink-faint); text-transform: uppercase; letter-spacing: 0.08em; }
+  .pol-ref { fill: var(--ink-faint); opacity: .55; }
+  .pol-me { fill: var(--ink); stroke: var(--bg); stroke-width: 3; }
+  .pol-past { fill: var(--ink-faint); }
+  .pol-trail { fill: none; stroke: var(--ink-faint); stroke-width: 1.5; stroke-dasharray: 3 3; }
+  .pol-ideo { font: 300 26px/1.2 'DM Sans', sans-serif; letter-spacing: -0.02em; margin-bottom: 4px; }
+  .pol-ideo.small { font-size: 19px; margin-top: 6px; }
+  .pol-axes { display: grid; gap: 8px; margin: 16px 0 12px; }
+  .pol-axes > div { display: grid; grid-template-columns: 76px 48px 1fr; align-items: baseline; gap: 8px; padding: 8px 0; border-top: 1px solid var(--line-soft); }
+  .pol-axes span { font-size: 12px; color: var(--ink-faint); }
+  .pol-axes b { font: 600 18px 'DM Sans', sans-serif; }
+  .pol-axes em { font-style: normal; font-size: 13px; color: var(--ink-soft); }
+  .pol-match { padding: 14px 0 4px; border-top: 1px solid var(--line-soft); }
+  .pol-match:first-of-type { margin-top: 8px; }
+  .pol-match-head { display: flex; justify-content: space-between; font-size: 15px; }
+  .pol-match p { font-size: 14px; margin: 8px 0 0; }
+  .pol-driver { padding: 9px 0; border-top: 1px solid var(--line-soft); font-size: 14px; line-height: 1.45; }
+  .pol-driver span { display: block; font: 600 10px 'DM Sans', sans-serif; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-faint); margin-bottom: 2px; }
+  .pol-driver em { display: block; font-style: normal; font-size: 12px; color: var(--ink-faint); margin-top: 2px; }
+  .pol-flash { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 8px; margin-top: 10px; }
+  .pol-flash details { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; }
+  .pol-flash summary { font-weight: 600; font-size: 14px; cursor: pointer; }
+  .pol-flash p { font-size: 13px; color: var(--ink-soft); margin: 6px 0 0; line-height: 1.5; }
+  html.theme-dark .pol-opt.is-right { background: #052e16; color: #bbf7d0; }
+  html.theme-dark .pol-opt.is-wrong { background: #450a0a; color: #fecaca; }
+
+  @media (max-width: 760px) {
+    .pol-grid, .pol-result { grid-template-columns: minmax(0, 1fr); }
+    .pol-card { padding: 16px; }
+    .pol-likert { grid-template-columns: 1fr; }
+    .pol-lk { min-height: 0; padding: 12px; text-align: left; }
+    .pol-q { font-size: 17px; }
+    .pol-article h2, .pol-intro h2 { font-size: 24px; }
+  }
+
   /* ============== ROTEIROS ============== */
   .itinerary-chip {
     border-color: #c4b5fd !important;
@@ -4597,6 +4715,10 @@
         <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-8H4v8"/><path d="M4 16s1.5-2 4-2 4 2 4 2 1.5-2 4-2 4 2 4 2"/><rect x="2" y="13" width="20" height="2"/><path d="M12 6v3"/><path d="M9 3l3-2 3 2"/><path d="M8 6v3"/><path d="M16 6v3"/></svg>
         Aniversários
       </div>
+      <div class="nav-item" data-page="politica">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18"/><path d="M5 21V10"/><path d="M19 21V10"/><path d="M9.5 21V10"/><path d="M14.5 21V10"/><path d="M2 10l10-7 10 7z"/></svg>
+        Política
+      </div>
       <div class="nav-item" data-page="notes">
         <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
         Notas
@@ -4959,6 +5081,9 @@
         </div>
       </div>
     </section>
+
+    <!-- POLÍTICA -->
+    <section class="page" id="page-politica"></section>
 
     <!-- BIRTHDAYS -->
     <section class="page" id="page-birthdays">
@@ -6367,6 +6492,7 @@ navItems.forEach(item => {
     if (target === 'trip') renderTrip();
     if (target === 'birthdays') renderBirthdays();
     if (target === 'notes') renderNotes();
+    if (target === 'politica') renderPolitica();
   });
 });
 
@@ -12442,6 +12568,693 @@ const renderSaude = (() => {
 })();
 
 // ============== VIAGEM ==============
+// ============== POLÍTICA ==============
+// Trilhas de história política, dinâmicas, domínio e nivelador ideológico (2 eixos).
+const renderPolitica = (() => {
+  // ---------- conteúdo ----------
+  // Trilhas: texto curto + conceitos + quiz (5 perguntas). Índice da resposta certa em `a`.
+  const TRILHAS = [
+    {
+      id: 'origens', emoji: '🏛️', title: 'De onde vêm "esquerda" e "direita"', era: '1789 a 1815',
+      body: [
+        'Os termos nasceram na Assembleia Nacional da Revolução Francesa, em 1789. Na votação sobre o poder de veto do rei, quem defendia a monarquia e a ordem tradicional sentou-se à direita do presidente da assembleia; quem queria mudanças profundas e mais poder ao povo sentou-se à esquerda.',
+        'Na Convenção (1792), a divisão ficou mais nítida: os girondinos, mais moderados e federalistas, de um lado; os jacobinos e os montanheses, radicais e centralizadores, do outro. A fase do Terror (1793 a 1794), sob Robespierre, mostrou como uma revolução feita em nome da liberdade pode suspender liberdades.',
+        'A Revolução produziu a Declaração dos Direitos do Homem e do Cidadão (1789), que afirmava igualdade perante a lei, soberania nacional e direitos naturais. Napoleão chegou ao poder em 1799 e se coroou imperador em 1804, consolidando parte das reformas, como o Código Civil, num regime autoritário.',
+        'Desde então, "esquerda" e "direita" mudaram muito de conteúdo de país para país e de época para época. O que se mantém é a ideia de um eixo: de um lado, maior ênfase em igualdade e mudança; do outro, maior ênfase em ordem, tradição e, mais tarde, liberdade econômica.',
+      ],
+      concepts: [['Antigo Regime', 'Ordem social francesa anterior a 1789: monarquia absoluta e sociedade dividida em clero, nobreza e terceiro estado.'], ['Jacobinos', 'Grupo radical da Revolução, defensor de um Estado centralizado e da república.'], ['Girondinos', 'Grupo republicano mais moderado, com base nas províncias.'], ['Soberania nacional', 'Ideia de que o poder emana da nação, e não do rei.']],
+      quiz: [
+        ['Em que evento surgiram os termos "esquerda" e "direita" na política?', ['Revolução Gloriosa inglesa', 'Assembleia Nacional da Revolução Francesa', 'Independência dos Estados Unidos', 'Congresso de Viena'], 1, 'A origem é a disposição dos deputados na Assembleia Nacional francesa em 1789.'],
+        ['Quem se sentava à direita na Assembleia de 1789?', ['Os defensores da monarquia e da ordem tradicional', 'Os jacobinos radicais', 'Os representantes dos camponeses', 'Os socialistas'], 0, 'À direita ficaram os partidários do rei e de mudanças limitadas.'],
+        ['Qual documento de 1789 afirmou a igualdade perante a lei?', ['Magna Carta', 'Manifesto Comunista', 'Declaração dos Direitos do Homem e do Cidadão', 'Constituição de Weimar'], 2, 'A Declaração de 1789 é um dos textos fundadores dos direitos civis modernos.'],
+        ['O período do Terror (1793 a 1794) está associado a qual líder?', ['Napoleão Bonaparte', 'Luís XVI', 'Maximilien Robespierre', 'Edmund Burke'], 2, 'Robespierre liderou o Comitê de Salvação Pública durante o Terror.'],
+        ['O que é correto dizer sobre o significado de "esquerda" e "direita" hoje?', ['É o mesmo desde 1789', 'Varia conforme o país e a época', 'Só existe na França', 'Refere-se apenas à economia'], 1, 'O conteúdo dos termos mudou ao longo do tempo e difere entre países.'],
+      ],
+    },
+    {
+      id: 'liberalismo', emoji: '📜', title: 'Liberalismo clássico', era: 'Séculos XVII a XIX',
+      body: [
+        'O liberalismo nasceu como reação ao absolutismo. John Locke (Segundo Tratado sobre o Governo, 1689) defendeu que as pessoas têm direitos naturais à vida, à liberdade e à propriedade, e que o governo existe para protegê-los, podendo ser derrubado se os violar.',
+        'Montesquieu (O Espírito das Leis, 1748) propôs a separação entre os poderes Executivo, Legislativo e Judiciário, para que um limite o outro. A ideia inspirou a Constituição dos Estados Unidos (1787) e a maioria das constituições modernas, inclusive a brasileira.',
+        'Na economia, Adam Smith (A Riqueza das Nações, 1776) argumentou que a divisão do trabalho e a troca livre geram prosperidade, e que o interesse individual, num mercado com concorrência, pode produzir benefícios coletivos (a "mão invisível").',
+        'Revoluções como a Gloriosa (Inglaterra, 1688), a Americana (1776) e a Francesa (1789) carregaram ideias liberais. No século XIX, John Stuart Mill (Sobre a Liberdade, 1859) formulou o princípio do dano: o Estado só deve limitar a liberdade de alguém para evitar dano a outros.',
+      ],
+      concepts: [['Direitos naturais', 'Direitos que existiriam antes e independentemente do Estado.'], ['Separação de poderes', 'Divisão do poder estatal em funções independentes que se controlam mutuamente.'], ['Mão invisível', 'Metáfora de Adam Smith para a coordenação espontânea do mercado.'], ['Princípio do dano', 'Ideia de Mill de que só o dano a terceiros justifica restringir a liberdade.']],
+      quiz: [
+        ['Para John Locke, quais eram os direitos naturais?', ['Trabalho, saúde e educação', 'Vida, liberdade e propriedade', 'Igualdade, fraternidade e solidariedade', 'Ordem, tradição e fé'], 1, 'Locke fala em vida, liberdade e propriedade.'],
+        ['Quem formulou a teoria da separação dos poderes em O Espírito das Leis?', ['Rousseau', 'Hobbes', 'Montesquieu', 'Voltaire'], 2, 'Montesquieu publicou O Espírito das Leis em 1748.'],
+        ['A metáfora da "mão invisível" é de qual autor?', ['Adam Smith', 'Karl Marx', 'John Maynard Keynes', 'Friedrich Hayek'], 0, 'Adam Smith usa a expressão em A Riqueza das Nações (1776).'],
+        ['O "princípio do dano" de John Stuart Mill diz que:', ['O Estado deve impor a moral da maioria', 'A liberdade só pode ser limitada para evitar dano a outros', 'Todo dano deve ser indenizado pelo Estado', 'O mercado deve ser regulado ao máximo'], 1, 'Para Mill, a única justificativa para restringir a liberdade é prevenir dano a terceiros.'],
+        ['O liberalismo surgiu principalmente como reação a quê?', ['Ao socialismo', 'Ao absolutismo monárquico', 'Ao fascismo', 'À globalização'], 1, 'Os primeiros liberais se opunham ao poder absoluto dos reis.'],
+      ],
+    },
+    {
+      id: 'conservadorismo', emoji: '⚓', title: 'Conservadorismo', era: 'A partir de 1790',
+      body: [
+        'O conservadorismo moderno costuma ser associado a Edmund Burke, parlamentar britânico que publicou Reflexões sobre a Revolução na França em 1790. Burke criticou a tentativa de reconstruir a sociedade a partir de princípios abstratos e previu que ela levaria à violência e à tirania.',
+        'Para Burke, as instituições (família, religião, costumes, leis) acumulam a experiência de gerações e não devem ser descartadas de uma vez. A sociedade seria um contrato entre os vivos, os mortos e os que ainda vão nascer. Mudanças são necessárias, mas devem ser graduais e prudentes.',
+        'O conservadorismo não é uma doutrina única: há conservadores mais próximos do liberalismo econômico, outros mais nacionalistas ou religiosos. O traço comum é o ceticismo diante de projetos de transformação radical e a valorização da ordem, da continuidade e da experiência histórica.',
+        'No século XX, autores como Michael Oakeshott e Russell Kirk renovaram a tradição. Na política prática, partidos conservadores e democratas-cristãos tiveram papel central na Europa do pós-guerra.',
+      ],
+      concepts: [['Prudência', 'Virtude política central para Burke: agir com cautela diante da complexidade social.'], ['Reformismo gradual', 'Mudar preservando o que funciona, em vez de recomeçar do zero.'], ['Democracia cristã', 'Corrente que combina valores cristãos, economia social de mercado e democracia.']],
+      quiz: [
+        ['Qual obra de 1790 é considerada fundadora do conservadorismo moderno?', ['O Príncipe', 'Reflexões sobre a Revolução na França', 'O Contrato Social', 'Leviatã'], 1, 'Edmund Burke publicou as Reflexões em 1790.'],
+        ['Qual destas ideias é central no pensamento de Burke?', ['Abolir todas as instituições herdadas', 'Mudanças graduais que preservam a experiência acumulada', 'Revolução permanente', 'Fim da propriedade privada'], 1, 'Burke defendia reformas prudentes, não a ruptura total.'],
+        ['Para Burke, a sociedade é um contrato entre:', ['Patrões e empregados', 'Os vivos, os mortos e os que vão nascer', 'O rei e a nobreza', 'Os cidadãos e o mercado'], 1, 'É uma das formulações mais conhecidas das Reflexões.'],
+        ['É correto afirmar que o conservadorismo:', ['É uma doutrina única e fechada', 'Tem várias vertentes, com ceticismo comum a mudanças radicais', 'Rejeita qualquer mudança', 'Surgiu no século XXI'], 1, 'Há várias correntes conservadoras; o ponto comum é a desconfiança de rupturas.'],
+        ['Que corrente teve papel central na Europa do pós-guerra ao lado da social-democracia?', ['Anarquismo', 'Democracia cristã', 'Fascismo', 'Monarquismo absolutista'], 1, 'Partidos democratas-cristãos governaram Alemanha e Itália por décadas após 1945.'],
+      ],
+    },
+    {
+      id: 'socialismo', emoji: '⚙️', title: 'Socialismo e marxismo', era: 'Século XIX a 1991',
+      body: [
+        'A Revolução Industrial trouxe crescimento, mas também jornadas longas, trabalho infantil e cidades insalubres. Nesse contexto surgiram críticas ao capitalismo. Os chamados socialistas utópicos, como Robert Owen e Charles Fourier, propuseram comunidades cooperativas.',
+        'Karl Marx e Friedrich Engels publicaram o Manifesto Comunista em 1848. Para eles, a história é marcada pela luta de classes; no capitalismo, a burguesia (dona dos meios de produção) explora o proletariado. Marx previa que os trabalhadores tomariam o poder e caminhariam para uma sociedade sem classes. Sua obra principal, O Capital, teve o primeiro volume publicado em 1867.',
+        'Em 1917, a Revolução Russa levou os bolcheviques, liderados por Lenin, ao poder, e em 1922 foi criada a União Soviética. Sob Stalin, houve industrialização acelerada, coletivização forçada da agricultura, fome e repressão em massa (os gulags). Outros regimes comunistas surgiram na China (1949), em Cuba (1959) e no Leste Europeu.',
+        'O socialismo também seguiu caminhos democráticos: partidos socialistas e trabalhistas passaram a disputar eleições e a buscar reformas dentro da democracia. O bloco soviético entrou em crise nos anos 1980 e a URSS se dissolveu em 1991.',
+      ],
+      concepts: [['Luta de classes', 'Conflito entre grupos sociais definidos pela posição na produção.'], ['Meios de produção', 'Fábricas, terras, máquinas e recursos usados para produzir.'], ['Mais-valia', 'Para Marx, o valor produzido pelo trabalhador além do que recebe em salário.'], ['Socialismo democrático', 'Busca do socialismo por vias eleitorais e institucionais.']],
+      quiz: [
+        ['Em que ano foi publicado o Manifesto Comunista?', ['1789', '1848', '1917', '1867'], 1, 'Marx e Engels publicaram o Manifesto em 1848.'],
+        ['Para Marx, o motor da história é:', ['A vontade divina', 'A luta de classes', 'O progresso tecnológico neutro', 'A competição entre nações'], 1, 'A luta de classes é o conceito central do materialismo histórico.'],
+        ['Quem liderou os bolcheviques na Revolução Russa de 1917?', ['Stalin', 'Trotsky', 'Lenin', 'Kerensky'], 2, 'Lenin liderou os bolcheviques na Revolução de Outubro.'],
+        ['Em que ano a União Soviética se dissolveu?', ['1989', '1985', '1991', '1995'], 2, 'A URSS foi oficialmente dissolvida em dezembro de 1991.'],
+        ['Os "socialistas utópicos" propunham:', ['Revolução armada imediata', 'Comunidades cooperativas como modelo', 'Fim da indústria', 'Monarquias constitucionais'], 1, 'Owen e Fourier imaginaram comunidades cooperativas organizadas.'],
+      ],
+    },
+    {
+      id: 'socialdemocracia', emoji: '🤝', title: 'Social-democracia e Estado de bem-estar', era: '1890 a 1970',
+      body: [
+        'No fim do século XIX, Eduard Bernstein, do Partido Social-Democrata alemão, defendeu que o socialismo poderia ser alcançado por reformas graduais e pelo voto, e não por revolução. Esse "revisionismo" está na origem da social-democracia.',
+        'A crise de 1929 abalou a confiança nos mercados autorregulados. John Maynard Keynes (Teoria Geral, 1936) argumentou que, em recessões, o Estado deve aumentar gastos para sustentar a demanda e o emprego. Nos Estados Unidos, o New Deal de Roosevelt aplicou políticas nessa linha.',
+        'Depois da Segunda Guerra, o Relatório Beveridge (Reino Unido, 1942) inspirou um Estado de bem-estar social com saúde pública universal (o NHS, de 1948), previdência e seguro-desemprego. Os países nórdicos combinaram economia de mercado, impostos altos e serviços públicos amplos.',
+        'De 1945 até meados dos anos 1970, muitos países viveram forte crescimento com esse modelo. A crise do petróleo e a combinação de inflação alta com estagnação (estagflação) nos anos 1970 abriram espaço para críticas e para o avanço de ideias liberais na economia.',
+      ],
+      concepts: [['Revisionismo', 'Corrente de Bernstein que trocou a revolução por reformas graduais.'], ['Keynesianismo', 'Uso do gasto público e da política econômica para estabilizar a demanda.'], ['Estado de bem-estar', 'Estado que garante proteção social ampla: saúde, previdência, educação.'], ['Estagflação', 'Inflação alta combinada com estagnação econômica.']],
+      quiz: [
+        ['Quem defendeu, no fim do século XIX, chegar ao socialismo por reformas e pelo voto?', ['Lenin', 'Eduard Bernstein', 'Rosa Luxemburgo', 'Bakunin'], 1, 'Bernstein é o principal nome do revisionismo.'],
+        ['Para Keynes, o que o Estado deve fazer em recessões?', ['Cortar todos os gastos', 'Aumentar gastos para sustentar a demanda', 'Estatizar todas as empresas', 'Não fazer nada'], 1, 'Keynes defendia política fiscal ativa contra o desemprego.'],
+        ['Qual relatório de 1942 inspirou o Estado de bem-estar britânico?', ['Relatório Beveridge', 'Plano Marshall', 'Relatório Brundtland', 'Acordo de Bretton Woods'], 0, 'O Relatório Beveridge propôs a seguridade social universal.'],
+        ['O New Deal foi um conjunto de políticas de qual presidente?', ['Ronald Reagan', 'Franklin D. Roosevelt', 'John F. Kennedy', 'Woodrow Wilson'], 1, 'Roosevelt lançou o New Deal a partir de 1933.'],
+        ['O que é estagflação?', ['Crescimento com inflação baixa', 'Inflação alta com economia estagnada', 'Deflação com pleno emprego', 'Crescimento acelerado das exportações'], 1, 'Foi o problema típico dos anos 1970.'],
+      ],
+    },
+    {
+      id: 'totalitarismo', emoji: '⚠️', title: 'Fascismo, nazismo e totalitarismo', era: '1919 a 1945',
+      body: [
+        'Depois da Primeira Guerra Mundial, crises econômicas, medo de revoluções e ressentimento nacional favoreceram movimentos autoritários. Na Itália, Benito Mussolini fundou o fascismo e chegou ao poder após a Marcha sobre Roma, em 1922.',
+        'O fascismo combinava nacionalismo extremo, culto ao líder, partido único, rejeição da democracia liberal e do marxismo, e uso da violência política. O Estado deveria subordinar indivíduos, sindicatos e empresas aos interesses da nação (o corporativismo).',
+        'Na Alemanha, Adolf Hitler e o Partido Nacional-Socialista chegaram ao poder em 1933. O nazismo acrescentou um racismo biológico radical, que levou à perseguição e ao assassinato sistemático de cerca de seis milhões de judeus no Holocausto, além de ciganos, pessoas com deficiência e outros grupos. A expansão alemã desencadeou a Segunda Guerra Mundial (1939 a 1945).',
+        'A filósofa Hannah Arendt, em Origens do Totalitarismo (1951), analisou o nazismo e o stalinismo como regimes totalitários: sistemas que buscam controlar todas as esferas da vida por meio de ideologia, terror e partido único. Classificar o fascismo no eixo esquerda e direita é tema de debate, mas a maioria dos historiadores o situa na extrema direita.',
+      ],
+      concepts: [['Totalitarismo', 'Regime que busca controle total da sociedade por ideologia, terror e partido único.'], ['Corporativismo', 'Organização da economia em corporações subordinadas ao Estado.'], ['Holocausto', 'Genocídio de judeus europeus pelo regime nazista.']],
+      quiz: [
+        ['Em que ano ocorreu a Marcha sobre Roma, que levou Mussolini ao poder?', ['1919', '1922', '1933', '1939'], 1, 'A Marcha sobre Roma foi em outubro de 1922.'],
+        ['Qual destes NÃO é um traço típico do fascismo?', ['Culto ao líder', 'Partido único', 'Pluralismo partidário e imprensa livre', 'Nacionalismo extremo'], 2, 'O fascismo suprimia partidos rivais e a imprensa independente.'],
+        ['Quem escreveu Origens do Totalitarismo?', ['George Orwell', 'Hannah Arendt', 'Karl Popper', 'Simone de Beauvoir'], 1, 'Hannah Arendt publicou a obra em 1951.'],
+        ['Para Arendt, quais regimes eram exemplos de totalitarismo?', ['Nazismo e stalinismo', 'Monarquia britânica e república francesa', 'Social-democracia sueca e New Deal', 'Império Romano e Grécia antiga'], 0, 'Arendt comparou o nazismo e o stalinismo.'],
+        ['Em que ano Hitler chegou ao poder na Alemanha?', ['1923', '1929', '1933', '1939'], 2, 'Hitler foi nomeado chanceler em janeiro de 1933.'],
+      ],
+    },
+    {
+      id: 'guerrafria', emoji: '🧱', title: 'Guerra Fria e o mundo bipolar', era: '1947 a 1991',
+      body: [
+        'Após 1945, Estados Unidos e União Soviética disputaram influência global sem guerra direta entre si. De um lado, democracias liberais e economias de mercado; do outro, regimes comunistas de economia planificada.',
+        'Em 1947, a Doutrina Truman prometeu apoiar países contra a expansão comunista, e o Plano Marshall financiou a reconstrução da Europa Ocidental. A OTAN foi criada em 1949 e o Pacto de Varsóvia em 1955. O Muro de Berlim, erguido em 1961, virou símbolo da divisão.',
+        'A disputa envolveu corrida armamentista nuclear, corrida espacial e guerras em outros países, como Coreia (1950 a 1953) e Vietnã. A Crise dos Mísseis em Cuba (1962) foi o momento mais próximo de uma guerra nuclear. Na América Latina, o contexto influenciou golpes e regimes militares.',
+        'Nos anos 1980, Mikhail Gorbachev lançou a perestroika (reestruturação) e a glasnost (abertura). O Muro de Berlim caiu em 1989 e a URSS se dissolveu em 1991, encerrando a Guerra Fria.',
+      ],
+      concepts: [['Bipolaridade', 'Ordem mundial dividida entre duas superpotências.'], ['Contenção', 'Estratégia americana de impedir a expansão soviética.'], ['Perestroika e glasnost', 'Reformas econômica e política de Gorbachev.']],
+      quiz: [
+        ['Em que ano a OTAN foi criada?', ['1945', '1949', '1955', '1961'], 1, 'A OTAN foi fundada em abril de 1949.'],
+        ['O que foi o Plano Marshall?', ['Plano soviético de industrialização', 'Ajuda americana para reconstruir a Europa Ocidental', 'Tratado de desarmamento nuclear', 'Programa espacial'], 1, 'O Plano Marshall foi lançado em 1947 e financiou a reconstrução europeia.'],
+        ['Qual evento de 1962 levou o mundo perto de uma guerra nuclear?', ['Queda do Muro de Berlim', 'Guerra da Coreia', 'Crise dos Mísseis em Cuba', 'Revolução Húngara'], 2, 'A Crise dos Mísseis durou 13 dias em outubro de 1962.'],
+        ['Glasnost significa:', ['Reestruturação econômica', 'Abertura política e transparência', 'Corrida espacial', 'Planejamento central'], 1, 'Glasnost foi a política de abertura de Gorbachev.'],
+        ['Em que ano caiu o Muro de Berlim?', ['1987', '1989', '1991', '1993'], 1, 'O Muro caiu em 9 de novembro de 1989.'],
+      ],
+    },
+    {
+      id: 'neoliberalismo', emoji: '📈', title: 'Neoliberalismo e libertarianismo', era: '1940 até hoje',
+      body: [
+        'Friedrich Hayek (O Caminho da Servidão, 1944) argumentou que o planejamento central da economia concentra poder e ameaça a liberdade. Para ele, os preços de mercado transmitem informações que nenhum planejador consegue reunir.',
+        'Milton Friedman, da Escola de Chicago, defendeu o controle da oferta de moeda contra a inflação, menos regulação e um papel mais limitado do Estado (Capitalismo e Liberdade, 1962). As ideias ganharam força com a estagflação dos anos 1970.',
+        'Margaret Thatcher (primeira-ministra britânica a partir de 1979) e Ronald Reagan (presidente dos EUA a partir de 1981) privatizaram empresas, cortaram impostos e enfrentaram sindicatos. Em 1989, o "Consenso de Washington" resumiu recomendações como disciplina fiscal, abertura comercial e privatizações para países em desenvolvimento.',
+        'O libertarianismo vai além: Robert Nozick (Anarquia, Estado e Utopia, 1974) defendeu um Estado mínimo, limitado a proteger contra violência, roubo e fraude. Críticos dessas correntes apontam aumento da desigualdade e crises financeiras; defensores apontam ganhos de crescimento, inflação menor e mais liberdade de escolha.',
+      ],
+      concepts: [['Neoliberalismo', 'Rótulo para políticas de mercado, privatização e desregulação a partir dos anos 1970.'], ['Monetarismo', 'Escola de Friedman que enfatiza o controle da moeda contra a inflação.'], ['Estado mínimo', 'Estado limitado a segurança, justiça e defesa dos contratos.']],
+      quiz: [
+        ['Qual livro de Hayek, de 1944, critica o planejamento central?', ['A Riqueza das Nações', 'O Caminho da Servidão', 'Capitalismo e Liberdade', 'Teoria Geral'], 1, 'O Caminho da Servidão foi publicado em 1944.'],
+        ['Milton Friedman é associado a qual escola?', ['Escola de Frankfurt', 'Escola de Chicago', 'Escola Austríaca', 'Escola de Cambridge'], 1, 'Friedman foi o principal nome da Escola de Chicago.'],
+        ['Quem foi primeira-ministra do Reino Unido a partir de 1979?', ['Theresa May', 'Margaret Thatcher', 'Angela Merkel', 'Indira Gandhi'], 1, 'Thatcher governou de 1979 a 1990.'],
+        ['Para Robert Nozick, o Estado legítimo é:', ['Máximo, dono das empresas', 'Mínimo, voltado à proteção contra violência, roubo e fraude', 'Inexistente desde já', 'Uma monarquia hereditária'], 1, 'Nozick defende o Estado mínimo.'],
+        ['O "Consenso de Washington" (1989) recomendava:', ['Estatização da economia', 'Disciplina fiscal, abertura comercial e privatizações', 'Moratória da dívida', 'Controle total de preços'], 1, 'Eram recomendações de política econômica pró-mercado.'],
+      ],
+    },
+    {
+      id: 'brasil', emoji: '🇧🇷', title: 'Brasil: da República à Nova República', era: '1889 até hoje',
+      body: [
+        'A República foi proclamada em 15 de novembro de 1889. Na República Velha (1889 a 1930), o poder ficou concentrado nas oligarquias de São Paulo e Minas Gerais (a "política do café com leite"), com voto aberto e baixa participação.',
+        'A Revolução de 1930 levou Getúlio Vargas ao poder. Em 1937 ele instaurou o Estado Novo, uma ditadura que durou até 1945. Vargas criou a CLT (1943), a Justiça do Trabalho e empresas estatais como a CSN; voltou eleito em 1951, criou a Petrobras em 1953 e se suicidou em 1954.',
+        'O período democrático de 1946 a 1964 teve Juscelino Kubitschek e a construção de Brasília (1960). Em 1964, um golpe militar depôs João Goulart. O regime militar durou até 1985, com eleições indiretas para presidente, o AI-5 (1968), censura e repressão, e também o "milagre econômico" do início dos anos 1970, seguido de crise da dívida.',
+        'A redemocratização trouxe as Diretas Já (1984), a eleição indireta de Tancredo Neves (1985) e a Constituição de 1988, chamada de "Constituição Cidadã". Depois vieram o impeachment de Collor (1992), o Plano Real (1994), que controlou a hiperinflação, e alternâncias de poder entre diferentes forças políticas, incluindo um segundo impeachment, de Dilma Rousseff, em 2016.',
+      ],
+      concepts: [['Café com leite', 'Alternância de poder entre elites paulistas e mineiras na República Velha.'], ['Estado Novo', 'Ditadura de Vargas entre 1937 e 1945.'], ['AI-5', 'Ato Institucional de 1968 que endureceu o regime militar.'], ['Constituição Cidadã', 'Apelido da Constituição de 1988, que ampliou direitos.']],
+      quiz: [
+        ['Em que ano foi proclamada a República no Brasil?', ['1822', '1889', '1930', '1888'], 1, 'Em 15 de novembro de 1889.'],
+        ['O Estado Novo de Vargas durou de:', ['1930 a 1934', '1937 a 1945', '1951 a 1954', '1945 a 1950'], 1, 'Vargas implantou o Estado Novo em 1937; ele terminou em 1945.'],
+        ['Qual ato de 1968 endureceu o regime militar?', ['AI-1', 'AI-5', 'Lei da Anistia', 'Pacote de Abril'], 1, 'O AI-5 fechou o Congresso e suspendeu garantias.'],
+        ['A atual Constituição brasileira é de:', ['1946', '1967', '1988', '1994'], 2, 'Promulgada em 5 de outubro de 1988.'],
+        ['O Plano Real, de 1994, teve como principal objetivo:', ['Construir Brasília', 'Controlar a hiperinflação', 'Criar a Petrobras', 'Instituir o voto feminino'], 1, 'O Real estabilizou a moeda após décadas de inflação alta.'],
+      ],
+    },
+    {
+      id: 'instituicoes', emoji: '⚖️', title: 'Democracia e instituições hoje', era: 'Conceitos atuais',
+      body: [
+        'Democracias diferem na forma de governo. No presidencialismo (Brasil, EUA), o presidente é eleito separadamente e é chefe de Estado e de governo. No parlamentarismo (Reino Unido, Alemanha), o governo depende da maioria no Parlamento e o primeiro-ministro pode cair por voto de desconfiança.',
+        'Os sistemas eleitorais também variam: no majoritário distrital, cada distrito elege quem tiver mais votos; no proporcional, as cadeiras são distribuídas conforme a votação de cada partido. O Brasil usa o sistema proporcional de lista aberta para deputados e o majoritário para cargos executivos e senadores.',
+        'Democracias liberais se apoiam em eleições livres, mas também em freios e contrapesos: Judiciário independente, imprensa livre, direitos das minorias e alternância de poder. Cientistas políticos como Steven Levitsky e Daniel Ziblatt (Como as Democracias Morrem, 2018) mostram que regimes podem se deteriorar por dentro, por meio de governos eleitos que enfraquecem essas instituições.',
+        'Além do eixo esquerda e direita, muitos analistas usam um segundo eixo, entre liberdade individual e autoridade. É por isso que pessoas podem concordar na economia e discordar nos costumes, ou o contrário. O populismo, que opõe um "povo puro" a uma "elite corrupta", pode aparecer tanto à esquerda quanto à direita.',
+      ],
+      concepts: [['Presidencialismo', 'Sistema em que o presidente é eleito separadamente do Legislativo.'], ['Parlamentarismo', 'Sistema em que o governo depende da confiança do Parlamento.'], ['Freios e contrapesos', 'Mecanismos pelos quais os poderes limitam uns aos outros.'], ['Populismo', 'Discurso que opõe um povo homogêneo a uma elite vista como corrupta.']],
+      quiz: [
+        ['No parlamentarismo, o chefe de governo é geralmente:', ['O presidente eleito diretamente', 'O primeiro-ministro, apoiado pela maioria do Parlamento', 'O presidente do Supremo', 'O monarca'], 1, 'O primeiro-ministro depende da confiança do Parlamento.'],
+        ['Como são eleitos os deputados federais no Brasil?', ['Majoritário distrital', 'Proporcional de lista aberta', 'Proporcional de lista fechada', 'Indicação dos governadores'], 1, 'O Brasil usa o sistema proporcional de lista aberta.'],
+        ['Qual é a tese central de Como as Democracias Morrem?', ['Democracias só caem por golpes militares', 'Governos eleitos podem corroer as instituições por dentro', 'A democracia é sempre estável', 'O voto obrigatório salva a democracia'], 1, 'Levitsky e Ziblatt mostram a erosão gradual por líderes eleitos.'],
+        ['O segundo eixo frequentemente usado além de esquerda e direita é:', ['Rico e pobre', 'Liberdade individual e autoridade', 'Urbano e rural', 'Jovem e idoso'], 1, 'O eixo libertário e autoritário mede a visão sobre liberdades e ordem.'],
+        ['O populismo pode ser encontrado:', ['Só na esquerda', 'Só na direita', 'Tanto na esquerda quanto na direita', 'Apenas em monarquias'], 2, 'Populismo é um estilo político, não uma ideologia de um só lado.'],
+      ],
+    },
+  ];
+
+  // Linha do tempo: pares "qual veio primeiro?"
+  const EVENTOS = [
+    ['Revolução Gloriosa na Inglaterra', 1688], ['Segundo Tratado sobre o Governo, de Locke', 1689], ['O Espírito das Leis, de Montesquieu', 1748],
+    ['A Riqueza das Nações, de Adam Smith', 1776], ['Independência dos Estados Unidos', 1776], ['Constituição dos Estados Unidos', 1787],
+    ['Início da Revolução Francesa', 1789], ['Reflexões sobre a Revolução na França, de Burke', 1790], ['Napoleão se coroa imperador', 1804],
+    ['Independência do Brasil', 1822], ['Manifesto Comunista', 1848], ['Sobre a Liberdade, de Stuart Mill', 1859], ['O Capital, volume 1', 1867],
+    ['Abolição da escravidão no Brasil', 1888], ['Proclamação da República no Brasil', 1889], ['Revolução Russa', 1917],
+    ['Marcha sobre Roma', 1922], ['Quebra da Bolsa de Nova York', 1929], ['Revolução de 1930 no Brasil', 1930], ['Hitler chega ao poder', 1933],
+    ['Teoria Geral, de Keynes', 1936], ['Início do Estado Novo', 1937], ['Início da Segunda Guerra Mundial', 1939], ['Relatório Beveridge', 1942],
+    ['Criação da CLT', 1943], ['O Caminho da Servidão, de Hayek', 1944], ['Fim da Segunda Guerra Mundial', 1945], ['Criação da OTAN', 1949],
+    ['Revolução Chinesa', 1949], ['Criação da Petrobras', 1953], ['Revolução Cubana', 1959], ['Inauguração de Brasília', 1960],
+    ['Construção do Muro de Berlim', 1961], ['Crise dos Mísseis em Cuba', 1962], ['Golpe militar no Brasil', 1964], ['AI-5', 1968],
+    ['Anarquia, Estado e Utopia, de Nozick', 1974], ['Thatcher assume no Reino Unido', 1979], ['Reagan assume nos EUA', 1981],
+    ['Diretas Já', 1984], ['Fim do regime militar no Brasil', 1985], ['Constituição brasileira', 1988], ['Queda do Muro de Berlim', 1989],
+    ['Dissolução da URSS', 1991], ['Impeachment de Collor', 1992], ['Plano Real', 1994],
+  ];
+
+  // Qual corrente? princípio -> ideologia
+  const CORRENTES = ['Liberalismo clássico', 'Conservadorismo', 'Socialismo marxista', 'Social-democracia', 'Libertarianismo', 'Anarquismo', 'Fascismo', 'Democracia cristã'];
+  const PRINCIPIOS = [
+    ['A história é movida pela luta entre classes, e os trabalhadores devem controlar os meios de produção.', 2],
+    ['Instituições herdadas guardam a sabedoria de gerações; mudanças devem ser graduais e prudentes.', 1],
+    ['O governo existe para proteger vida, liberdade e propriedade, e seus poderes devem ser separados e limitados.', 0],
+    ['Mercado e democracia, sim, mas com impostos progressivos e serviços públicos universais financiados pelo Estado.', 3],
+    ['O Estado legítimo é mínimo: só protege contra violência, roubo e fraude; o resto cabe às trocas voluntárias.', 4],
+    ['Toda forma de Estado e de hierarquia coercitiva deve ser abolida em favor da cooperação voluntária.', 5],
+    ['A nação acima de tudo, sob um líder e um partido único, com indivíduos e empresas subordinados ao Estado.', 6],
+    ['Economia social de mercado orientada por valores cristãos, dignidade da pessoa e papel central da família.', 7],
+    ['O livre comércio e a concorrência, guiados pelo interesse próprio, tendem a gerar prosperidade geral.', 0],
+    ['Reformas pelo voto, sindicatos fortes e Estado de bem-estar são o caminho para reduzir desigualdades.', 3],
+    ['Desconfiança de projetos utópicos e valorização da ordem, da tradição e da experiência histórica.', 1],
+    ['Impostos são, em grande medida, uma forma de coerção; a liberdade econômica deve ser quase total.', 4],
+  ];
+
+  // Nivelador: e = eixo ('eco' ou 'soc'); k = +1 se concordar puxa para mercado (eco) ou autoridade (soc), -1 se puxa para Estado (eco) ou liberdade (soc)
+  const AFIRMACOES = [
+    ['eco', 1, 'Impostos mais baixos estimulam mais o crescimento do que gastos públicos maiores.'],
+    ['soc', 1, 'Penas mais duras são a forma mais eficaz de reduzir a criminalidade.'],
+    ['eco', -1, 'O governo deve garantir uma renda mínima para quem não consegue se sustentar.'],
+    ['soc', -1, 'O consumo de drogas por adultos deveria ser tratado como questão de saúde, não de polícia.'],
+    ['eco', 1, 'Empresas estatais tendem a ser menos eficientes que as privadas e, em geral, deveriam ser privatizadas.'],
+    ['soc', 1, 'A preservação de valores e tradições familiares deve orientar as leis.'],
+    ['eco', -1, 'Saúde e educação de qualidade devem ser oferecidas principalmente pelo Estado, de forma gratuita.'],
+    ['soc', -1, 'O Estado não deve interferir em escolhas pessoais que não prejudicam terceiros.'],
+    ['eco', 1, 'A legislação trabalhista deveria ser mais flexível para facilitar contratações.'],
+    ['soc', 1, 'Em situações de ameaça à segurança, é aceitável limitar algumas liberdades individuais.'],
+    ['eco', -1, 'Grandes fortunas deveriam pagar um imposto específico.'],
+    ['soc', -1, 'A liberdade de expressão deve proteger inclusive opiniões que a maioria considera ofensivas.'],
+    ['eco', 1, 'O livre comércio internacional beneficia a maioria das pessoas, mesmo que alguns setores percam.'],
+    ['soc', 1, 'Um governo forte e com autoridade é mais importante do que muitos freios e contrapesos.'],
+    ['eco', -1, 'Setores estratégicos, como energia e petróleo, devem ficar sob controle do Estado.'],
+    ['soc', -1, 'Casais do mesmo sexo devem ter os mesmos direitos legais que os demais casais.'],
+    ['eco', 1, 'Programas sociais devem ter regras rígidas e prazo definido para evitar dependência.'],
+    ['soc', 1, 'A religião deve ter papel importante na vida pública do país.'],
+    ['eco', -1, 'Deixado a si mesmo, o mercado tende a concentrar renda; o Estado precisa corrigir essa desigualdade.'],
+    ['soc', -1, 'O acesso do governo a dados pessoais para vigilância deve ser fortemente limitado.'],
+    ['eco', 1, 'O governo deve priorizar o equilíbrio das contas públicas, mesmo que isso exija cortar gastos.'],
+    ['soc', 1, 'Escolas devem ensinar disciplina e respeito à hierarquia acima de tudo.'],
+    ['eco', -1, 'Sindicatos fortes são importantes para proteger os trabalhadores.'],
+    ['soc', -1, 'O aborto deveria ser uma decisão da mulher, e não proibido por lei.'],
+    ['eco', 1, 'Regulamentações em excesso atrapalham mais do que protegem o consumidor.'],
+    ['soc', 1, 'O controle de imigração deve ser rígido para proteger a identidade e a segurança nacional.'],
+    ['eco', -1, 'Em crises, o Estado deve investir diretamente na economia para gerar empregos.'],
+    ['soc', -1, 'Protestos devem ser amplamente tolerados, mesmo quando causam transtornos.'],
+    ['eco', 1, 'Quem empreende e assume riscos deve ficar com a maior parte do que ganha.'],
+    ['soc', 1, 'Restringir certos conteúdos considerados imorais pode ser justificado para proteger a sociedade.'],
+    ['eco', -1, 'Bancos e grandes empresas precisam de regulação forte do Estado para evitar abusos.'],
+    ['soc', -1, 'A polícia deve ter limites rígidos e ser fiscalizada de perto por órgãos independentes.'],
+  ];
+
+  // Posições de referência (x = economia: -100 Estado, +100 mercado; y = social: -100 liberdade, +100 autoridade)
+  const IDEOLOGIAS = [
+    { n: 'Socialismo autoritário (marxismo-leninismo)', x: -85, y: 70, d: 'Economia planificada pelo Estado e partido único como instrumento da transformação social.', pro: 'Defensores destacam a meta de igualdade material e o fim da exploração.', contra: 'Críticos apontam repressão política, falta de liberdades e ineficiência econômica nos regimes que a adotaram.' },
+    { n: 'Socialismo democrático', x: -65, y: -20, d: 'Propriedade social de setores-chave e redistribuição ampla, alcançadas por vias democráticas.', pro: 'Defensores destacam igualdade e controle democrático da economia.', contra: 'Críticos apontam custo fiscal, menor incentivo ao investimento e riscos de estatização excessiva.' },
+    { n: 'Socialismo libertário / anarquismo', x: -75, y: -75, d: 'Rejeita tanto o Estado coercitivo quanto a concentração de propriedade; aposta em cooperativas e autogestão.', pro: 'Defensores destacam autonomia, cooperação e ausência de dominação.', contra: 'Críticos questionam a viabilidade em sociedades grandes e complexas.' },
+    { n: 'Social-democracia', x: -35, y: -5, d: 'Economia de mercado com Estado de bem-estar forte, impostos progressivos e diálogo com sindicatos.', pro: 'Defensores destacam proteção social e redução de desigualdades sem abrir mão do mercado.', contra: 'Críticos apontam carga tributária alta e dificuldade de financiar o modelo a longo prazo.' },
+    { n: 'Progressismo liberal', x: -20, y: -50, d: 'Ênfase em direitos individuais e diversidade, com algum papel redistributivo do Estado.', pro: 'Defensores destacam ampliação de direitos civis e inclusão.', contra: 'Críticos apontam distanciamento de valores tradicionais e de preocupações econômicas populares.' },
+    { n: 'Centro', x: 0, y: 0, d: 'Posições moderadas, combinando elementos de diferentes correntes conforme o tema.', pro: 'Defensores destacam pragmatismo e capacidade de construir consensos.', contra: 'Críticos apontam falta de direção clara e tendência a evitar decisões difíceis.' },
+    { n: 'Democracia cristã', x: 10, y: 40, d: 'Economia social de mercado, valores cristãos, família e comunidade como base da sociedade.', pro: 'Defensores destacam coesão social e equilíbrio entre mercado e solidariedade.', contra: 'Críticos apontam a influência religiosa em políticas públicas de um Estado laico.' },
+    { n: 'Liberalismo econômico (clássico)', x: 55, y: -30, d: 'Livre mercado, Estado limitado e liberdades civis amplas.', pro: 'Defensores destacam crescimento, inovação e liberdade de escolha.', contra: 'Críticos apontam desigualdade e proteção social insuficiente.' },
+    { n: 'Libertarianismo', x: 80, y: -75, d: 'Estado mínimo, liberdade econômica e pessoal quase totais.', pro: 'Defensores destacam a autonomia individual e a eficiência das trocas voluntárias.', contra: 'Críticos apontam falta de rede de proteção e de bens públicos.' },
+    { n: 'Conservadorismo liberal (centro-direita)', x: 45, y: 35, d: 'Economia de mercado com valorização da tradição, da ordem e das instituições.', pro: 'Defensores destacam estabilidade, responsabilidade fiscal e coesão social.', contra: 'Críticos apontam resistência a mudanças sociais e a novas demandas de direitos.' },
+    { n: 'Nacional-conservadorismo', x: 30, y: 75, d: 'Soberania nacional, tradição, segurança e controle de fronteiras como prioridades.', pro: 'Defensores destacam identidade nacional, ordem e proteção contra ameaças externas.', contra: 'Críticos apontam riscos às liberdades individuais e às minorias.' },
+  ];
+
+  // ---------- estado ----------
+  const page = document.getElementById('page-politica');
+  const LIKERT = ['Discordo totalmente', 'Discordo', 'Neutro', 'Concordo', 'Concordo totalmente'];
+  let view = { tab: 'overview', open: null, session: null, test: null, result: null };
+  try { const t = localStorage.getItem('orbita_pol_tab'); if (['overview', 'trilhas', 'dinamicas', 'nivelador'].includes(t)) view.tab = t; } catch {}
+
+  function P() {
+    if (!state.politica) state.politica = {};
+    const p = state.politica;
+    p.quiz = p.quiz || {};
+    p.read = p.read || {};
+    p.games = p.games || {};
+    p.compass = p.compass || [];
+    p.log = p.log || [];
+    return p;
+  }
+  const shuffle = arr => { const a = arr.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+  const pct = (n, d) => d ? Math.round(n * 100 / d) : 0;
+  const fmtDate = iso => new Date(iso).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' }).replace('.', '');
+
+  // ---------- domínio ----------
+  function mastery() {
+    const p = P();
+    const trilhas = TRILHAS.map(t => (p.quiz[t.id] && p.quiz[t.id].best) || 0);
+    const tAvg = trilhas.reduce((a, b) => a + b, 0) / TRILHAS.length;
+    const tl = (p.games.timeline && p.games.timeline.best) || 0;
+    const co = (p.games.corrente && p.games.corrente.best) || 0;
+    const total = Math.round(tAvg * 0.7 + tl * 0.15 + co * 0.15);
+    const level = total >= 85 ? 'Especialista' : total >= 65 ? 'Avançado' : total >= 40 ? 'Intermediário' : total > 0 ? 'Iniciante' : 'Ainda sem avaliação';
+    return { total, level, tAvg: Math.round(tAvg), tl, co, read: TRILHAS.filter(t => p.read[t.id]).length, done: TRILHAS.filter(t => p.quiz[t.id]).length };
+  }
+
+  // ---------- sessões de perguntas (quiz, linha do tempo, corrente) ----------
+  function startQuiz(id) {
+    const t = TRILHAS.find(x => x.id === id);
+    const items = shuffle(t.quiz).map(([q, opts, a, exp]) => {
+      const order = shuffle(opts.map((o, i) => i));
+      return { q, opts: order.map(i => opts[i]), a: order.indexOf(a), exp };
+    });
+    view.session = { kind: 'quiz', id, title: t.title, items, i: 0, picks: [] };
+  }
+  function startTimeline() {
+    const items = [];
+    const used = new Set();
+    while (items.length < 10) {
+      const [a, b] = shuffle(EVENTOS).slice(0, 2);
+      if (a[1] === b[1] || used.has(a[0] + b[0])) continue;
+      used.add(a[0] + b[0]);
+      items.push({ q: 'Qual destes aconteceu primeiro?', opts: [a[0], b[0]], a: a[1] < b[1] ? 0 : 1, exp: `${a[0]}: ${a[1]} · ${b[0]}: ${b[1]}` });
+    }
+    view.session = { kind: 'timeline', id: 'timeline', title: 'Linha do tempo', items, i: 0, picks: [] };
+  }
+  function startCorrente() {
+    const items = shuffle(PRINCIPIOS).slice(0, 10).map(([txt, c]) => {
+      const others = shuffle(CORRENTES.map((x, i) => i).filter(i => i !== c)).slice(0, 3);
+      const opts = shuffle([c, ...others]);
+      return { q: `“${txt}”`, opts: opts.map(i => CORRENTES[i]), a: opts.indexOf(c), exp: `Princípio associado a: ${CORRENTES[c]}.` };
+    });
+    view.session = { kind: 'corrente', id: 'corrente', title: 'Qual corrente?', items, i: 0, picks: [] };
+  }
+  function finishSession() {
+    const s = view.session;
+    const right = s.picks.filter((p, i) => p === s.items[i].a).length;
+    const score = pct(right, s.items.length);
+    const p = P();
+    const bucket = s.kind === 'quiz' ? (p.quiz[s.id] = p.quiz[s.id] || { best: 0, attempts: 0 }) : (p.games[s.id] = p.games[s.id] || { best: 0, attempts: 0 });
+    s.prevBest = bucket.best;
+    bucket.best = Math.max(bucket.best, score);
+    bucket.attempts++;
+    bucket.last = score;
+    p.log.unshift({ at: new Date().toISOString(), what: s.title, score });
+    p.log = p.log.slice(0, 30);
+    s.done = { right, score };
+    saveState();
+  }
+
+  function sessionHTML() {
+    const s = view.session;
+    if (s.done) {
+      const { right, score } = s.done;
+      return `
+        <div class="pol-card pol-session">
+          <div class="pol-kicker">${escapeHTML(s.title)}</div>
+          <div class="pol-score-big">${score}%</div>
+          <div class="pol-muted">${right} de ${s.items.length} certas${score > s.prevBest ? ' · novo recorde' : ` · recorde ${Math.max(score, s.prevBest)}%`}</div>
+          <div class="pol-review">
+            ${s.items.map((it, i) => `<div class="pol-review-row ${s.picks[i] === it.a ? 'ok' : 'no'}"><span>${s.picks[i] === it.a ? '✓' : '✗'}</span><div><div>${escapeHTML(it.q)}</div><div class="pol-muted">${escapeHTML(it.opts[it.a])}${s.picks[i] === it.a ? '' : ` · você marcou: ${escapeHTML(it.opts[s.picks[i]])}`}</div></div></div>`).join('')}
+          </div>
+          <div class="pol-actions">
+            <button class="btn" data-pol="again">Tentar de novo</button>
+            <button class="btn btn-ghost" data-pol="close-session">Voltar</button>
+          </div>
+        </div>`;
+    }
+    const it = s.items[s.i];
+    const picked = s.picks[s.i];
+    const answered = picked !== undefined;
+    return `
+      <div class="pol-card pol-session">
+        <div class="pol-session-head">
+          <div class="pol-kicker">${escapeHTML(s.title)} · ${s.i + 1} de ${s.items.length}</div>
+          <button class="pol-link" data-pol="close-session">Sair</button>
+        </div>
+        <div class="pol-bar"><span style="width:${pct(s.i, s.items.length)}%"></span></div>
+        <div class="pol-q">${escapeHTML(it.q)}</div>
+        <div class="pol-opts">
+          ${it.opts.map((o, i) => `<button class="pol-opt ${answered ? (i === it.a ? 'is-right' : i === picked ? 'is-wrong' : 'is-dim') : ''}" data-pol="pick" data-i="${i}" ${answered ? 'disabled' : ''}>${escapeHTML(o)}</button>`).join('')}
+        </div>
+        ${answered ? `
+          <div class="pol-feedback ${picked === it.a ? 'ok' : 'no'}"><b>${picked === it.a ? 'Certo.' : 'Não foi dessa vez.'}</b> ${escapeHTML(it.exp)}</div>
+          <div class="pol-actions"><button class="btn" data-pol="next">${s.i + 1 < s.items.length ? 'Próxima' : 'Ver resultado'}</button></div>` : ''}
+      </div>`;
+  }
+
+  // ---------- nivelador ----------
+  function computeCompass(answers) {
+    let eco = 0, soc = 0, ne = 0, ns = 0;
+    AFIRMACOES.forEach(([axis, k], i) => {
+      const v = answers[i] - 2; // -2..+2
+      if (axis === 'eco') { eco += v * k; ne++; } else { soc += v * k; ns++; }
+    });
+    const x = Math.round(eco * 100 / (ne * 2));
+    const y = Math.round(soc * 100 / (ns * 2));
+    const ranked = IDEOLOGIAS.map(o => {
+      const dist = Math.hypot(o.x - x, o.y - y);
+      return { ...o, dist, sim: Math.max(0, Math.round(100 - dist * 100 / 200)) };
+    }).sort((a, b) => a.dist - b.dist);
+    const drivers = AFIRMACOES.map(([axis, k, txt], i) => ({ axis, txt, v: answers[i] - 2, pull: (answers[i] - 2) * k }))
+      .filter(d => Math.abs(d.v) === 2);
+    return { x, y, ranked, drivers };
+  }
+  function axisLabel(v, neg, pos) {
+    const a = Math.abs(v);
+    if (a < 15) return 'Centro';
+    const side = v < 0 ? neg : pos;
+    return (a >= 60 ? 'Fortemente ' : a >= 35 ? '' : 'Levemente ') + side;
+  }
+
+  function compassSVG(points, size) {
+    const S = size || 320, pad = 26, W = S - pad * 2;
+    const toX = v => pad + (v + 100) / 200 * W, toY = v => pad + (100 - v) / 200 * W;
+    const refs = IDEOLOGIAS.map(o => `<g><circle cx="${toX(o.x)}" cy="${toY(o.y)}" r="3" class="pol-ref"/><title>${escapeHTML(o.n)}</title></g>`).join('');
+    const trail = points.length > 1 ? `<polyline class="pol-trail" points="${points.map(p => `${toX(p.x)},${toY(p.y)}`).join(' ')}"/>` : '';
+    const dots = points.map((p, i) => `<circle cx="${toX(p.x)}" cy="${toY(p.y)}" r="${i === points.length - 1 ? 8 : 4}" class="${i === points.length - 1 ? 'pol-me' : 'pol-past'}"/>`).join('');
+    return `
+      <svg class="pol-compass" viewBox="0 0 ${S} ${S}" role="img" aria-label="Bússola política: economia no eixo horizontal, liberdade e autoridade no vertical">
+        <rect x="${pad}" y="${pad}" width="${W / 2}" height="${W / 2}" class="pol-q1"/><rect x="${pad + W / 2}" y="${pad}" width="${W / 2}" height="${W / 2}" class="pol-q2"/>
+        <rect x="${pad}" y="${pad + W / 2}" width="${W / 2}" height="${W / 2}" class="pol-q2"/><rect x="${pad + W / 2}" y="${pad + W / 2}" width="${W / 2}" height="${W / 2}" class="pol-q1"/>
+        <line x1="${pad}" y1="${S / 2}" x2="${S - pad}" y2="${S / 2}" class="pol-axis"/><line x1="${S / 2}" y1="${pad}" x2="${S / 2}" y2="${S - pad}" class="pol-axis"/>
+        <text x="${S / 2}" y="${pad - 9}" text-anchor="middle" class="pol-axis-t">Autoridade</text>
+        <text x="${S / 2}" y="${S - 8}" text-anchor="middle" class="pol-axis-t">Liberdade</text>
+        <text x="${pad - 4}" y="${S / 2 - 6}" text-anchor="start" class="pol-axis-t">Estado</text>
+        <text x="${S - pad + 4}" y="${S / 2 - 6}" text-anchor="end" class="pol-axis-t">Mercado</text>
+        ${refs}${trail}${dots}
+      </svg>`;
+  }
+
+  function resultHTML(r, prev) {
+    const top = r.ranked.slice(0, 3);
+    const eco = axisLabel(r.x, 'à esquerda (Estado)', 'à direita (mercado)');
+    const soc = axisLabel(r.y, 'libertário', 'autoritário');
+    const moved = prev ? Math.round(Math.hypot(r.x - prev.x, r.y - prev.y)) : null;
+    return `
+      <div class="pol-card">
+        <div class="pol-kicker">Seu resultado</div>
+        <div class="pol-result">
+          <div>${compassSVG(P().compass.slice(-5).map(c => ({ x: c.x, y: c.y })))}</div>
+          <div class="pol-result-side">
+            <div class="pol-ideo">${escapeHTML(top[0].n)}</div>
+            <div class="pol-muted">Posição mais próxima no modelo · ${top[0].sim}% de proximidade</div>
+            <div class="pol-axes">
+              <div><span>Economia</span><b>${r.x > 0 ? '+' : ''}${r.x}</b><em>${escapeHTML(eco)}</em></div>
+              <div><span>Social</span><b>${r.y > 0 ? '+' : ''}${r.y}</b><em>${escapeHTML(soc)}</em></div>
+            </div>
+            ${moved !== null ? `<div class="pol-muted">Desde o teste anterior (${fmtDate(prev.at)}), você se deslocou ${moved} pontos no mapa.</div>` : ''}
+          </div>
+        </div>
+      </div>
+      <div class="pol-card">
+        <div class="pol-kicker">Correntes mais próximas</div>
+        ${top.map((o, i) => `
+          <div class="pol-match">
+            <div class="pol-match-head"><b>${i + 1}. ${escapeHTML(o.n)}</b><span>${o.sim}%</span></div>
+            <div class="pol-bar thin"><span style="width:${o.sim}%"></span></div>
+            <p>${escapeHTML(o.d)}</p>
+            <p class="pol-muted">${escapeHTML(o.pro)} ${escapeHTML(o.contra)}</p>
+          </div>`).join('')}
+      </div>
+      ${r.drivers.length ? `
+      <div class="pol-card">
+        <div class="pol-kicker">O que mais pesou</div>
+        <div class="pol-muted" style="margin-bottom:10px">Afirmações em que você concordou ou discordou totalmente.</div>
+        ${r.drivers.slice(0, 8).map(d => `<div class="pol-driver"><span>${d.v > 0 ? 'Concordo totalmente' : 'Discordo totalmente'}</span>${escapeHTML(d.txt)}<em>${d.axis === 'eco' ? (d.pull > 0 ? 'puxou para o mercado' : 'puxou para o Estado') : (d.pull > 0 ? 'puxou para a autoridade' : 'puxou para a liberdade')}</em></div>`).join('')}
+      </div>` : ''}
+      <div class="pol-card pol-method">
+        <div class="pol-kicker">Como o resultado é calculado</div>
+        <p>São ${AFIRMACOES.length} afirmações em dois eixos: economia (Estado ou mercado) e social (liberdade individual ou autoridade). Em cada eixo, metade das afirmações puxa para um lado quando você concorda e metade puxa para o outro, para que concordar com tudo, ou discordar de tudo, não empurre o resultado para um lado só.</p>
+        <p>Cada resposta vale de −2 a +2, e cada eixo vai de −100 a +100. As correntes são posições de referência aproximadas nesse mapa; a proximidade é a distância entre o seu ponto e cada uma delas.</p>
+        <p class="pol-muted">É um modelo simplificado, inspirado em bússolas políticas de dois eixos. Serve para reflexão e não substitui conhecer as propostas concretas de cada corrente, partido ou candidato. Rótulos variam de país para país: "liberal" no Brasil costuma significar pró-mercado, e nos EUA, progressista.</p>
+        <div class="pol-actions"><button class="btn" data-pol="test-start">Refazer o teste</button></div>
+      </div>`;
+  }
+
+  function testHTML() {
+    const t = view.test;
+    const i = t.i;
+    const cur = t.answers[i];
+    return `
+      <div class="pol-card pol-session">
+        <div class="pol-session-head">
+          <div class="pol-kicker">Afirmação ${i + 1} de ${AFIRMACOES.length}</div>
+          <button class="pol-link" data-pol="test-cancel">Sair</button>
+        </div>
+        <div class="pol-bar"><span style="width:${pct(i, AFIRMACOES.length)}%"></span></div>
+        <div class="pol-q">${escapeHTML(AFIRMACOES[i][2])}</div>
+        <div class="pol-likert">
+          ${LIKERT.map((l, v) => `<button class="pol-lk ${cur === v ? 'is-on' : ''}" data-pol="answer" data-v="${v}">${l}</button>`).join('')}
+        </div>
+        <div class="pol-actions">
+          ${i > 0 ? '<button class="btn btn-ghost" data-pol="test-back">Voltar</button>' : ''}
+          <span class="pol-muted">Responda pelo que você pensa, não pelo que acha que deveria pensar.</span>
+        </div>
+      </div>`;
+  }
+
+  // ---------- telas ----------
+  function overviewHTML() {
+    const m = mastery();
+    const p = P();
+    const last = p.compass[p.compass.length - 1];
+    const lastTop = last && computeCompass(last.answers).ranked[0];
+    return `
+      <div class="pol-grid">
+        <div class="pol-card pol-hero">
+          <div class="pol-kicker">Domínio de censo político</div>
+          <div class="pol-ring" style="--v:${m.total}"><div><b>${m.total}%</b><span>${escapeHTML(m.level)}</span></div></div>
+          <div class="pol-stats">
+            <div><b>${m.tAvg}%</b><span>Trilhas (peso 70%)</span></div>
+            <div><b>${m.tl}%</b><span>Linha do tempo (15%)</span></div>
+            <div><b>${m.co}%</b><span>Qual corrente? (15%)</span></div>
+          </div>
+          <div class="pol-muted">${m.read} de ${TRILHAS.length} trilhas lidas · ${m.done} quizzes feitos. O domínio usa sua melhor nota em cada atividade.</div>
+        </div>
+        <div class="pol-card">
+          <div class="pol-kicker">Nivelador ideológico</div>
+          ${last ? `
+            ${compassSVG(p.compass.slice(-5).map(c => ({ x: c.x, y: c.y })), 240)}
+            <div class="pol-ideo small">${escapeHTML(lastTop.n)}</div>
+            <div class="pol-muted">Economia ${last.x > 0 ? '+' : ''}${last.x} · Social ${last.y > 0 ? '+' : ''}${last.y} · feito em ${fmtDate(last.at)}</div>
+            <div class="pol-actions"><button class="btn btn-ghost" data-pol="tab" data-tab="nivelador">Ver análise</button></div>`
+          : `<p class="pol-muted">${AFIRMACOES.length} afirmações, cerca de 5 minutos. Mostra onde você está num mapa de dois eixos e quais correntes ficam mais próximas, sem julgamento.</p>
+            <div class="pol-actions"><button class="btn" data-pol="tab" data-tab="nivelador">Fazer o teste</button></div>`}
+        </div>
+      </div>
+      <div class="pol-card">
+        <div class="pol-kicker">Domínio por trilha</div>
+        ${TRILHAS.map(t => { const q = p.quiz[t.id]; const b = q ? q.best : 0; return `
+          <button class="pol-row" data-pol="open" data-id="${t.id}">
+            <span class="pol-row-emoji">${t.emoji}</span>
+            <span class="pol-row-main"><span>${escapeHTML(t.title)}</span><span class="pol-bar thin"><span style="width:${b}%"></span></span></span>
+            <span class="pol-row-val">${q ? b + '%' : p.read[t.id] ? 'lida' : '—'}</span>
+          </button>`; }).join('')}
+      </div>
+      ${p.log.length ? `
+      <div class="pol-card">
+        <div class="pol-kicker">Últimas atividades</div>
+        ${p.log.slice(0, 8).map(l => `<div class="pol-log"><span>${fmtDate(l.at)}</span><span>${escapeHTML(l.what)}</span><b>${l.score == null ? '✓' : l.score + '%'}</b></div>`).join('')}
+      </div>` : ''}`;
+  }
+
+  function trilhasHTML() {
+    const p = P();
+    if (view.open) {
+      const t = TRILHAS.find(x => x.id === view.open);
+      const q = p.quiz[t.id];
+      return `
+        <div class="pol-card pol-article">
+          <button class="pol-link" data-pol="close">‹ Todas as trilhas</button>
+          <div class="pol-kicker" style="margin-top:14px">${escapeHTML(t.era)}</div>
+          <h2>${t.emoji} ${escapeHTML(t.title)}</h2>
+          ${t.body.map(par => `<p>${escapeHTML(par)}</p>`).join('')}
+          <h3>Conceitos-chave</h3>
+          <dl class="pol-concepts">${t.concepts.map(([k, v]) => `<div><dt>${escapeHTML(k)}</dt><dd>${escapeHTML(v)}</dd></div>`).join('')}</dl>
+          <div class="pol-actions">
+            <button class="btn" data-pol="quiz" data-id="${t.id}">${q ? `Refazer o quiz (recorde ${q.best}%)` : 'Fazer o quiz · 5 perguntas'}</button>
+            ${(() => { const i = TRILHAS.indexOf(t); return i < TRILHAS.length - 1 ? `<button class="btn btn-ghost" data-pol="open" data-id="${TRILHAS[i + 1].id}">Próxima trilha ›</button>` : ''; })()}
+          </div>
+        </div>`;
+    }
+    return `
+      <div class="pol-muted" style="margin-bottom:14px">Uma sequência da Revolução Francesa até hoje. Leia cada trilha e faça o quiz para medir o que ficou.</div>
+      <div class="pol-cards">
+        ${TRILHAS.map((t, i) => { const q = p.quiz[t.id]; return `
+          <button class="pol-card pol-tcard" data-pol="open" data-id="${t.id}">
+            <div class="pol-tcard-top"><span class="pol-num">${String(i + 1).padStart(2, '0')}</span><span>${t.emoji}</span></div>
+            <div class="pol-tcard-title">${escapeHTML(t.title)}</div>
+            <div class="pol-muted">${escapeHTML(t.era)}</div>
+            <div class="pol-tcard-foot">${q ? `<span class="pol-pill">Quiz ${q.best}%</span>` : p.read[t.id] ? '<span class="pol-pill">Lida</span>' : '<span class="pol-pill ghost">Não lida</span>'}</div>
+          </button>`; }).join('')}
+      </div>`;
+  }
+
+  function dinamicasHTML() {
+    const g = P().games;
+    const card = (id, emoji, title, desc, start) => `
+      <div class="pol-card">
+        <div class="pol-tcard-top"><span class="pol-kicker">${emoji} ${title}</span>${g[id] ? `<span class="pol-pill">Recorde ${g[id].best}%</span>` : ''}</div>
+        <p class="pol-muted">${desc}</p>
+        <div class="pol-actions"><button class="btn" data-pol="${start}">${g[id] ? 'Jogar de novo' : 'Começar'}</button></div>
+      </div>`;
+    return `
+      <div class="pol-grid">
+        ${card('timeline', '⏳', 'Linha do tempo', `10 rodadas: entre dois acontecimentos, qual veio primeiro? Sorteados de ${EVENTOS.length} marcos da história política mundial e brasileira.`, 'timeline')}
+        ${card('corrente', '🧭', 'Qual corrente?', 'Leia um princípio e identifique a ideologia que o defende. Treina o reconhecimento das ideias, não de pessoas ou partidos.', 'corrente')}
+      </div>
+      <div class="pol-card">
+        <div class="pol-kicker">Revisão rápida · conceitos</div>
+        <div class="pol-flash">
+          ${shuffle([].concat(...TRILHAS.map(t => t.concepts))).slice(0, 6).map(([k, v]) => `<details><summary>${escapeHTML(k)}</summary><p>${escapeHTML(v)}</p></details>`).join('')}
+        </div>
+        <div class="pol-actions"><button class="btn btn-ghost" data-pol="reshuffle">Sortear outros</button></div>
+      </div>`;
+  }
+
+  function nivelHTML() {
+    if (view.test) return testHTML();
+    const p = P();
+    if (view.result) return resultHTML(view.result, view.prev);
+    const last = p.compass[p.compass.length - 1];
+    if (last) return resultHTML(computeCompass(last.answers), p.compass[p.compass.length - 2]);
+    return `
+      <div class="pol-card pol-intro">
+        <div class="pol-kicker">Nivelador ideológico</div>
+        <h2>Onde você está no mapa político?</h2>
+        <p>Você vai ler ${AFIRMACOES.length} afirmações sobre economia, costumes e o papel do Estado e dizer o quanto concorda com cada uma. No fim, o Órbita mostra sua posição em dois eixos e as correntes mais próximas, com o que seus defensores e críticos costumam argumentar.</p>
+        <ul>
+          <li>As afirmações são equilibradas: em cada eixo, metade puxa para um lado e metade para o outro.</li>
+          <li>Não há resposta certa. "Neutro" é uma opção válida.</li>
+          <li>Pode refazer quando quiser; o Órbita guarda o histórico para você ver se mudou.</li>
+        </ul>
+        <div class="pol-actions"><button class="btn" data-pol="test-start">Começar</button></div>
+      </div>`;
+  }
+
+  function render() {
+    P();
+    const tabs = [['overview', 'Visão geral'], ['trilhas', 'Trilhas'], ['dinamicas', 'Dinâmicas'], ['nivelador', 'Nivelador']];
+    let body;
+    if (view.session) body = sessionHTML();
+    else if (view.tab === 'overview') body = overviewHTML();
+    else if (view.tab === 'trilhas') body = trilhasHTML();
+    else if (view.tab === 'dinamicas') body = dinamicasHTML();
+    else body = nivelHTML();
+    const m = mastery();
+    page.innerHTML = `
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Pol<em>ítica</em></h1>
+          <div class="page-meta">História política · domínio ${m.total}% · ${escapeHTML(m.level)}</div>
+        </div>
+      </div>
+      <div class="tr-tabs pol-tabs">${tabs.map(([k, l]) => `<button class="tr-tab ${view.tab === k && !view.session ? 'active' : ''}" data-pol="tab" data-tab="${k}">${l}</button>`).join('')}</div>
+      <div class="pol-body">${body}</div>`;
+  }
+
+  page.addEventListener('click', e => {
+    const el = e.target.closest('[data-pol]');
+    if (!el) return;
+    const act = el.dataset.pol;
+    const p = P();
+    const top = () => { const r = page.getBoundingClientRect(); if (r.top < 0) page.scrollIntoView({ block: 'start' }); };
+    switch (act) {
+      case 'tab':
+        view.tab = el.dataset.tab; view.session = null; view.open = null; view.test = null; view.result = null;
+        try { localStorage.setItem('orbita_pol_tab', view.tab); } catch {}
+        render(); top(); break;
+      case 'open':
+        view.tab = 'trilhas'; view.open = el.dataset.id; view.session = null;
+        if (!p.read[view.open]) { p.read[view.open] = true; saveState(); }
+        render(); top(); break;
+      case 'close': view.open = null; render(); top(); break;
+      case 'quiz': startQuiz(el.dataset.id); render(); top(); break;
+      case 'timeline': startTimeline(); render(); top(); break;
+      case 'corrente': startCorrente(); render(); top(); break;
+      case 'reshuffle': render(); break;
+      case 'pick': {
+        const s = view.session;
+        if (s.picks[s.i] !== undefined) return;
+        s.picks[s.i] = Number(el.dataset.i);
+        render(); break;
+      }
+      case 'next': {
+        const s = view.session;
+        if (s.i + 1 < s.items.length) s.i++; else finishSession();
+        render(); top(); break;
+      }
+      case 'again': {
+        const s = view.session;
+        if (s.kind === 'quiz') startQuiz(s.id); else if (s.kind === 'timeline') startTimeline(); else startCorrente();
+        render(); top(); break;
+      }
+      case 'close-session': view.session = null; render(); top(); break;
+      case 'test-start': view.test = { i: 0, answers: [] }; view.result = null; render(); top(); break;
+      case 'test-cancel': view.test = null; render(); break;
+      case 'test-back': if (view.test.i > 0) view.test.i--; render(); break;
+      case 'answer': {
+        const t = view.test;
+        t.answers[t.i] = Number(el.dataset.v);
+        if (t.i + 1 < AFIRMACOES.length) { t.i++; render(); return; }
+        const r = computeCompass(t.answers);
+        view.prev = p.compass[p.compass.length - 1] || null;
+        p.compass.push({ at: new Date().toISOString(), x: r.x, y: r.y, answers: t.answers.slice(), top: r.ranked[0].n });
+        p.log.unshift({ at: new Date().toISOString(), what: `Nivelador: ${r.ranked[0].n}`, score: null });
+        p.log = p.log.slice(0, 30);
+        saveState();
+        view.test = null; view.result = r;
+        render(); top(); break;
+      }
+    }
+  });
+
+  return render;
+})();
+
 // Checklists de viagem + roteiro por dia + mapa com busca de lugares.
 // Busca por nome/endereço: Photon (OSM, sem chave), fallback Nominatim.
 // "O que tem aqui": Overpass API na área visível do mapa.
