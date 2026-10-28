@@ -2775,7 +2775,7 @@ function askScroll(){
 }
 const askEx = t => t.split("\n").filter(l => /^\s*[-•]\s+/.test(l)).map(l => l.replace(/^\s*[-•]\s+/, "").replace(/\*\*/g, "").replace(/\s*\(.*?\)\s*$/, "")).join(". ");
 function askMsgHTML(m){
-  if(m.r === "user") return `<div class="msg me">${m.ctx?`<div class="msg-ctx">📎 ${esc(m.ctx.slice(0,70))}${m.ctx.length>70?"...":""}</div>`:""}<div class="msg-body">${esc(m.t)}</div></div>`;
+  if(m.r === "user") return `<div class="msg me">${m.ctx?`<div class="msg-ctx">📎 ${esc(m.ctx.replace(/\n/g," · ").slice(0,80))}${m.ctx.length>80?"...":""}</div>`:""}<div class="msg-body">${esc(m.t)}</div></div>`;
   const live = m.pending;
   return `<div class="msg ai${live?" live":""}${m.err?" err":""}"><div class="msg-tag">💬 Teacher</div><div class="msg-body">${m.t ? mdLite(m.t) : `<span class="typing"><i></i><i></i><i></i></span>`}</div>
     ${!live && !m.err ? `<div class="msg-meta">${m.first?`answered in ${(m.first/1000).toFixed(1)}s`:""}${canSpeak && askEx(m.t)?` <button class="ghost mini" type="button" data-qsay="${esc(askEx(m.t))}">Listen to examples</button>`:""}</div>` : ""}</div>`;
@@ -2831,7 +2831,7 @@ function openSheet(ctxText){
 }
 function closeSheet(){ qSheet = false; renderSheet(); }
 function attachHTML(){
-  return qAttach ? `<div class="q-attach"><span>📎 About: ${esc(qAttach.slice(0,80))}${qAttach.length>80?"...":""}</span><button type="button" class="iconbtn" data-qdetach="1" aria-label="Remove">✕</button></div>` : "";
+  return qAttach ? `<div class="q-attach"><span>📎 About: ${esc(qAttach.replace(/\n/g," · ").slice(0,90))}${qAttach.length>90?"...":""}</span><button type="button" class="iconbtn" data-qdetach="1" aria-label="Remove">✕</button></div>` : "";
 }
 function renderSheet(){
   const sh = $("#askSheet"), fab = $("#askFab"); if(!sh) return;
@@ -2859,8 +2859,9 @@ function decorateAsk(){
   const fab = $("#askFab"); if(fab) fab.hidden = qSheet || tab === "ask";
 }
 function cardText(el){
-  const c = el.cloneNode(true); c.querySelectorAll(".ask-this, textarea, .actions, .bank").forEach(x => x.remove());
-  return (c.innerText || c.textContent || "").replace(/[ \t]+/g," ").replace(/\n\s*\n+/g,"\n").trim().slice(0,700);
+  const skip = new Set([...el.querySelectorAll(".ask-this, .actions, .bank")].map(x => (x.innerText || "").trim()).filter(Boolean));
+  let t = (el.innerText || el.textContent || "").split("\n").map(l => l.trim()).filter(l => l && !skip.has(l) && l !== "💬").join("\n");
+  return t.replace(/[ \t]+/g," ").slice(0,700);
 }
 document.addEventListener("click", e => {
   const b = e.target.closest("button, .sheet-bg"); if(!b) return;
