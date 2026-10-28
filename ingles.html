@@ -147,8 +147,9 @@ ul.list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
 .card .a{font-size:1.15rem;color:var(--sea);font-weight:600}
 .reveal{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
 /* ===== Reading track ===== */
-nav.tabs{grid-template-columns:repeat(7,1fr);gap:2px;padding:3px}
-nav.tabs button{font-size:.7rem;padding:8px 0}
+nav.tabs{display:flex;overflow-x:auto;gap:2px;padding:3px;scrollbar-width:none}
+nav.tabs::-webkit-scrollbar{display:none}
+nav.tabs button{flex:none;font-size:.82rem;padding:8px 11px;white-space:nowrap}
 .rd{display:flex;flex-direction:column;gap:14px}
 .rd-next{display:grid;grid-template-columns:88px 1fr;gap:14px;align-items:center;border:2px solid var(--ink);border-radius:16px;padding:14px}
 .rd-next .go{margin:6px 0 0}
@@ -212,6 +213,56 @@ nav.tabs button{font-size:.7rem;padding:8px 0}
 .tbtn{display:flex;flex-direction:column;gap:2px;text-align:left;border:0;border-radius:14px;padding:12px 10px;background:var(--sea);color:#fff}
 .tbtn b{font-size:1.05rem}.tbtn span{font-size:.78rem;line-height:1.25}.tbtn .meta{color:#fff;opacity:.8}
 .tbtn:disabled{opacity:.45;cursor:default}
+.sp-h{margin:2px 0;font-size:1.4rem;line-height:1.2}
+.spframe{display:flex;flex-wrap:wrap;gap:4px}
+.spframe span{background:var(--sea);color:#fff;font-weight:800;font-size:.72rem;letter-spacing:.04em;border-radius:6px;padding:5px 8px}
+.sp-chunks{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.sp-chunks li{display:grid;grid-template-columns:auto 1fr;gap:8px;align-items:center;border-bottom:1px solid var(--line);padding:8px 0}
+.sp-chunks .iconbtn{color:var(--sea);font-size:1rem;border:1px solid var(--line);border-radius:999px;width:34px;height:34px}
+.spblocks{display:flex;flex-wrap:wrap;gap:6px}
+.ghost.rec{background:var(--sun);border-color:var(--sun);color:var(--sun-ink);font-weight:700}
+/* ===== Two environments: class (blue) and daily plan (amber) ===== */
+:root{--cls:#2563EB;--cls-soft:#EFF6FF;--day:#B45309;--day-bg:#F59E0B;--day-soft:#FFFBEB;--ok:#16A34A}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--cls:#60A5FA;--cls-soft:#0F1E3D;--day:#FBBF24;--day-bg:#F59E0B;--day-soft:#261C06;--ok:#4ADE80}}
+:root[data-theme="dark"]{--cls:#60A5FA;--cls-soft:#0F1E3D;--day:#FBBF24;--day-bg:#F59E0B;--day-soft:#261C06;--ok:#4ADE80}
+.hub{display:flex;flex-direction:column;gap:14px}
+.env{border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:10px;border:2px solid}
+.env-day{background:var(--day-soft);border-color:var(--day-bg)}
+.env-cls{background:var(--cls-soft);border-color:var(--cls)}
+.env-tag{font-size:.72rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+.env-day .env-tag{color:var(--day)}.env-cls .env-tag{color:var(--cls)}
+.env-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.env-title{font-weight:800;font-size:1.2rem;line-height:1.2}
+.env-count{text-align:right;font-size:.75rem;color:var(--muted);flex:none}.env-count b{display:block;font-size:1.5rem;line-height:1;color:var(--ink);font-variant-numeric:tabular-nums}
+.env-bar{height:8px;border-radius:4px;background:var(--line);overflow:hidden}.env-bar i{display:block;height:100%;background:var(--ok);transition:width .3s}
+.plan{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.pl button{width:100%;display:grid;grid-template-columns:28px 1fr auto;gap:10px;align-items:center;text-align:left;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-left:5px solid var(--day-bg);border-radius:12px;padding:10px}
+.pl.is-cls button{border-left-color:var(--cls)}
+.pl-st{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.9rem;border:2px solid var(--day-bg);color:var(--day);background:var(--surface)}
+.pl.is-cls .pl-st{border-color:var(--cls);color:var(--cls)}
+.pl.done .pl-st{background:var(--ok);border-color:var(--ok);color:#fff}
+.pl.done button{border-left-color:var(--ok)}
+.pl.done .pl-main b{color:var(--muted)}
+.pl-main{display:flex;flex-direction:column;min-width:0}
+.pl-go{font-size:.8rem;font-weight:700;color:var(--day);white-space:nowrap}
+.is-cls .pl-go,.cls-card .pl-go{color:var(--cls)}
+.cls-card{width:100%;display:flex;flex-direction:column;gap:2px;text-align:left;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-left:5px solid var(--cls);border-radius:12px;padding:10px 12px}
+.cls-card.now{border:2px solid var(--cls);border-left-width:5px}
+.cls-date{font-size:.78rem;color:var(--muted);display:flex;gap:6px;align-items:center}
+.badge-today{background:var(--cls);color:#fff;font-weight:800;font-size:.66rem;letter-spacing:.06em;border-radius:999px;padding:1px 7px}
+.cls-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.obj{margin:2px 0 0;padding-left:18px;font-size:.9rem}
+.vocab{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.vocab li{display:grid;grid-template-columns:auto 1fr;gap:8px;align-items:start;border-bottom:1px solid var(--line);padding:8px 0}
+.vocab .iconbtn,.env-cls ~ * .iconbtn{color:var(--cls)}
+.vocab .iconbtn{border:1px solid var(--line);border-radius:999px;width:32px;height:32px;font-size:.9rem}
+.vex{font-size:.9rem;color:var(--muted);font-style:italic}
+nav.tabs button.t-cls::before,nav.tabs button.t-day::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;vertical-align:1px}
+nav.tabs button.t-cls::before{background:var(--cls)}
+nav.tabs button.t-day::before{background:var(--day-bg)}
+nav.tabs button.t-home{font-weight:800}
+nav.tabs button.t-cls[aria-selected="true"]{background:var(--cls-soft)!important;color:var(--cls)!important}
+nav.tabs button.t-day[aria-selected="true"]{background:var(--day-soft)!important;color:var(--day)!important}
 .ggrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .gcard{display:flex;flex-direction:column;gap:4px;text-align:left;border:2px solid var(--ink);border-radius:14px;padding:12px;background:var(--surface)}
 .gcard b{font-size:1.05rem}.gcard span{font-size:.85rem;line-height:1.3}
@@ -286,9 +337,12 @@ body{padding:4px 0 32px!important}
   <section id="resultBox" hidden></section>
 
   <nav class="tabs" role="tablist">
-    <button role="tab" id="t-tre" aria-selected="true" data-tab="tre">Practice</button>
-    <button role="tab" id="t-tobe" aria-selected="false" data-tab="tobe">To be</button>
-    <button role="tab" id="t-read" aria-selected="false" data-tab="read">Read</button>
+    <button role="tab" id="t-home" class="t-home" aria-selected="true" data-tab="home">Today</button>
+    <button role="tab" id="t-class" class="t-cls" aria-selected="false" data-tab="class">Class</button>
+    <button role="tab" id="t-tre" class="t-day" aria-selected="false" data-tab="tre">Practice</button>
+    <button role="tab" id="t-read" class="t-day" aria-selected="false" data-tab="read">Read</button>
+    <button role="tab" id="t-speak" class="t-day" aria-selected="false" data-tab="speak">Speak</button>
+    <button role="tab" id="t-tobe" class="t-day" aria-selected="false" data-tab="tobe">To be</button>
     <button role="tab" id="t-rec" aria-selected="false" data-tab="rec">Recent</button>
     <button role="tab" id="t-all" aria-selected="false" data-tab="all">Phrases<span class="count" id="cnt"></span></button>
     <button role="tab" id="t-rev" aria-selected="false" data-tab="rev">Review</button>
@@ -309,7 +363,7 @@ const PH = {tr:"Type in Portuguese or English: a word, a sentence, something you
 $("#mode").addEventListener("click", e => { const b = e.target.closest(".chip"); if(!b) return;
   mode = b.dataset.m; document.querySelectorAll("#mode .chip").forEach(x => x.setAttribute("aria-pressed", x.dataset.m===mode));
   $("#txt").placeholder = PH[mode]; $("#go").textContent = mode==="fix" ? "Fix it" : "Translate"; $("#txt").focus(); });
-let ctx = "General", sample = null, col = null, items = [], tab = "tre", busy = false, ctl = null;
+let ctx = "General", sample = null, col = null, items = [], tab = "home", busy = false, ctl = null;
 let tcol = null, days = [], genBusy = false, treErr = "";
 const drafts = {}, picks = {}, checking = new Set(), retry = new Set(), tipOpen = new Set(), exErr = {};
 let open = null, confirmDel = null, query = "", onlyFav = false, card = null, shown = false;
@@ -350,6 +404,12 @@ const ptOf = r => r.meaningPt || (r.from==="pt" ? r.src : r.out);
     rcol = db.collection("leituras");
     rcol.orderBy("day","asc").limit(40).onSnapshot(snap => {
       reads = snap.docs.map(d => ({id:d.id, ...d.data()})); render();
+    }, () => {});
+    acol = db.collection("aulas");
+    acol.onSnapshot(snap => { aDocs = snap.docs.map(d => ({id:d.id, ...d.data()})).filter(c => c.date && c.title); render(); }, () => {});
+    spcol = db.collection("fala");
+    spcol.onSnapshot(snap => {
+      const o = {}; snap.docs.forEach(d => { o[d.id] = {...d.data(), _saved:true}; }); spDocs = o; render();
     }, () => {});
     bcol = db.collection("dominio");
     bcol.orderBy("started","desc").limit(60).onSnapshot(snap => {
@@ -478,6 +538,7 @@ document.querySelector("nav.tabs").addEventListener("click", e => {
   const b = e.target.closest("[data-tab]"); if(!b) return;
   tab = b.dataset.tab; card=null; shown=false; if(tab!=="read"){ rPop=null; }
   document.querySelectorAll("nav.tabs button").forEach(x => x.setAttribute("aria-selected", x.dataset.tab===tab));
+  b.scrollIntoView({block:"nearest", inline:"nearest"});
   render();
 });
 
@@ -523,6 +584,9 @@ function render(){
   if(tab==="lvl") renderLevel(p);
   if(tab==="read") renderRead(p);
   if(tab==="tobe") renderToBe(p);
+  if(tab==="speak") renderSpeak(p);
+  if(tab==="home") renderHome(p);
+  if(tab==="class") renderClass(p);
 }
 
 /* ===== CEFR / GSE scale ===== */
@@ -579,7 +643,7 @@ function promptGen(recent){
 
 Frases que ele salvou recentemente (use para personalizar e reforçar o que ele precisou de verdade):
 ${recent}
-${focusLine()}${unitLine()}${toBeLine()}
+${focusLine()}${unitLine()}${classLine()}${toBeLine()}
 
 Organize o treino pelos níveis do CEFR (com equivalência GSE). Nível atual dele: ${curLevel()}.
 ${levelPlan().map(x => `- ${x.n} exercício(s) de nível ${x.lvl} (${cefr(x.lvl).name}, GSE ${cefr(x.lvl).gse[0]} a ${cefr(x.lvl).gse[1]}): ${cefr(x.lvl).can} ${x.why}`).join("\n")}
@@ -692,12 +756,12 @@ function groupByLevel(list){
   return gs.sort((a,b) => rank(a.L) - rank(b.L));
 }
 function renderTreino(p){
-  const t = todayDoc(), st = streak(), uh = unitHTML();
+  const t = todayDoc(), st = streak();
   const dateTxt = new Date().toLocaleDateString("en-GB",{weekday:"long", day:"numeric", month:"long"});
   const head = `<div class="tre-head"><div><div class="lang">Today's practice</div><div class="out">${esc(dateTxt)}</div></div>
     <div class="streak"><b>${st}</b>${st===1?"day in a row":"days in a row"}</div></div>`;
   if(!t){
-    p.innerHTML = `<div style="display:flex;flex-direction:column;gap:12px">${uh}${head}
+    p.innerHTML = `<div style="display:flex;flex-direction:column;gap:12px">${head}
       <div class="empty"><strong>6 exercises to build sentences</strong>Word order, saying it in English and using patterns, based on the phrases you saved. About 10 minutes.
       <div style="margin-top:14px"><button class="go" id="gen" type="button" style="margin:0" ${genBusy||!sample?"disabled":""}>${genBusy?"Creating your practice...":"Create today's practice"}</button></div>
       ${treErr?`<div class="status err" style="margin-top:8px">${esc(treErr)}</div>`:""}</div></div>`;
@@ -706,7 +770,7 @@ function renderTreino(p){
   }
   const ans = t.answers || {}, n = Object.keys(ans).length, total = t.items.length;
   const okN = Object.values(ans).filter(a => a.ok).length;
-  p.innerHTML = `<div style="display:flex;flex-direction:column;gap:10px">${uh}${head}
+  p.innerHTML = `<div style="display:flex;flex-direction:column;gap:10px">${head}
     <div class="prog"><i style="width:${Math.round(n/total*100)}%"></i></div>
     <div class="meta">${n} of ${total} done${n?` · ${okN} correct`:""}${n===total?" · Today's practice is complete. Your mistakes were added to your favourites.":""}</div>
     ${groupByLevel(t.items).map(g => `${g.L ? levelHead(g.L) : ""}<ol class="ex-list">${g.idx.map(i => exHTML(t.items[i], i, ans[i])).join("")}</ol>`).join("")}</div>`;
@@ -1372,6 +1436,14 @@ const UNIT = {id:"unit-09-money", n:9, title:"Money", from:"2026-10-26", to:"202
     {k:"mc", q:"They organised a ___ to help families after the storm.", o:["refund","receipt","fundraiser"], a:2, why:"Fundraiser = evento para arrecadar dinheiro."},
     {k:"order", en:"I give money to charity every month", pt:"Talking about a monthly habit of giving"},
     {k:"order", en:"Have you ever volunteered for a charity", pt:"Asking a classmate about their experience"},
+    {k:"mc", q:"Will you ___ me for the charity run? I'm running 10 km.", o:["sponsor","donate","raise"], a:0, why:"Sponsor = apoiar alguém com dinheiro num desafio (corrida, maratona). Donate é doar para a instituição."},
+    {k:"mc", q:"All the money goes to people ___ need.", o:["on","in","at"], a:1, why:"People in need = pessoas necessitadas. Sempre IN need."},
+    {k:"mc", q:"Even small donations can ___ a difference.", o:["do","make","give"], a:1, why:"Make a difference = fazer a diferença. Nunca \"do a difference\"."},
+    {k:"mc", q:"I want to give ___ to my community.", o:["back","up","away"], a:0, why:"Give back = retribuir. Give up = desistir. Give away = dar de graça."},
+    {k:"mc", q:"She ___ €50 to the Red Cross last month.", o:["donated","borrowed","raised"], a:0, why:"Donate something TO a charity. Raise é arrecadar (de várias pessoas)."},
+    {k:"order", en:"We are raising money for the local hospital", pt:"Explaining your school's fundraiser"},
+    {k:"write", pattern:"I'd support ___ because ___.", pt:"Which charity or cause would you support? Why?", model:"I'd support a charity that helps children with education because school can change a child's life."},
+    {k:"write", open:true, pattern:"I think it's better to give ___ because ___.", pt:"Is it better to give money or your time? Why?", model:"I think it's better to give your time because you really see the people you help, and you can use your skills."},
   ]},
   {key:"skl", title:"Your skills and helping others", sub:"I'm good at... so I could...", items:[
     {k:"write", pattern:"I'm good at ___, so I could help by ___ing.", pt:"Say one skill you have and how it could help a charity.", model:"I'm good at selling, so I could help by finding new donors for the charity."},
@@ -1493,13 +1565,13 @@ function uItemHTML(it, key){
   return `<li class="exr${done?" done":""}"><div class="lang">${label}</div>${b}</li>`;
 }
 
-function unitHTML(){
-  if(!unitActive()) return "";
+function unitHTML(embed){
+  if(!unitActive() && !embed) return "";
   const ans = uAnsAll(), keys = Object.keys(ans), total = uTotal();
   const done = keys.length, ok = keys.filter(k=>ans[k].ok).length;
   let h = `<section class="unit"><button class="unit-top" type="button" data-utoggle="1" aria-expanded="${uOpen}">
     <span class="unit-n">${UNIT.n}</span><span class="unit-meta"><span class="lang">This week in class</span><span class="unit-t">${esc(UNIT.title)}</span>
-    <span class="meta">${done} of ${total} done${done?` · ${ok} correct`:""}</span></span><span class="unit-chev">${uOpen?"Close":"Open"}</span></button>
+    <span class="meta">${done} of ${total} done${done?` · ${ok} correct`:""}</span></span><span class="unit-chev">${embed?"":uOpen?"Close":"Open"}</span></button>
     <div class="prog"><i style="width:${Math.round(done/total*100)}%"></i></div>`;
   if(uOpen){
     if(!uSec){
@@ -2065,6 +2137,469 @@ $("#panel").addEventListener("click", e => {
   else if(ds.grw==="wrong") rwAnswer(false);
   else if(ds.grw==="next") rwNext();
   else if(ds.grw==="new"){ rwNew(); rwStart(); }
+});
+
+
+/* ===== Speak: sentence-building lessons ===== */
+const SPK = [
+ {id:"skeleton", n:1, title:"The sentence skeleton", goal:"Build any sentence in 5 blocks: WHO + ACTION + WHAT + WHERE + WHEN.",
+  why:"Em português a ordem é flexível e o sujeito some (\"Moro em São Paulo\", \"Está chovendo\"). Em inglês a ordem é fixa e o sujeito é obrigatório: I live in São Paulo. It's raining. Monte sempre na mesma ordem: quem, ação, o quê, onde, quando.",
+  frame:["WHO","ACTION","WHAT","WHERE","WHEN"],
+  chunks:[["I study English at a school in Malta every afternoon.","Eu estudo inglês numa escola em Malta toda tarde."],["My friend works in a bank in Valletta.","Meu amigo trabalha num banco em Valletta."],["We had dinner at a nice restaurant last night.","Jantamos num restaurante legal ontem à noite."],["It's raining a lot today.","Está chovendo muito hoje."]],
+  ex:[
+   {t:"order", en:"I study English at a school in Malta every afternoon", pt:"Your routine here"},
+   {t:"order", en:"We had lunch near the beach yesterday", pt:"What you did yesterday"},
+   {t:"say", q:"What do you do every day here in Malta?", hint:"I + action + what + where + when", model:"I study English at a school in St Julian's every afternoon."},
+   {t:"say", q:"What do you do for work in Brazil?", hint:"I work in ___ at ___ in ___", model:"I work at a big company in São Paulo."},
+   {t:"expand", base:"I drink coffee.", blocks:["what kind? (a cappuccino)","where? (at a café near school)","when? (every morning)"], model:"I drink a cappuccino at a café near school every morning."},
+  ]},
+ {id:"chunks", n:2, title:"Start with a ready-made chunk", goal:"Don't build from zero. Start with a chunk and just fill the gap.",
+  why:"Nativos não montam frases palavra por palavra: eles usam blocos prontos. Decore estes começos e você só precisa completar o final. É o atalho mais rápido para destravar.",
+  chunks:[["I think that...","Eu acho que..."],["I'd like to...","Eu gostaria de..."],["I'm trying to...","Estou tentando..."],["I'm not sure, but...","Não tenho certeza, mas..."],["The thing is...","O negócio é que..."],["It depends on...","Depende de..."],["I used to..., but now...","Eu costumava..., mas agora..."],["I'm looking forward to...","Estou ansioso para... (no bom sentido)"]],
+  ex:[
+   {t:"say", q:"What would you like to do this weekend?", hint:"I'd like to ___", model:"I'd like to visit Gozo and swim at the Blue Lagoon."},
+   {t:"say", q:"Is speaking English difficult for you?", hint:"The thing is, ___", model:"The thing is, I understand almost everything, but speaking is still hard for me."},
+   {t:"say", q:"What did you use to do that you don't do now?", hint:"I used to ___, but now I ___", model:"I used to work until late every day, but now I have more time to study."},
+   {t:"say", q:"What are you looking forward to?", hint:"I'm looking forward to ___ing", model:"I'm looking forward to visiting Valletta on Saturday."},
+   {t:"order", en:"I'm trying to speak English every day", pt:"Your goal here"},
+  ]},
+ {id:"questions", n:3, title:"Asking questions", goal:"Ask any question with QUASI: Question word + AUxiliary + Subject + Infinitive.",
+  why:"Em português a pergunta é a própria frase com entonação (\"Você mora aqui?\"). Em inglês precisa de um auxiliar ANTES do sujeito: Do you live here? Fórmula QUASI: Question word, AUxiliary, Subject, Infinitive. Where + do + you + live?",
+  frame:["QUESTION WORD","AUXILIARY","SUBJECT","VERB","REST"],
+  chunks:[["Where do you live?","Onde você mora?"],["What are you doing tonight?","O que você vai fazer hoje à noite?"],["How long have you been here?","Há quanto tempo você está aqui?"],["Did you like the trip?","Você gostou da viagem?"],["What do you think about Malta?","O que você acha de Malta?"],["How was your weekend?","Como foi seu fim de semana?"]],
+  ex:[
+   {t:"order", en:"Where did you go last weekend", pt:"Asking a classmate about the weekend"},
+   {t:"order", en:"How long have you been in Malta", pt:"Asking someone how long they've been here"},
+   {t:"say", q:"Ask a classmate where they are from.", hint:"Where + be + you + from?", model:"Where are you from?"},
+   {t:"say", q:"Ask a classmate what they do for work.", hint:"What + do + you + do?", model:"What do you do for a living?"},
+   {t:"say", q:"Ask someone if they liked the restaurant yesterday.", hint:"Did + you + like...?", model:"Did you like the restaurant yesterday?"},
+   {t:"say", q:"Ask someone what they are going to do after class.", hint:"What + are + you + going to...?", model:"What are you going to do after class?"},
+  ]},
+ {id:"connect", n:4, title:"Connect your ideas", goal:"Turn short sentences into long ones with and, but, because, so, when.",
+  why:"Você não precisa de frases complicadas para parecer fluente. Duas frases simples + um conector já soam naturais: I was tired, but I went to class. Pense curto e conecte.",
+  chunks:[["I was tired, but I went to class.","Eu estava cansado, mas fui para a aula."],["I study a lot because I want to speak better.","Estudo muito porque quero falar melhor."],["It was raining, so we stayed at home.","Estava chovendo, então ficamos em casa."],["When I arrived, the class was starting.","Quando cheguei, a aula estava começando."],["I woke up, had breakfast and went to school.","Acordei, tomei café e fui para a escola."]],
+  ex:[
+   {t:"expand", base:"I like Malta.", blocks:["+ because ...","+ but ..."], model:"I like Malta because the people are friendly, but it's very windy."},
+   {t:"expand", base:"It was really hot.", blocks:["+ so ..."], model:"It was really hot, so we went to the beach."},
+   {t:"say", q:"Why are you learning English?", hint:"I'm learning English because ___, so ___", model:"I'm learning English because I want better opportunities at work, so I study every day."},
+   {t:"say", q:"Describe your morning today in one sentence.", hint:"I ___, ___ and ___.", model:"I woke up at eight, had breakfast and walked to school."},
+   {t:"order", en:"I was tired but I went to the gym", pt:"Yesterday after class"},
+  ]},
+ {id:"story", n:5, title:"Tell a short story", goal:"Talk about the past in order: first, then, after that, in the end.",
+  why:"Para contar algo, use passado simples + marcadores de sequência. Os marcadores (first, then, after that) te dão alguns segundos para pensar na próxima frase sem parar de falar.",
+  chunks:[["First, we went to Valletta.","Primeiro, fomos a Valletta."],["Then we had lunch by the sea.","Depois almoçamos perto do mar."],["After that, we took a boat to Sliema.","Depois disso, pegamos um barco para Sliema."],["In the end, we were really tired, but it was great.","No fim, estávamos muito cansados, mas foi ótimo."]],
+  ex:[
+   {t:"say", q:"What did you do last weekend? Use first, then, after that.", hint:"First, I ___. Then ___. After that, ___.", model:"First, I went to the beach in the morning. Then I had lunch with some classmates. After that, we walked around Sliema."},
+   {t:"say", q:"Tell me about your first day in Malta.", hint:"On my first day, I ___. Then ___.", model:"On my first day, I arrived late at night. Then I went straight to bed because I was exhausted."},
+   {t:"say", q:"Tell me about a good meal you had recently.", hint:"Last ___, I went to ___. I had ___. It was ___.", model:"Last Friday, I went to a small restaurant in Valletta. I had rabbit stew. It was delicious."},
+   {t:"order", en:"After that we took a bus back home", pt:"The end of your trip"},
+  ]},
+ {id:"opinion", n:6, title:"Give your opinion", goal:"Answer + Reason + Example. Never answer with one word.",
+  why:"Respostas de uma palavra travam a conversa. Use o método ARE: Answer (sua resposta), Reason (porque), Example (por exemplo). Três frases curtas = uma resposta completa e fluente.",
+  frame:["ANSWER","REASON (because...)","EXAMPLE (for example...)"],
+  chunks:[["In my opinion, ...","Na minha opinião, ..."],["I agree, because ...","Concordo, porque ..."],["I see your point, but ...","Entendo seu ponto, mas ..."],["For example, ...","Por exemplo, ..."],["That's true, but on the other hand, ...","É verdade, mas por outro lado, ..."]],
+  ex:[
+   {t:"say", q:"Is money important?", hint:"Answer. Because ___. For example, ___.", model:"Yes, I think money is important because it gives you freedom. For example, I can study English in Malta because I saved money."},
+   {t:"say", q:"Do you prefer living in a big city or a small town?", hint:"I prefer ___ because ___. For example, ___.", model:"I prefer a big city because there are more opportunities. For example, in São Paulo you can find any kind of job."},
+   {t:"say", q:"\"Money often costs too much.\" Do you agree?", hint:"I agree / I don't agree, because ___. For example, ___.", model:"I agree, because many people work too much and forget their health and family. For example, I know people who never take holidays."},
+   {t:"say", q:"Is it better to save money or to spend it on experiences?", hint:"In my opinion, ___ because ___.", model:"In my opinion, it's better to spend on experiences because you keep the memories forever. For example, this trip to Malta."},
+  ]},
+ {id:"stuck", n:7, title:"When you get stuck", goal:"Keep talking when you don't know a word: fillers and describing.",
+  why:"Travar é normal, até para nativos. O segredo é não ficar em silêncio: ganhe tempo com uma expressão (filler) e descreva a palavra que falta em vez de parar a frase.",
+  chunks:[["Well, let me think...","Bom, deixa eu pensar..."],["How can I say this...","Como posso dizer..."],["What's the word... it's a kind of...","Qual é a palavra... é um tipo de..."],["It's like a ..., but ...","É tipo um ..., mas ..."],["It's the thing you use to ...","É a coisa que você usa para ..."],["Sorry, could you say that again?","Desculpa, pode repetir?"],["What I mean is ...","O que eu quero dizer é ..."]],
+  ex:[
+   {t:"say", q:"Explain the word 'carregador' without saying 'charger'.", hint:"It's the thing you use to ___", model:"It's the thing you use to put energy in your phone."},
+   {t:"say", q:"Explain what a 'padaria' is to a foreign friend.", hint:"It's a kind of shop where ___", model:"It's a kind of shop where you buy bread, cakes and coffee in the morning."},
+   {t:"say", q:"Explain what 'saudade' means.", hint:"It's a feeling when ___", model:"It's a feeling when you miss someone or something very much, and you want it back."},
+   {t:"say", q:"You didn't understand what the teacher said. What do you say?", hint:"Sorry, could you ___?", model:"Sorry, could you say that again, please?"},
+  ]},
+ {id:"money", n:8, title:"Money talk (Unit 9)", goal:"Use this week's vocabulary in real sentences.",
+  why:"Vocabulário só fixa quando você usa em frases sobre a sua vida. Use os blocos abaixo e complete com a sua realidade.",
+  chunks:[["I spend most of my money on...","Gasto a maior parte do meu dinheiro com..."],["I can't afford ... right now.","Não posso pagar ... agora."],["I'm trying to save money for...","Estou tentando economizar para..."],["It was a waste of money because...","Foi dinheiro jogado fora porque..."],["Could I have a refund, please?","Pode me devolver o dinheiro, por favor?"]],
+  ex:[
+   {t:"say", q:"What do you spend most of your money on?", hint:"I spend most of my money on ___", model:"I spend most of my money on food and travelling."},
+   {t:"say", q:"What are you saving money for?", hint:"I'm trying to save money for ___", model:"I'm trying to save money for a trip around Europe."},
+   {t:"say", q:"Tell me about something that was a waste of money.", hint:"I bought ___. It was a waste of money because ___.", model:"I bought an expensive watch last year. It was a waste of money because I never wear it."},
+   {t:"say", q:"You want to return a shirt because it doesn't fit. What do you say?", hint:"I bought ___, but ___. Could I ___?", model:"I bought this shirt yesterday, but it doesn't fit. Could I have a refund, please?"},
+   {t:"order", en:"I can't afford a new phone right now", pt:"Talking about money"},
+  ]},
+];
+let spcol = null, spDocs = {}, spLesson = null, spBusy = new Set(), spMic = null, spMicKey = null, spMicMsg = "";
+const spDrafts = {}, spPicks = {}, spRetry = new Set(), spErr = {}, spModel = new Set();
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+let spMicOk = !!SR;
+const spKey = (l,i) => l + "-" + i;
+const spAns = (l,i) => (spDocs[l]?.answers || {})[i];
+const spDoneN = L => L.ex.filter((_,i) => spAns(L.id,i)).length;
+function spWords(e, key){ const w = e.en.split(/\s+/); let sh = seeded(w, key.length*29 + w.length*11 + 5); if(sh.join(" ")===w.join(" ")) sh = sh.slice(1).concat(sh[0]); return sh; }
+
+async function spSave(L, i, a){
+  a = {...a, ts: Date.now()};
+  spRetry.delete(spKey(L.id,i)); delete spErr[spKey(L.id,i)];
+  const d = spDocs[L.id] || {answers:{}};
+  spDocs[L.id] = {...d, answers:{...(d.answers||{}), [i]:a}};
+  render();
+  if(!spcol) return;
+  try{
+    if(d._saved) await spcol.doc(L.id).update({answers:{[String(i)]:a}, updated:Date.now()});
+    else await spcol.doc(L.id).set({lesson:L.id, answers:{...(d.answers||{}), [i]:a}, updated:Date.now()});
+  }catch(e){ spErr[spKey(L.id,i)] = "Couldn't save this answer."; render(); }
+  if(!a.ok && col && a.text && a.better){
+    try{ await col.doc("x" + idFor(a.text)).set({src:a.text, out:a.better, from:"en", kind:"fix", pattern:L.ex[i].hint||"", meaningPt:"",
+      alts:a.natural?[a.natural]:[], pron:"", note:a.note||"", ex:"", exPt:"", ctx:"Social", fav:true, ts:Date.now()}); }catch(e){}
+  }
+}
+function spPrompt(L, e, text){
+  const task = e.t==="expand" ? `Expandir a frase "${e.base}" acrescentando: ${e.blocks.join("; ")}. Ele deve dizer a frase longa completa.` : e.q;
+  return `Você é o professor de speaking de um brasileiro (inglês B1, morando em Malta, inglês britânico). Ele entende bem ouvindo e lendo, mas trava para MONTAR frases quando fala. A resposta dele pode ter vindo de ditado por voz: ignore pontuação, maiúsculas e pequenas falhas de reconhecimento.
+Lição: ${L.title}. Objetivo da lição: ${L.goal}
+Tarefa: ${task}${e.hint?`\nEstrutura alvo: ${e.hint}`:""}
+Resposta modelo (só referência): ${e.model}
+Resposta dele: """${text}"""
+
+Regras:
+- "ok": true se a frase é compreensível, gramaticalmente correta (ou com um deslize mínimo) e cumpre a tarefa. Qualquer conteúdo ou opinião vale, não precisa ser igual ao modelo.
+- "used_target": true se ele usou a estrutura alvo da lição.
+- "better": a frase DELE corrigida, mantendo as ideias e o vocabulário dele (igual, se já estiver ótima).
+- "natural": como um nativo britânico diria a mesma ideia de forma natural, um pouco mais rica (nível B1/B2).
+- "note": 1 ou 2 frases em PORTUGUÊS do Brasil explicando o principal erro de montagem (ordem das palavras, sujeito faltando, auxiliar, tempo verbal, preposição) ou elogiando algo específico. Cite as palavras em inglês entre aspas. Sem travessões.
+- "next": uma pergunta curta de continuação em inglês, como numa conversa real, para ele responder em voz alta.
+Responda só com JSON:
+{"ok":true,"used_target":true,"better":"...","natural":"...","note":"...","next":"..."}`;
+}
+async function spCheck(L, i){
+  const key = spKey(L.id,i), e = L.ex[i], text = (spDrafts[key]||"").trim();
+  if(!text || !sample || spBusy.has(key)) return;
+  if(spMic){ try{ spMic.stop(); }catch(err){} }
+  spBusy.add(key); delete spErr[key]; render();
+  try{
+    const r = await sample.json(spPrompt(L, e, text), {modelTier:"quick", cache:false});
+    spBusy.delete(key);
+    await spSave(L, i, {text, ok:r?.ok===true, target:r?.used_target===true, better:String(r?.better||e.model), natural:String(r?.natural||""), note:String(r?.note||""), next:String(r?.next||"")});
+  }catch(err){
+    spBusy.delete(key);
+    spErr[key] = err?.code==="rate_limited" ? "Too many checks in a row. Wait a moment." : "Couldn't check it right now. Try again.";
+    render();
+  }
+}
+function spListen(key){
+  if(!SR || !spMicOk) return;
+  if(spMic){ try{ spMic.stop(); }catch(e){} return; }
+  let r; try{ r = new SR(); }catch(e){ spMicOk = false; render(); return; }
+  r.lang = "en-GB"; r.interimResults = true; r.continuous = false;
+  const base = (spDrafts[key]||"").trim();
+  r.onresult = ev => { let t = ""; for(const res of ev.results) t += res[0].transcript;
+    spDrafts[key] = (base ? base + " " : "") + t;
+    const ta = document.querySelector(`[data-spdraft="${key}"]`); if(ta) ta.value = spDrafts[key]; };
+  r.onerror = ev => { if(["not-allowed","service-not-allowed","audio-capture"].includes(ev.error)){ spMicOk = false; spMicMsg = "The microphone isn't available here. Use the mic on your keyboard to dictate."; } };
+  r.onend = () => { spMic = null; spMicKey = null; render(); };
+  spMic = r; spMicKey = key;
+  try{ r.start(); }catch(e){ spMic = null; spMicKey = null; spMicOk = false; }
+  render();
+}
+
+function spExHTML(L, e, i){
+  const key = spKey(L.id,i), a = spAns(L.id,i), done = a && !spRetry.has(key);
+  const lab = {order:"Build the sentence", say:"Say it out loud", expand:"Make it longer"}[e.t];
+  let b = "";
+  if(e.t==="order"){
+    b += `<div class="note">${esc(e.pt)}</div>`;
+    if(done){
+      b += `<div><span class="fb ${a.ok?"ok":"no"}">${a.ok?"Correct":"Almost"}</span></div>${a.ok?"":`<div class="mine">You: <s>${esc(a.text)}</s></div>`}
+        <div class="out">${esc(e.en)}${/^(where|how|what|did|do|are|is|can|could)\b/i.test(e.en)?"?":"."}</div>
+        <div class="honest">Now say it out loud 3 times, without looking.</div>
+        <div class="actions">${canSpeak?`<button class="ghost" type="button" data-spsay="${esc(e.en)}">Listen</button>`:""}<button class="ghost" type="button" data-spredo="${key}">Try again</button></div>`;
+    } else {
+      const w = spWords(e,key), pk = spPicks[key]||[];
+      b += `<div class="built">${pk.length ? pk.map((k,n)=>`<button class="word" type="button" data-spunpick="${key}:${n}">${esc(w[k])}</button>`).join("") : `<span class="hint">Tap the words in the right order</span>`}</div>
+        <div class="bank">${w.map((x,k)=> pk.includes(k) ? "" : `<button class="word" type="button" data-sppick="${key}:${k}">${esc(x)}</button>`).join("")}</div>
+        <div class="actions"><button class="ghost" type="button" data-spreset="${key}">Clear</button><button class="go" type="button" data-spord="${key}" ${pk.length===w.length?"":"disabled"}>Check</button></div>`;
+    }
+  } else {
+    if(e.t==="say") b += `<div class="q2">${esc(e.q)}</div>`;
+    else b += `<div class="q2">${esc(e.base)}</div><div class="spblocks">${e.blocks.map(x=>`<span class="alt">${esc(x)}</span>`).join("")}</div>`;
+    if(e.hint) b += `<div class="note"><span class="lang">Structure</span><br><b>${esc(e.hint)}</b></div>`;
+    if(done){
+      b += `<div><span class="fb ${a.ok?"ok":"no"}">${a.ok?"Good":"Almost"}</span>${a.ok && a.target?` <span class="fb ok">Used the structure</span>`:""}</div>
+        ${cleanW(a.text)!==cleanW(a.better)?`<div class="mine">You: ${a.ok?esc(a.text):`<s>${esc(a.text)}</s>`}</div>`:""}
+        <div class="out">${esc(a.better)}</div>
+        ${a.note?`<div class="note">${esc(a.note)}</div>`:""}
+        ${a.natural && cleanW(a.natural)!==cleanW(a.better)?`<div class="ex"><span class="lang">How a native would say it</span><br><b>${esc(a.natural)}</b></div>`:""}
+        ${a.next?`<div class="focus"><span class="lang">Keep talking, answer out loud</span><b>${esc(a.next)}</b></div>`:""}
+        <div class="actions">${canSpeak?`<button class="ghost" type="button" data-spsay="${esc(a.natural||a.better)}">Listen</button>`:""}<button class="ghost" type="button" data-spredo="${key}">Say it again</button></div>`;
+    } else {
+      const rec = spMicKey === key;
+      b += `<textarea data-spdraft="${key}" placeholder="Say it out loud first. Then dictate or type it here." aria-label="Your answer">${esc(spDrafts[key]||"")}</textarea>
+        <div class="actions">${spMicOk?`<button class="ghost${rec?" rec":""}" type="button" data-spmic="${key}">${rec?"● Listening... tap to stop":"🎤 Speak"}</button>`:""}
+        <button class="ghost" type="button" data-spmodel="${key}">${spModel.has(key)?"Hide model":"See model"}</button>
+        <button class="go" type="button" data-spcheck="${key}" ${spBusy.has(key)||!sample?"disabled":""}>${spBusy.has(key)?"Checking...":"Check"}</button></div>
+        ${spModel.has(key)?`<div class="ex"><b>${esc(e.model)}</b>${canSpeak?` <button class="ghost" type="button" data-spsay="${esc(e.model)}" style="margin-left:6px;padding:2px 8px">Listen</button>`:""}</div>`:""}`;
+    }
+  }
+  if(spErr[key]) b += `<div class="status err">${esc(spErr[key])}</div>`;
+  return `<li class="exr${done?" done":""}"><div class="lang">${i+1} · ${lab}</div>${b}</li>`;
+}
+function renderSpeak(p){
+  const f = document.activeElement?.dataset?.spdraft, pos = f ? document.activeElement.selectionStart : 0;
+  if(!spLesson){
+    const total = SPK.length, full = SPK.filter(L => spDoneN(L)===L.ex.length).length;
+    p.innerHTML = `<div style="display:flex;flex-direction:column;gap:12px">
+      <div class="tre-head"><div><div class="lang">Speaking lessons</div><div class="out">Build sentences without freezing</div></div>
+        <div class="streak"><b>${full}/${total}</b>lessons done</div></div>
+      <div class="focus"><b>How to use</b><div class="note">Para cada lição: leia a regra, ouça as frases e repita em voz alta. Nos exercícios, FALE primeiro, depois dite (ou digite) e toque Check. Falar em voz alta é o que treina a montagem da frase.</div></div>
+      <ul class="unit-secs">${SPK.map(L => { const d = spDoneN(L), n = L.ex.length;
+        return `<li><button type="button" data-splesson="${L.id}"><span><b>${L.n}. ${esc(L.title)}</b><span class="meta">${esc(L.goal)}</span></span><span class="unit-c${d===n?" full":""}">${d}/${n}</span></button></li>`; }).join("")}</ul></div>`;
+    return;
+  }
+  const L = SPK.find(x => x.id===spLesson), idx = SPK.indexOf(L), nx = SPK[idx+1], d = spDoneN(L);
+  p.innerHTML = `<div style="display:flex;flex-direction:column;gap:12px">
+    <div class="rhead"><button class="ghost" type="button" data-splesson="">← Lessons</button><span class="meta">Lesson ${L.n} of ${SPK.length} · ${d}/${L.ex.length} done</span></div>
+    <div><div class="lang">Lesson ${L.n}</div><h2 class="sp-h">${esc(L.title)}</h2><div class="out">${esc(L.goal)}</div></div>
+    ${L.frame?`<div class="spframe">${L.frame.map(x=>`<span>${esc(x)}</span>`).join("")}</div>`:""}
+    <div class="memo"><span class="lang">Por que você trava</span>${esc(L.why)}</div>
+    <div class="section-title">Listen and repeat out loud</div>
+    <ul class="sp-chunks">${L.chunks.map(c => `<li>${canSpeak?`<button class="iconbtn" type="button" data-spsay="${esc(c[0])}" aria-label="Listen">▶</button>`:""}<div><div class="out">${esc(c[0])}</div><div class="meta">${esc(c[1])}</div></div></li>`).join("")}</ul>
+    <div class="section-title">Your turn</div>
+    ${spMicOk?"":`<div class="honest">${esc(spMicMsg || "Tip: use the mic on your phone keyboard to dictate your answer.")}</div>`}
+    <ol class="ex-list">${L.ex.map((e,i) => spExHTML(L,e,i)).join("")}</ol>
+    ${nx?`<button class="go" type="button" data-splesson="${nx.id}" style="margin:0;align-self:flex-end">Next: ${esc(nx.title)}</button>`:`<button class="ghost" type="button" data-splesson="">Back to lessons</button>`}</div>`;
+  if(f){ const n = document.querySelector(`[data-spdraft="${f}"]`); if(n){ n.focus(); n.setSelectionRange(pos,pos); } }
+}
+$("#panel").addEventListener("input", e => { const d = e.target.dataset.spdraft; if(d!==undefined) spDrafts[d] = e.target.value; });
+$("#panel").addEventListener("click", e => {
+  const b = e.target.closest("button"); if(!b) return; const ds = b.dataset;
+  const LI = key => { const k = key.lastIndexOf("-"); return [SPK.find(x=>x.id===key.slice(0,k)), +key.slice(k+1)]; };
+  if(ds.splesson !== undefined){ spLesson = ds.splesson || null; render(); window.scrollTo({top: document.querySelector("nav.tabs").offsetTop - 8}); }
+  else if(ds.sppick){ const [key,k] = ds.sppick.split(":"); (spPicks[key] ||= []).push(+k); render(); }
+  else if(ds.spunpick){ const [key,n] = ds.spunpick.split(":"); spPicks[key].splice(+n,1); render(); }
+  else if(ds.spreset){ spPicks[ds.spreset] = []; render(); }
+  else if(ds.spord){ const [L,i] = LI(ds.spord), e2 = L.ex[i], w = spWords(e2, ds.spord), text = (spPicks[ds.spord]||[]).map(k=>w[k]).join(" ");
+    spSave(L, i, {text, ok: cleanW(text)===cleanW(e2.en)}); }
+  else if(ds.spcheck){ const [L,i] = LI(ds.spcheck); spCheck(L,i); }
+  else if(ds.spmic) spListen(ds.spmic);
+  else if(ds.spmodel){ spModel.has(ds.spmodel) ? spModel.delete(ds.spmodel) : spModel.add(ds.spmodel); render(); }
+  else if(ds.spredo){ spRetry.add(ds.spredo); spPicks[ds.spredo] = []; spDrafts[ds.spredo] = ""; render(); }
+  else if(ds.spsay) speak(ds.spsay);
+});
+
+
+/* ===== Two environments: CLASS (exchange lessons) and TODAY (daily parallel plan) ===== */
+const CLASS_SEED = [
+ {id:"c-2026-10-28", date:"2026-10-28", unit:9, sec:"cha", title:"Philanthropy and charities",
+  summary_pt:"Aula sobre dinheiro e tudo que o envolve, com foco em filantropia e caridade: como falar de doar, arrecadar dinheiro, ser voluntário e apoiar uma causa.",
+  vocab:[
+   ["charity","instituição de caridade; caridade","She works for a children's charity."],
+   ["donate (to)","doar (para)","I donate €10 to charity every month."],
+   ["donation","doação","They made a donation of €500."],
+   ["donor","doador","The hospital thanked all its donors."],
+   ["raise money (for)","arrecadar dinheiro (para)","We raised €2,000 for the animal shelter."],
+   ["fundraiser","evento para arrecadar dinheiro","The school organised a fundraiser."],
+   ["fundraising","arrecadação de fundos","Fundraising is hard work."],
+   ["volunteer","voluntário; ser voluntário","I volunteered at a food bank."],
+   ["philanthropist","filantropo","A local philanthropist paid for the new library."],
+   ["philanthropy","filantropia","Philanthropy can change whole communities."],
+   ["non-profit (organisation)","ONG; organização sem fins lucrativos","She works for a non-profit."],
+   ["a good cause","uma boa causa","Don't worry, it's for a good cause."],
+   ["people in need","pessoas necessitadas","The money goes to people in need."],
+   ["make a difference","fazer a diferença","Small donations can make a difference."],
+   ["give back (to)","retribuir (à comunidade)","I want to give back to my community."],
+   ["sponsor","patrocinar; apoiar com dinheiro","Will you sponsor me for the charity run?"],
+   ["generous","generoso","That's very generous of you."],
+  ],
+  phrases:[
+   ["I'd like to make a donation.","Eu gostaria de fazer uma doação."],
+   ["All the money goes to charity.","Todo o dinheiro vai para a caridade."],
+   ["We're raising money for the local hospital.","Estamos arrecadando dinheiro para o hospital local."],
+   ["Would you like to sponsor me?","Você gostaria de me patrocinar?"],
+   ["It's for a good cause.","É por uma boa causa."],
+   ["I volunteer at a shelter on Saturdays.","Sou voluntário num abrigo aos sábados."],
+  ],
+  grammar_pt:[
+   "Donate TO alguém ou algo: donate to a charity (não \"donate a charity\").",
+   "Raise money FOR uma causa. Raise (arrecadar, levantar) tem objeto; rise (subir) não tem: prices rise.",
+   "Volunteer AT um lugar ou FOR uma organização: I volunteer at a food bank / for the Red Cross.",
+   "Make a difference, nunca \"do a difference\".",
+  ],
+  questions:["Do you give money to charity? Why or why not?","Is it better to give money or your time?","Should rich people give more to charity?","Which charity or cause would you support, and why?","What skills could you use to help a charity?"]},
+];
+let acol = null, aDocs = [], clsView = null, clsAdd = false, clsTopic = "", clsDate = "", clsBusy = false, clsErr = "";
+const allClasses = () => CLASS_SEED.map(c => ({...c, seed:true})).concat(aDocs).sort((a,b) => a.date < b.date ? 1 : a.date > b.date ? -1 : 0);
+const fmtD = (d, o) => new Date(d + "T12:00:00").toLocaleDateString("en-GB", o || {weekday:"short", day:"numeric", month:"short"});
+const vEn = v => Array.isArray(v) ? v[0] : v.en, vPt = v => Array.isArray(v) ? v[1] : v.pt, vEx = v => Array.isArray(v) ? v[2] : v.ex;
+function clsProgress(c){
+  if(c.sec){ const s = UNIT.sections.find(x => x.key===c.sec); if(!s) return null; const ans = uAnsAll();
+    return {d: s.items.filter((_,i) => ans[uKey(s.key,i)]).length, n: s.items.length}; }
+  if(Array.isArray(c.quiz) && c.quiz.length) return {d: Object.keys(c.answers||{}).length, n: c.quiz.length};
+  return null;
+}
+function classLine(){
+  const c = allClasses()[0]; if(!c) return "";
+  const dd = daysBetween(c.date, ymd(new Date())); if(dd > 3) return "";
+  return `\nAula mais recente no intercâmbio (${c.date}): ${c.title}. Vocabulário da aula: ${(c.vocab||[]).slice(0,12).map(vEn).join(", ")}. Use esse vocabulário em pelo menos 2 exercícios de hoje.`;
+}
+
+/* ---- TODAY: the daily plan ---- */
+function dailyPlan(){
+  const today = ymd(new Date()), rows = [];
+  const t = todayDoc(), tn = t ? Object.keys(t.answers||{}).length : 0, tt = t ? t.items.length : 6;
+  rows.push({k:"tre", icon:"✍️", tab:"tre", name:"Daily practice", detail: t ? `${tn} of ${tt} exercises` : "6 exercises, about 10 min", st: t && tn>=tt ? "done" : tn ? "part" : "todo"});
+  const nx = rNext(), readToday = reads.some(r => r.status==="done" && r.doneAt && ymd(new Date(r.doneAt))===today);
+  rows.push({k:"read", icon:"📖", tab:"read", name:"Reading", detail: readToday ? "Read today" : nx ? `Day ${nx} · ${BOOKS[nx-1].t}` : "Track complete", st: readToday || !nx ? "done" : rDoc(nx) ? "part" : "todo"});
+  let spN = 0; Object.values(spDocs).forEach(d => Object.values(d.answers||{}).forEach(a => { if(a.ts && ymd(new Date(a.ts))===today) spN++; }));
+  const spL = SPK.find(L => spDoneN(L) < L.ex.length);
+  rows.push({k:"speak", icon:"🗣️", tab:"speak", name:"Speaking", detail: spN>=3 ? `${spN} answers today` : `${spL ? `Lesson ${spL.n} · ${spL.title}` : "Review any lesson"} · ${spN}/3 answers`, st: spN>=3 ? "done" : spN ? "part" : "todo", lesson: spL?.id});
+  const tbToday = bSess.some(s => s.status==="done" && s.finished && ymd(new Date(s.finished))===today), ob = openB();
+  const weakT = (() => { const m = tbMastery(); if(!m.covered) return "Present"; let best = null;
+    TENSES.forEach(T => { const its = TB.filter(it => tbTense(it)===T.k).map(it => it.c); const cs = [...new Set(its)].filter(c => m.cats[c]);
+      const v = cs.length ? cs.reduce((s,c)=>s+m.cats[c].pct,0)/cs.length : 100; if(!best || v < best.v) best = {v, n:T.name}; }); return best.n; })();
+  rows.push({k:"tobe", icon:"🔤", tab:"tobe", name:"Verb to be", detail: tbToday ? "Drill done today" : ob ? `Continue: ${Object.keys(ob.answers||{}).length} of ${ob.ids.length}` : `1 drill · suggested: ${weakT}`, st: tbToday ? "done" : ob ? "part" : "todo"});
+  const c = allClasses().find(x => x.date===today);
+  if(c){ const pr = clsProgress(c);
+    rows.push({k:"class", icon:"🎓", cls:true, name:"Review today's class", detail: `${c.title}${pr?` · ${pr.d} of ${pr.n} exercises`:""}`, st: pr && pr.d>=pr.n ? "done" : pr && pr.d ? "part" : "todo", cid:c.id}); }
+  return rows;
+}
+function renderHome(p){
+  const rows = dailyPlan(), done = rows.filter(r => r.st==="done").length;
+  const today = ymd(new Date()), cl = allClasses(), last = cl[0], isToday = last && last.date===today;
+  const pr = last ? clsProgress(last) : null, uAns = uAnsAll(), uDone = Object.keys(uAns).length, uTot = uTotal();
+  const sym = {done:"✓", part:"◐", todo:"○"};
+  p.innerHTML = `<div class="hub">
+    <section class="env env-day" aria-label="Daily plan">
+      <div class="env-tag">📅 Daily plan · parallel study</div>
+      <div class="env-head"><div><div class="env-title">${esc(new Date().toLocaleDateString("en-GB",{weekday:"long", day:"numeric", month:"long"}))}</div>
+        <div class="meta">${done===rows.length ? "All done for today. Great work!" : `${rows.length-done} left for today`}</div></div>
+        <div class="env-count"><b>${done}/${rows.length}</b><span>done</span></div></div>
+      <div class="env-bar"><i style="width:${Math.round(done/rows.length*100)}%"></i></div>
+      <ul class="plan">${rows.map(r => `<li class="pl ${r.st}${r.cls?" is-cls":""}">
+        <button type="button" data-hgo="${r.k}" ${r.lesson?`data-hlesson="${r.lesson}"`:""} ${r.cid?`data-hcid="${r.cid}"`:""}>
+          <span class="pl-st" aria-label="${r.st==="done"?"Done":r.st==="part"?"Started":"To do"}">${sym[r.st]}</span>
+          <span class="pl-main"><b>${r.icon} ${esc(r.name)}</b><span class="meta">${esc(r.detail)}</span></span>
+          <span class="pl-go">${r.st==="done"?"Review":"Go"} ›</span></button></li>`).join("")}</ul>
+    </section>
+    <section class="env env-cls" aria-label="Exchange class">
+      <div class="env-tag">🎓 In class · exchange</div>
+      <div class="env-head"><div><div class="env-title">Unit ${UNIT.n} · ${esc(UNIT.title)}</div>
+        <div class="meta">${fmtD(UNIT.from,{day:"numeric",month:"short"})} to ${fmtD(UNIT.to,{day:"numeric",month:"short"})} · unit exercises ${uDone}/${uTot}</div></div>
+        <div class="env-count"><b>${cl.length}</b><span>${cl.length===1?"class":"classes"}</span></div></div>
+      ${last ? `<button type="button" class="cls-card" data-hcls="${last.id}">
+        <span class="cls-date">${isToday?`<span class="badge-today">TODAY</span>`:""}${esc(fmtD(last.date))}</span>
+        <b>${esc(last.title)}</b>
+        <span class="meta">${(last.vocab||[]).length} words · ${(last.phrases||[]).length} phrases${pr?` · exercises ${pr.d}/${pr.n}`:""}</span>
+        <span class="pl-go">Open study sheet ›</span></button>` : ""}
+      <div class="actions"><button class="ghost" type="button" data-hgo="class">All classes</button><button class="ghost" type="button" data-hgo="class" data-hadd="1">+ Log a class</button></div>
+    </section></div>`;
+}
+
+/* ---- CLASS tab ---- */
+function sheetHTML(c){
+  const pr = clsProgress(c), today = ymd(new Date());
+  let h = `<div class="rhead"><button class="ghost" type="button" data-cview="">← Classes</button><span class="meta">Unit ${c.unit||UNIT.n}</span></div>
+    <div class="env env-cls"><div class="env-tag">🎓 Class · ${esc(fmtD(c.date,{weekday:"long", day:"numeric", month:"long"}))}${c.date===today?` <span class="badge-today">TODAY</span>`:""}</div>
+      <h2 class="sp-h">${esc(c.title)}</h2>${c.summary_pt?`<div class="note">${esc(c.summary_pt)}</div>`:""}</div>
+    <div class="section-title">Vocabulary</div>
+    <ul class="vocab">${(c.vocab||[]).map(v => `<li>${canSpeak?`<button class="iconbtn" type="button" data-spsay="${esc(vEn(v))}" aria-label="Listen">▶</button>`:""}
+      <div><b>${esc(vEn(v))}</b> <span class="meta">${esc(vPt(v))}</span>${vEx(v)?`<div class="vex">${esc(vEx(v))}</div>`:""}</div></li>`).join("")}</ul>`;
+  if((c.phrases||[]).length) h += `<div class="section-title">Ready-made phrases</div><ul class="sp-chunks">${c.phrases.map(x => `<li>${canSpeak?`<button class="iconbtn" type="button" data-spsay="${esc(vEn(x))}" aria-label="Listen">▶</button>`:""}<div><div class="out">${esc(vEn(x))}</div><div class="meta">${esc(vPt(x))}</div></div></li>`).join("")}</ul>`;
+  if((c.grammar_pt||[]).length) h += `<div class="memo"><span class="lang">Para gravar</span>${c.grammar_pt.map(g => `<div>• ${esc(g)}</div>`).join("")}</div>`;
+  if((c.questions||[]).length) h += `<div class="section-title">Speaking: answer out loud</div><ul class="ex-list">${c.questions.map(q => `<li class="exr"><div class="q2">${esc(q)}</div><div class="actions">${canSpeak?`<button class="ghost" type="button" data-spsay="${esc(q)}">Listen</button>`:""}<button class="ghost" type="button" data-hgo="speak" data-hlesson="opinion">Practise with feedback ›</button></div></li>`).join("")}</ul>`;
+  if(c.sec){
+    const s = UNIT.sections.find(x => x.key===c.sec);
+    h += `<div class="section-title">Exercises${pr?` · ${pr.d}/${pr.n}`:""}</div><ol class="ex-list">${s.items.map((it,i) => uItemHTML(it, uKey(s.key,i))).join("")}</ol>`;
+  } else if((c.quiz||[]).length){
+    h += `<div class="section-title">Exercises${pr?` · ${pr.d}/${pr.n}`:""}</div><ol class="ex-list">${c.quiz.map((q,i) => { const a = (c.answers||{})[i];
+      return `<li class="exr${a?" done":""}"><div class="lang">Choose the right word</div><div class="q2">${esc(q.q)}</div><div class="opts">${q.o.map((o,j) => {
+        let cls = "qopt"; if(a){ if(j===q.a) cls += " right"; else if(j===a.pick) cls += " wrong"; }
+        return `<button class="${cls}" type="button" data-cq="${c.id}:${i}:${j}" ${a?"disabled":""}>${esc(o)}</button>`; }).join("")}</div>
+        ${a?`<div><span class="fb ${a.ok?"ok":"no"}">${a.ok?"Correct":"Not quite"}</span></div>${q.why?`<div class="note">${esc(q.why)}</div>`:""}`:""}</li>`; }).join("")}</ol>`;
+  }
+  if(!c.seed) h += `<div class="actions"><button class="ghost del" type="button" data-cdel="${c.id}">${confirmDel===c.id?"Confirm delete":"Delete this class"}</button></div>`;
+  return h;
+}
+function renderClass(p){
+  const f = document.activeElement?.id, pos = f ? document.activeElement.selectionStart : 0;
+  const cl = allClasses(), today = ymd(new Date());
+  if(clsView){ const c = cl.find(x => x.id===clsView); if(c){ p.innerHTML = `<div style="display:flex;flex-direction:column;gap:12px">${sheetHTML(c)}</div>`; return; } clsView = null; }
+  uOpen = true;
+  let h = `<div class="env env-cls"><div class="env-tag">🎓 In class · exchange</div>
+      <div class="env-title">Unit ${UNIT.n} · ${esc(UNIT.title)}</div>
+      <div class="meta">${fmtD(UNIT.from,{day:"numeric",month:"short"})} to ${fmtD(UNIT.to,{day:"numeric",month:"short"})}</div>
+      <ul class="obj">${["Talk about attitudes to money and about spending money","Talk about philanthropy and charities","Discuss your skills and how they could help others","Go shopping for clothes and ask for a refund","Write a 'for sale' advert"].map(o => `<li>${esc(o)}</li>`).join("")}</ul></div>
+    <div class="section-title">Class diary</div>
+    <ul class="cls-list">${cl.map(c => { const pr = clsProgress(c);
+      return `<li><button type="button" class="cls-card${c.date===today?" now":""}" data-cview="${c.id}">
+        <span class="cls-date">${c.date===today?`<span class="badge-today">TODAY</span>`:""}${esc(fmtD(c.date))}</span>
+        <b>${esc(c.title)}</b><span class="meta">${(c.vocab||[]).length} words${pr?` · exercises ${pr.d}/${pr.n}`:""}</span><span class="pl-go">Open ›</span></button></li>`; }).join("")}</ul>`;
+  if(clsAdd){
+    h += `<div class="exr"><div class="lang">Log a class</div>
+      <input class="search" id="clsDate" type="date" value="${esc(clsDate || today)}" aria-label="Class date">
+      <textarea id="clsTopic" placeholder="What was the class about? Ex.: money idioms, second conditional, describing your city..." aria-label="Class topic">${esc(clsTopic)}</textarea>
+      <div class="actions"><button class="ghost" type="button" data-cadd="0">Cancel</button><button class="go" type="button" data-csave="1" ${clsBusy||!sample||!acol?"disabled":""}>${clsBusy?"Creating study sheet...":"Create study sheet"}</button></div>
+      <div class="honest">Claude builds the vocabulary, phrases, tips and exercises for this class.</div>
+      ${clsErr?`<div class="status err">${esc(clsErr)}</div>`:""}</div>`;
+  } else h += `<div><button class="go" type="button" data-cadd="1" style="margin:0">+ Log a class</button></div>`;
+  h += `<div class="section-title">All Unit ${UNIT.n} exercises</div>${unitHTML(true)}`;
+  p.innerHTML = `<div style="display:flex;flex-direction:column;gap:12px">${h}</div>`;
+  if(f==="clsTopic"){ const n = $("#clsTopic"); if(n){ n.focus(); n.setSelectionRange(pos,pos); } }
+}
+async function clsCreate(){
+  const topic = clsTopic.trim(), date = clsDate || ymd(new Date());
+  if(!topic || clsBusy || !sample || !acol) return;
+  clsBusy = true; clsErr = ""; render();
+  try{
+    const r = await sample.json(`Monte a ficha de estudo de uma aula de inglês que um brasileiro (nível ${curLevel()}, intercâmbio em Malta, inglês britânico) acabou de ter. Livro atual: Unit ${UNIT.n} ${UNIT.title}. Tema da aula, nas palavras dele: """${topic}"""
+
+Regras:
+- "title": título curto em inglês.
+- "summary_pt": 1 a 2 frases em português do Brasil sobre o que a aula cobre.
+- "vocab": 10 a 14 palavras ou expressões úteis do tema, cada uma com "en", "pt" (tradução em português do Brasil) e "ex" (frase de exemplo curta e natural em inglês).
+- "phrases": 5 frases prontas para usar em conversa, com "en" e "pt".
+- "grammar_pt": 2 a 4 dicas curtas em português sobre preposições, collocations ou armadilhas do tema para brasileiros, citando o inglês.
+- "questions": 4 perguntas de speaking em inglês sobre o tema.
+- "quiz": 6 exercícios de completar, "q" frase em inglês com ___, "o" 3 opções, "a" índice da certa (varie a posição), "why" explicação curta em português.
+Nenhum campo pode ter travessões. Ortografia britânica.
+Responda só com JSON:
+{"title":"...","summary_pt":"...","vocab":[{"en":"...","pt":"...","ex":"..."}],"phrases":[{"en":"...","pt":"..."}],"grammar_pt":["..."],"questions":["..."],"quiz":[{"q":"...","o":["...","...","..."],"a":0,"why":"..."}]}`, {cache:false});
+    if(!r || typeof r.title!=="string" || !Array.isArray(r.vocab) || !r.vocab.length) throw {code:"invalid_json"};
+    const S = x => String(x ?? "");
+    const doc = {date, unit:UNIT.n, topic, title:S(r.title), summary_pt:S(r.summary_pt),
+      vocab:r.vocab.slice(0,16).map(v => ({en:S(v.en), pt:S(v.pt), ex:S(v.ex)})),
+      phrases:(r.phrases||[]).slice(0,6).map(v => ({en:S(v.en), pt:S(v.pt)})),
+      grammar_pt:(r.grammar_pt||[]).slice(0,4).map(S), questions:(r.questions||[]).slice(0,5).map(S),
+      quiz:(r.quiz||[]).filter(q => q && Array.isArray(q.o) && q.o.length>=2 && Number.isInteger(q.a) && q.a < q.o.length).slice(0,8).map(q => ({q:S(q.q), o:q.o.map(S), a:q.a, why:S(q.why)})),
+      answers:{}, created:Date.now()};
+    const id = "c-" + date + "-" + Date.now().toString(36);
+    await acol.doc(id).set(doc);
+    clsAdd = false; clsTopic = ""; clsDate = ""; clsView = id;
+  }catch(e){
+    clsErr = ({rate_limited:"Too many requests in a row. Try again in a minute.", invalid_json:"The study sheet came back incomplete. Try again."})[e?.code] || "Couldn't create the study sheet right now. Try again.";
+  }finally{ clsBusy = false; render(); }
+}
+function goTab(t){
+  const b = document.querySelector(`nav.tabs [data-tab="${t}"]`); if(b) b.click();
+  document.querySelector("nav.tabs")?.scrollIntoView({block:"start", behavior:"smooth"});
+}
+$("#panel").addEventListener("input", e => { if(e.target.id==="clsTopic") clsTopic = e.target.value; if(e.target.id==="clsDate") clsDate = e.target.value; });
+$("#panel").addEventListener("click", async e => {
+  const b = e.target.closest("button"); if(!b) return; const ds = b.dataset;
+  if(ds.hgo){
+    if(ds.hgo==="class"){ clsView = ds.hcid || null; if(ds.hadd){ clsAdd = true; clsView = null; } goTab("class"); }
+    else { if(ds.hlesson) spLesson = ds.hlesson; if(ds.hgo==="tobe") bView = openB() ? "q" : "home"; goTab(ds.hgo); }
+  }
+  else if(ds.hcls){ clsView = ds.hcls; goTab("class"); }
+  else if(ds.cview !== undefined){ clsView = ds.cview || null; confirmDel = null; render(); window.scrollTo({top: document.querySelector("nav.tabs").offsetTop - 8}); }
+  else if(ds.cadd){ clsAdd = ds.cadd==="1"; clsErr = ""; render(); if(clsAdd) setTimeout(() => $("#clsTopic")?.focus(), 0); }
+  else if(ds.csave) clsCreate();
+  else if(ds.cq){
+    const [id,i,j] = ds.cq.split(":"); const c = aDocs.find(x => x.id===id); if(!c || (c.answers||{})[i]) return;
+    const a = {pick:+j, ok:+j===c.quiz[+i].a}; c.answers = {...(c.answers||{}), [i]:a}; render();
+    try{ await acol.doc(id).update({answers:{[i]:a}}); }catch(err){ status("Couldn't save this answer.", true); }
+  }
+  else if(ds.cdel){
+    if(confirmDel!==ds.cdel){ confirmDel = ds.cdel; render(); return; }
+    confirmDel = null; clsView = null;
+    try{ await acol.doc(ds.cdel).delete(); }catch(err){ status("Couldn't delete.", true); }
+    render();
+  }
 });
 
 render();
