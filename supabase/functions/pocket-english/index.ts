@@ -1,6 +1,7 @@
 // Edge Function: pocket-english
 // Proxy autenticado para a Anthropic API usado pelo Pocket Phrasebook (aba Inglês).
 // Recebe { prompt, quick } e devolve o JSON gerado pelo modelo (equivale ao sample.json do app original).
+// Com { stream: true, messages } devolve o texto em streaming (aba Ask: dúvidas respondidas na hora).
 
 const ANTHROPIC_API_KEY = Deno.env.get('ANTHROPIC_API_KEY');
 const MODEL = Deno.env.get('POCKET_MODEL') ?? 'claude-sonnet-4-6';
@@ -39,8 +40,55 @@ Deno.serve(async (req) => {
   if (!userRes.ok) return json({ error: 'Faça login para usar o Pocket Phrasebook' }, 401);
 
   let prompt: string, quick: boolean;
+  let body: Record<string, unknown>;
+  try { body = await req.json(); } catch { return json({ error: 'Body inválido' }, 400); }
+
+  // Modo conversa com streaming: devolve só o texto, pedaço por pedaço, para a resposta aparecer na hora
+  if (body?.stream) {
+    const msgs = Array.isArray(body.messages) ? body.messages : [];
+    const messages = msgs
+      .filter((m: { role?: string; content?: unknown }) => (m?.role === 'user' || m?.role === 'assistant') && typeof m?.content === 'string' && m.content.trim())
+      .slice(-16)
+      .map((m: { role: string; content: string }) => ({ role: m.role, content: m.content.slice(0, 8000) }));
+    if (!messages.length || messages[messages.length - 1].role !== 'user') return json({ error: 'Envie a pergunta' }, 400);
+    const system = typeof body.system === 'string' ? body.system.slice(0, 4000) : undefined;
+    const upstream = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
+      body: JSON.stringify({ model: body.quick === false ? MODEL : QUICK_MODEL, max_tokens: Math.min(Number(body.max_tokens) || 900, 2000), stream: true, ...(system ? { system } : {}), messages }),
+    });
+    if (!upstream.ok || !upstream.body) {
+      const errText = await upstream.text();
+      return json({ error: `Anthropic ${upstream.status}: ${errText.slice(0, 300)}` }, upstream.status === 429 ? 429 : 502);
+    }
+    const enc = new TextEncoder(), dec = new TextDecoder();
+    const reader = upstream.body.getReader();
+    const out = new ReadableStream({
+      async start(controller) {
+        let buf = '';
+        try {
+          for (;;) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            buf += dec.decode(value, { stream: true });
+            let i;
+            while ((i = buf.indexOf('\n')) >= 0) {
+              const line = buf.slice(0, i).trim(); buf = buf.slice(i + 1);
+              if (!line.startsWith('data:')) continue;
+              try {
+                const ev = JSON.parse(line.slice(5));
+                if (ev.type === 'content_block_delta' && ev.delta?.type === 'text_delta') controller.enqueue(enc.encode(ev.delta.text));
+              } catch { /* linha incompleta */ }
+            }
+          }
+        } catch { /* conexão encerrada */ }
+        controller.close();
+      },
+    });
+    return new Response(out, { headers: { ...CORS_HEADERS, 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-cache' } });
+  }
+
   try {
-    const body = await req.json();
     prompt = (body?.prompt ?? '').toString();
     quick = !!body?.quick;
     if (!prompt.trim()) return json({ error: 'Campo "prompt" obrigatório' }, 400);
