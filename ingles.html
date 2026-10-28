@@ -2645,6 +2645,7 @@ function askPreamble(){
 Contexto: unidade atual do livro Unit ${UNIT.n} ${UNIT.title}${c?`; aula mais recente: ${c.title}`:""}.`;
 }
 function mdLite(t){
+  t = String(t).replace(/^\s*#{1,6}\s*(.+)$/gm, "**$1**").replace(/^\s*[-*_]{3,}\s*$/gm, "");
   return esc(t).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>").split(/\n/).map(l => /^\s*[-•]\s+/.test(l) ? `<li>${l.replace(/^\s*[-•]\s+/, "")}</li>` : l.trim() ? `<p>${l}</p>` : "").join("").replace(/(<li>.*?<\/li>)+/g, m => `<ul>${m}</ul>`);
 }
 async function askSend(text){
@@ -2698,7 +2699,9 @@ function askMsgHTML(m){
   return `<div class="msg ai${live?" live":""}${m.err?" err":""}"><div class="msg-tag">💬 Teacher</div><div class="msg-body">${m.t ? mdLite(m.t) : `<span class="typing"><i></i><i></i><i></i></span>`}</div>
     ${!live && !m.err ? `<div class="msg-meta">${m.first?`answered in ${(m.first/1000).toFixed(1)}s`:""}${canSpeak && askEx(m.t)?` <button class="ghost mini" type="button" data-qsay="${esc(askEx(m.t))}">Listen to examples</button>`:""}</div>` : ""}</div>`;
 }
+let qWarm = 0;
 function renderAsk(p){
+  if(sample && typeof sample.warm === "function" && Date.now() - qWarm > 120000){ qWarm = Date.now(); try{ sample.warm(); }catch(e){} }
   const f = document.activeElement?.id === "qIn", pos = f ? document.activeElement.selectionStart : 0;
   let h = `<div class="env env-ask"><div class="env-tag">💬 Ask the teacher</div>
     <div class="env-title">Any doubt, answered on the spot</div>

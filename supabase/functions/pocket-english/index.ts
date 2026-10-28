@@ -34,10 +34,11 @@ Deno.serve(async (req) => {
   if (!ANTHROPIC_API_KEY) return json({ error: 'ANTHROPIC_API_KEY não configurada na função' }, 500);
 
   // verify_jwt também aceita a anon key pública, então confere se há usuário logado.
-  const userRes = await fetch(`${Deno.env.get('SUPABASE_URL')}/auth/v1/user`, {
+  // A checagem roda em paralelo com o resto para não atrasar a resposta.
+  const authP = fetch(`${Deno.env.get('SUPABASE_URL')}/auth/v1/user`, {
     headers: { Authorization: req.headers.get('Authorization') ?? '', apikey: Deno.env.get('SUPABASE_ANON_KEY') ?? '' },
-  });
-  if (!userRes.ok) return json({ error: 'Faça login para usar o Pocket Phrasebook' }, 401);
+  }).then((r) => r.ok).catch(() => false);
+  const denied = () => json({ error: 'Faça login para usar o Pocket Phrasebook' }, 401);
 
   let prompt: string, quick: boolean;
   let body: Record<string, unknown>;
@@ -52,11 +53,15 @@ Deno.serve(async (req) => {
       .map((m: { role: string; content: string }) => ({ role: m.role, content: m.content.slice(0, 8000) }));
     if (!messages.length || messages[messages.length - 1].role !== 'user') return json({ error: 'Envie a pergunta' }, 400);
     const system = typeof body.system === 'string' ? body.system.slice(0, 4000) : undefined;
-    const upstream = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
+    const ctl = new AbortController();
+    const upP = fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST', signal: ctl.signal,
       headers: { 'Content-Type': 'application/json', 'x-api-key': ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
       body: JSON.stringify({ model: body.quick === false ? MODEL : QUICK_MODEL, max_tokens: Math.min(Number(body.max_tokens) || 900, 2000), stream: true, ...(system ? { system } : {}), messages }),
     });
+    if (!(await authP)) { ctl.abort(); upP.catch(() => {}); return denied(); }
+    let upstream: Response;
+    try { upstream = await upP; } catch (e) { return json({ error: e instanceof Error ? e.message : 'Falha na IA' }, 502); }
     if (!upstream.ok || !upstream.body) {
       const errText = await upstream.text();
       return json({ error: `Anthropic ${upstream.status}: ${errText.slice(0, 300)}` }, upstream.status === 429 ? 429 : 502);
@@ -87,6 +92,8 @@ Deno.serve(async (req) => {
     });
     return new Response(out, { headers: { ...CORS_HEADERS, 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-cache' } });
   }
+
+  if (!(await authP)) return denied();
 
   try {
     prompt = (body?.prompt ?? '').toString();
