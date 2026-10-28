@@ -249,6 +249,23 @@ nav.tabs button.t-ask{font-weight:800}
 .qchips .chip{font-size:.86rem;color:var(--ink);text-align:left}
 .result.live-tr{border-left-color:var(--line)}
 .result.live-tr .big{color:var(--ink)}
+.exr,.card,.rwcard{position:relative}
+.exr > :first-child,.rwcard{padding-right:38px}
+.ask-this{position:absolute;top:6px;right:6px;width:32px;height:32px;border-radius:999px;border:1px solid var(--line);background:var(--surface);font-size:.9rem;line-height:1;padding:0;opacity:.85;z-index:1}
+.ask-this:hover{opacity:1;border-color:var(--ink)}
+#askFab{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:30;border:0;border-radius:999px;background:var(--ink);color:var(--bg);font-weight:700;font-size:.98rem;padding:12px 18px;box-shadow:0 6px 18px rgba(0,0,0,.25)}
+#askSheet{position:fixed;inset:0;z-index:40}
+.sheet-bg{position:absolute;inset:0;background:rgba(0,0,0,.35)}
+.sheet{position:absolute;left:0;right:0;bottom:0;max-width:680px;margin:0 auto;height:min(78vh,640px);background:var(--bg);border-radius:18px 18px 0 0;padding:12px max(16px,env(safe-area-inset-right,0px)) calc(10px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:8px;box-shadow:0 -8px 30px rgba(0,0,0,.25)}
+@media (prefers-reduced-motion:no-preference){.sheet{animation:up .2s ease-out}}
+@keyframes up{from{transform:translateY(30px);opacity:.6}to{transform:none;opacity:1}}
+.sheet-head{display:flex;justify-content:space-between;align-items:center}
+.sheet-acts{display:flex;gap:6px;align-items:center}
+.sheet-chat{flex:1;overflow-y:auto;padding:2px 2px 8px}
+.sheet .ask-box{position:static;padding:0}
+.q-attach{display:flex;justify-content:space-between;align-items:center;gap:8px;background:var(--sea-soft);border-radius:10px;padding:6px 10px;font-size:.85rem}
+.msg-ctx{font-size:.75rem;opacity:.75;margin-bottom:4px;white-space:normal}
+body.sheet-open{overflow:hidden}
 .hub{display:flex;flex-direction:column;gap:14px}
 .env{border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:10px;border:2px solid}
 .env-day{background:var(--day-soft);border-color:var(--day-bg)}
@@ -636,6 +653,10 @@ function listHTML(list){
 function emptyHTML(t, s){ return `<div class="empty"><strong>${t}</strong>${s}</div>`; }
 
 function render(){
+  renderCore();
+  if(typeof decorateAsk === "function"){ decorateAsk(); if(qSheet) renderSheet(); }
+}
+function renderCore(){
   $("#cnt").textContent = items.length ? items.length : "";
   const p = $("#panel");
   if(dbState==="loading"){ p.innerHTML = emptyHTML("Loading your phrases", "One moment."); return; }
@@ -2706,11 +2727,13 @@ async function askSend(text){
   if(!text || qBusy || !sample) return;
   qErr = ""; qInput = "";
   const userMsg = {r:"user", t:text, ts:Date.now()};
+  if(qAttach){ userMsg.ctx = qAttach; qAttach = ""; }
   qMsgs = qMsgs.concat([userMsg]);
   const ai = {r:"assistant", t:"", ts:Date.now(), pending:true};
   qMsgs.push(ai); qBusy = true; render(); askScroll();
   const hist = qMsgs.filter(m => !m.pending && !m.err).slice(-10);
-  const messages = hist.map((m,i) => ({role:m.r, content: i===0 && m.r==="user" ? askPreamble() + "\n\nPergunta: " + m.t : m.t}));
+  const withCtx = m => m.ctx ? `Exercício que estou fazendo agora no app:\n"""${m.ctx}"""\n\nMinha dúvida: ${m.t}` : m.t;
+  const messages = hist.map((m,i) => ({role:m.r, content: i===0 && m.r==="user" ? askPreamble() + "\n\nPergunta: " + withCtx(m) : m.r==="user" ? withCtx(m) : m.t}));
   if(messages[0].role !== "user") messages.shift();
   if(!messages[0].content.startsWith("Você é")) messages[0].content = askPreamble() + "\n\nPergunta: " + messages[0].content;
   const t0 = performance.now(); let first = null;
@@ -2735,19 +2758,24 @@ async function askSend(text){
 }
 async function askSave(){
   if(!qcol) return;
-  const msgs = qMsgs.filter(m => !m.pending).map(m => { const o = {r:m.r, t:m.t, ts:m.ts}; if(m.err) o.err = true; if(m.first) o.first = m.first; if(m.total) o.total = m.total; return o; });
+  const msgs = qMsgs.filter(m => !m.pending).map(m => { const o = {r:m.r, t:m.t, ts:m.ts}; if(m.ctx) o.ctx = m.ctx; if(m.err) o.err = true; if(m.first) o.first = m.first; if(m.total) o.total = m.total; return o; });
   if(!msgs.length) return;
   if(!qCur) qCur = "q-" + Date.now();
   try{ await qcol.doc(qCur).set({started: msgs[0].ts, updated: Date.now(), title: msgs[0].t.slice(0,90), msgs}); }catch(e){}
 }
 function askPaint(ai){
-  const el = document.querySelector(".msg.ai.live .msg-body");
-  if(el){ el.innerHTML = mdLite(ai.t) || `<span class="typing"><i></i><i></i><i></i></span>`; askScroll(); }
+  document.querySelectorAll(".msg.ai.live .msg-body").forEach(el => { el.innerHTML = mdLite(ai.t) || `<span class="typing"><i></i><i></i><i></i></span>`; });
+  askScroll();
 }
-function askScroll(){ const l = document.querySelector(".chat"); if(l){ const last = l.lastElementChild; if(last) last.scrollIntoView({block:"end", behavior:"smooth"}); } }
+function askScroll(){
+  document.querySelectorAll(".chat").forEach(l => {
+    if(l.classList.contains("sheet-chat")){ l.scrollTop = l.scrollHeight; return; }
+    if(l.offsetParent){ const last = l.lastElementChild; if(last) last.scrollIntoView({block:"end", behavior:"smooth"}); }
+  });
+}
 const askEx = t => t.split("\n").filter(l => /^\s*[-•]\s+/.test(l)).map(l => l.replace(/^\s*[-•]\s+/, "").replace(/\*\*/g, "").replace(/\s*\(.*?\)\s*$/, "")).join(". ");
 function askMsgHTML(m){
-  if(m.r === "user") return `<div class="msg me"><div class="msg-body">${esc(m.t)}</div></div>`;
+  if(m.r === "user") return `<div class="msg me">${m.ctx?`<div class="msg-ctx">📎 ${esc(m.ctx.slice(0,70))}${m.ctx.length>70?"...":""}</div>`:""}<div class="msg-body">${esc(m.t)}</div></div>`;
   const live = m.pending;
   return `<div class="msg ai${live?" live":""}${m.err?" err":""}"><div class="msg-tag">💬 Teacher</div><div class="msg-body">${m.t ? mdLite(m.t) : `<span class="typing"><i></i><i></i><i></i></span>`}</div>
     ${!live && !m.err ? `<div class="msg-meta">${m.first?`answered in ${(m.first/1000).toFixed(1)}s`:""}${canSpeak && askEx(m.t)?` <button class="ghost mini" type="button" data-qsay="${esc(askEx(m.t))}">Listen to examples</button>`:""}</div>` : ""}</div>`;
@@ -2756,7 +2784,7 @@ let qWarm = 0;
 function renderAsk(p){
   if(sample && typeof sample.warm === "function" && Date.now() - qWarm > 120000){ qWarm = Date.now(); try{ sample.warm(); }catch(e){} }
   const f = document.activeElement?.id === "qIn", pos = f ? document.activeElement.selectionStart : 0;
-  let h = `<div class="env env-ask"><div class="env-tag">💬 Ask the teacher</div>
+  let h = `${attachHTML()}<div class="env env-ask"><div class="env-tag">💬 Ask the teacher</div>
     <div class="env-title">Any doubt, answered on the spot</div>
     <div class="meta">Pergunte em português ou inglês: gramática, vocabulário, "como eu digo...", dúvidas da aula.</div></div>`;
   if(!qMsgs.length){
@@ -2783,6 +2811,74 @@ $("#panel").addEventListener("click", e => {
   else if(ds.qhist){ qHist = !qHist; render(); }
   else if(ds.qopen){ const c = qConvs.find(x => x.id===ds.qopen); if(c){ qCur = c.id; qMsgs = (c.msgs||[]).map(m => ({...m})); qHist = false; render(); askScroll(); } }
   else if(ds.qsay) speak(ds.qsay);
+  else if(ds.qdetach){ qAttach = ""; render(); }
+});
+
+
+/* ===== Ask anywhere: floating button, chat sheet and "ask about this exercise" ===== */
+let qSheet = false, qAttach = "";
+(function(){
+  const fab = document.createElement("button");
+  fab.id = "askFab"; fab.type = "button"; fab.innerHTML = "💬 Ask"; fab.setAttribute("aria-label", "Ask the teacher");
+  const sh = document.createElement("div"); sh.id = "askSheet"; sh.hidden = true;
+  document.body.appendChild(fab); document.body.appendChild(sh);
+  fab.addEventListener("click", () => openSheet(""));
+})();
+function openSheet(ctxText){
+  if(ctxText) qAttach = ctxText;
+  if(tab === "ask"){ render(); setTimeout(() => $("#qIn")?.focus(), 0); return; }
+  qSheet = true; renderSheet(); setTimeout(() => $("#qIn2")?.focus(), 50);
+}
+function closeSheet(){ qSheet = false; renderSheet(); }
+function attachHTML(){
+  return qAttach ? `<div class="q-attach"><span>📎 About: ${esc(qAttach.slice(0,80))}${qAttach.length>80?"...":""}</span><button type="button" class="iconbtn" data-qdetach="1" aria-label="Remove">✕</button></div>` : "";
+}
+function renderSheet(){
+  const sh = $("#askSheet"), fab = $("#askFab"); if(!sh) return;
+  fab.hidden = qSheet || tab === "ask";
+  sh.hidden = !qSheet; document.body.classList.toggle("sheet-open", qSheet);
+  if(!qSheet){ sh.innerHTML = ""; return; }
+  const f = document.activeElement?.id === "qIn2", pos = f ? document.activeElement.selectionStart : 0;
+  sh.innerHTML = `<div class="sheet-bg" data-qclose="1"></div><div class="sheet" role="dialog" aria-label="Ask the teacher">
+    <div class="sheet-head"><b>💬 Ask the teacher</b><span class="sheet-acts">${qMsgs.length?`<button class="ghost mini" type="button" data-qnew="1">New</button>`:""}<button class="iconbtn" type="button" data-qclose="1" aria-label="Close">✕</button></span></div>
+    <div class="chat sheet-chat">${qMsgs.length ? qMsgs.map(askMsgHTML).join("") : `<div class="meta">Pergunte qualquer dúvida, em português ou inglês. A resposta chega na hora.</div><div class="chips qchips">${Q_CHIPS.slice(0,4).map(c => `<button class="chip" type="button" data-qchip="${esc(c)}">${esc(c)}</button>`).join("")}</div>`}</div>
+    ${attachHTML()}
+    <div class="ask-box"><textarea id="qIn2" rows="2" placeholder="${qAttach?"What's your doubt about this exercise?":"Type your question..."}" aria-label="Your question">${esc(qInput)}</textarea>
+    ${qBusy ? `<button class="ghost" type="button" data-qstop="1">Stop</button>` : `<button class="go" type="button" data-qsend="1" ${sample?"":"disabled"}>Ask</button>`}</div></div>`;
+  const c = sh.querySelector(".sheet-chat"); if(c) c.scrollTop = c.scrollHeight;
+  if(f){ const n = $("#qIn2"); if(n){ n.focus(); n.setSelectionRange(pos,pos); } }
+}
+function decorateAsk(){
+  const p = $("#panel"); if(!p) return;
+  p.querySelectorAll(".exr, .card, .rwcard").forEach(el => {
+    if(el.querySelector(":scope > .ask-this")) return;
+    const b = document.createElement("button"); b.type = "button"; b.className = "ask-this"; b.dataset.askthis = "1";
+    b.setAttribute("aria-label", "Ask about this exercise"); b.textContent = "💬";
+    el.appendChild(b);
+  });
+  const fab = $("#askFab"); if(fab) fab.hidden = qSheet || tab === "ask";
+}
+function cardText(el){
+  const c = el.cloneNode(true); c.querySelectorAll(".ask-this, textarea, .actions, .bank").forEach(x => x.remove());
+  return (c.innerText || c.textContent || "").replace(/[ \t]+/g," ").replace(/\n\s*\n+/g,"\n").trim().slice(0,700);
+}
+document.addEventListener("click", e => {
+  const b = e.target.closest("button, .sheet-bg"); if(!b) return;
+  const ds = b.dataset;
+  if(ds.askthis){ e.stopPropagation(); const card = b.parentElement; openSheet(cardText(card)); return; }
+  if(!b.closest("#askSheet")) return;
+  if(ds.qclose) closeSheet();
+  else if(ds.qdetach){ qAttach = ""; renderSheet(); }
+  else if(ds.qsend) askSend(qInput);
+  else if(ds.qchip) askSend(ds.qchip);
+  else if(ds.qstop) qCtl?.abort();
+  else if(ds.qnew){ qCtl?.abort(); qMsgs = []; qCur = null; qInput = ""; qAttach = ""; renderSheet(); setTimeout(() => $("#qIn2")?.focus(), 0); }
+  else if(ds.qsay) speak(ds.qsay);
+}, true);
+document.addEventListener("input", e => { if(e.target.id === "qIn2") qInput = e.target.value; });
+document.addEventListener("keydown", e => {
+  if(e.target.id === "qIn2" && e.key === "Enter" && !e.shiftKey){ e.preventDefault(); askSend(qInput); }
+  if(e.key === "Escape" && qSheet) closeSheet();
 });
 
 render();
