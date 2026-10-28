@@ -247,6 +247,8 @@ nav.tabs button.t-ask{font-weight:800}
 .ask-box textarea{flex:1;border:1px solid var(--line);border-radius:14px;font-size:1rem;min-height:48px;padding:10px 12px;background:var(--surface);resize:none}
 .ask-box .go,.ask-box .ghost{margin:0}
 .qchips .chip{font-size:.86rem;color:var(--ink);text-align:left}
+.result.live-tr{border-left-color:var(--line)}
+.result.live-tr .big{color:var(--ink)}
 .hub{display:flex;flex-direction:column;gap:14px}
 .env{border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:10px;border:2px solid}
 .env-day{background:var(--day-soft);border-color:var(--day-bg)}
@@ -484,14 +486,16 @@ Responda só com JSON:
 {"from":"pt"|"en"|"outro","to":"en"|"pt","translation":"...","alternatives":["..."],"pronunciation":"...","note":"...","pattern":"...","meaning_pt":"...","example":"...","example_pt":"..."}`;
 }
 
-async function translate(){
+async function translate(auto){
   const text = $("#txt").value.trim();
   if(!text || busy || !sample) return;
-  busy = true; $("#go").disabled = true; status(mode==="fix" ? "Checking..." : "Translating...");
+  if(auto !== true){ clearTimeout(liveT); clearTimeout(fullT); liveCtl?.abort(); }
+  busy = true; $("#go").disabled = true; if(auto !== true) status(mode==="fix" ? "Checking..." : "Translating...");
   ctl = new AbortController();
   try{
     const r = await sample.json(prompt(text), {modelTier:"quick", signal: ctl.signal});
     if(!r || typeof r.translation !== "string") throw {code:"invalid_json"};
+    if($("#txt").value.trim() !== text) return;
     const id = (mode==="fix"?"x":"") + idFor(text), prev = items.find(i => i.id===id);
     const rec = { src:text, out:r.translation, from: mode==="fix" ? "en" : (r.from==="pt"?"pt":"en"), kind: mode,
       pattern: String(r.pattern||""), meaningPt: String(r.meaning_pt||""),
@@ -500,9 +504,14 @@ async function translate(){
       ctx, fav: prev?.fav||false, ts: Date.now() };
     showResult({id, ...rec});
     status("");
+    if(col && lastAuto && lastAuto.id !== id && (text.startsWith(lastAuto.text) || lastAuto.text.startsWith(text)) && !items.find(i => i.id===lastAuto.id)?.fav){
+      const old = lastAuto.id; try{ await col.doc(old).delete(); }catch(e){}
+    }
+    lastAuto = mode==="tr" ? {id, text} : null;
     if(col){ try{ await col.doc(id).set(rec); }catch(e){ status(e.code==="quota_exceeded" ? "Storage is full. Delete some phrases to save new ones." : "Done, but this one couldn't be saved.", true); } }
     else status("Done. Saving isn't available here.");
   }catch(e){
+    if(e?.name==="AbortError" || e?.code==="cancelled"){ status(""); return; }
     const m = {not_granted:"Allow Claude access to translate.", rate_limited:"Too many requests in a row. Wait a moment and try again.",
       invalid_json:"The answer came back incomplete. Tap again.", session_expired:"Your session expired. Sign in to Claude again.",
       refused:"This text couldn't be translated.", cancelled:""};
@@ -555,9 +564,53 @@ document.addEventListener("click", async e => {
   }
 });
 
-$("#go").addEventListener("click", translate);
+$("#go").addEventListener("click", () => translate());
+
+/* ===== Live translation while typing ===== */
+let liveT = null, fullT = null, liveCtl = null, liveSeq = 0, lastAuto = null;
+const liveCache = new Map();
+function livePrompt(t){
+  return `Você é um tradutor instantâneo PT⇄EN de um brasileiro em Malta (situação: ${ctx}). Se o texto estiver em português, traduza para o inglês britânico natural que um nativo falaria. Se estiver em inglês ou em outra língua, traduza para o português do Brasil. O texto pode estar incompleto porque ele ainda está digitando: traduza o que já existe. Responda numa única linha, no formato "EN: tradução" quando a tradução for em inglês, ou "PT: tradução" quando for em português. Nada além disso.
+
+Texto: """${t}"""`;
+}
+function paintLive(text, raw, done){
+  if($("#txt").value.trim() !== text) return;
+  if(current && current.src === text) return;
+  const m = /^\s*(EN|PT)\s*:\s*/i.exec(raw||""), lang = m ? (m[1].toUpperCase()==="EN" ? "English" : "Portuguese") : "";
+  const out = m ? raw.slice(m[0].length).replace(/^["“]|["”]$/g,"") : "";
+  const box = $("#resultBox"); box.hidden = false;
+  box.innerHTML = `<div class="result live-tr"><div class="lang">${lang ? esc(lang) + " · " : ""}live${done ? "" : " ..."}</div>
+    <p class="big">${out ? esc(out) : `<span class="typing"><i></i><i></i><i></i></span>`}</p>
+    <div class="meta">${done ? "Pronunciation and tips in a moment..." : "Translating as you type"}</div></div>`;
+}
+async function liveTranslate(text){
+  if(mode !== "tr" || !sample || typeof sample !== "function") return;
+  if($("#txt").value.trim() !== text) return;
+  const seq = ++liveSeq; liveCtl?.abort();
+  if(liveCache.has(text)){ paintLive(text, liveCache.get(text), true); return; }
+  const c = liveCtl = new AbortController();
+  paintLive(text, "", false);
+  try{
+    const r = await sample(livePrompt(text), {modelTier:"quick", maxTokens:220, signal:c.signal, cache:false, onText: ({text:t}) => { if(seq === liveSeq) paintLive(text, t, false); }});
+    if(seq !== liveSeq) return;
+    const raw = (r && r.text) || "";
+    if(raw){ liveCache.set(text, raw); if(liveCache.size > 200) liveCache.delete(liveCache.keys().next().value); }
+    paintLive(text, raw, true);
+  }catch(e){ /* nova digitação cancelou ou falhou: a tradução completa vem logo depois */ }
+}
+$("#txt").addEventListener("input", () => {
+  clearTimeout(liveT); clearTimeout(fullT);
+  if(mode !== "tr") return;
+  const text = $("#txt").value.trim();
+  if(busy) ctl?.abort();
+  if(text.length < 2){ liveCtl?.abort(); if(!text){ $("#resultBox").hidden = true; current = null; status(""); } return; }
+  if(current && current.src !== text) current = null;
+  liveT = setTimeout(() => liveTranslate(text), 300);
+  fullT = setTimeout(() => { if($("#txt").value.trim() === text && !(current && current.src === text)) translate(true); }, 1500);
+});
 $("#txt").addEventListener("keydown", e => { if(e.key==="Enter" && !e.shiftKey){ e.preventDefault(); translate(); } });
-$("#clear").addEventListener("click", () => { ctl?.abort(); $("#txt").value=""; $("#resultBox").hidden=true; current=null; status(""); $("#txt").focus(); });
+$("#clear").addEventListener("click", () => { ctl?.abort(); liveCtl?.abort(); clearTimeout(liveT); clearTimeout(fullT); lastAuto = null; $("#txt").value=""; $("#resultBox").hidden=true; current=null; status(""); $("#txt").focus(); });
 
 document.querySelector("nav.tabs").addEventListener("click", e => {
   const b = e.target.closest("[data-tab]"); if(!b) return;
