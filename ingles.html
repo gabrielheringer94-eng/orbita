@@ -2816,7 +2816,7 @@ $("#panel").addEventListener("click", e => {
 
 
 /* ===== Ask anywhere: floating button, chat sheet and "ask about this exercise" ===== */
-let qSheet = false, qAttach = "";
+var qSheet = false, qAttach = "";
 (function(){
   const fab = document.createElement("button");
   fab.id = "askFab"; fab.type = "button"; fab.innerHTML = "💬 Ask"; fab.setAttribute("aria-label", "Ask the teacher");
