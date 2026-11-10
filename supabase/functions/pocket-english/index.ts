@@ -33,11 +33,15 @@ Deno.serve(async (req) => {
   if (req.method !== 'POST') return json({ error: 'Method not allowed' }, 405);
   if (!ANTHROPIC_API_KEY) return json({ error: 'ANTHROPIC_API_KEY não configurada na função' }, 500);
 
-  // verify_jwt também aceita a anon key pública, então confere se há usuário logado.
-  // A checagem roda em paralelo com o resto para não atrasar a resposta.
-  const authP = fetch(`${Deno.env.get('SUPABASE_URL')}/auth/v1/user`, {
-    headers: { Authorization: req.headers.get('Authorization') ?? '', apikey: Deno.env.get('SUPABASE_ANON_KEY') ?? '' },
-  }).then((r) => r.ok).catch(() => false);
+  // O gateway (verify_jwt) já validou a assinatura do token; aqui só confere que é um usuário logado
+  // (a chave anônima pública também passa no gateway). Feito localmente, sem chamada de rede.
+  let authed = false;
+  try {
+    const jwt = (req.headers.get('Authorization') ?? '').replace(/^Bearer\s+/i, '');
+    const payload = JSON.parse(atob(jwt.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+    authed = payload.role === 'authenticated' && !!payload.sub && (!payload.exp || payload.exp * 1000 > Date.now());
+  } catch { authed = false; }
+  const authP = Promise.resolve(authed);
   const denied = () => json({ error: 'Faça login para usar o Pocket Phrasebook' }, 401);
 
   let prompt: string, quick: boolean;
