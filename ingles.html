@@ -266,6 +266,31 @@ nav.tabs button.t-ask{font-weight:800}
 .q-attach{display:flex;justify-content:space-between;align-items:center;gap:8px;background:var(--sea-soft);border-radius:10px;padding:6px 10px;font-size:.85rem}
 .msg-ctx{font-size:.75rem;opacity:.75;margin-bottom:4px;white-space:normal}
 body.sheet-open{overflow:hidden}
+.vseg{display:grid;grid-template-columns:1fr 1fr;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:3px;gap:3px}
+.vseg button{border:0;background:none;border-radius:9px;padding:8px;font-weight:700;font-size:.9rem;color:var(--muted);min-height:40px}
+.vseg button[aria-selected="true"]{background:var(--ink);color:var(--bg)}
+.vhead,.vmain{display:grid;grid-template-columns:30px minmax(0,1.25fr) minmax(0,1fr) minmax(0,1fr);gap:8px;align-items:center}
+.vhead{font-size:.68rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:0 10px;position:sticky;top:0;background:var(--bg);z-index:1;padding-top:6px;padding-bottom:6px}
+.vlist{list-style:none;margin:0;padding:0;border:1px solid var(--line);border-radius:16px;overflow:hidden}
+.vrow{border-bottom:1px solid var(--line)}.vrow:last-child{border-bottom:0}
+.vrow.open{background:var(--sea-soft)}
+.vmain{width:100%;border:0;background:none;text-align:left;padding:10px;min-height:52px;color:var(--ink);font-size:1rem}
+.vmain .vc{overflow-wrap:anywhere;line-height:1.25}
+.vinf b{display:block;font-size:1.02rem}.vinf small{display:block;font-size:.74rem;color:var(--muted);margin-top:1px}
+.vk{display:inline-flex;align-items:center;justify-content:center;min-width:26px;height:22px;border-radius:7px;font-size:.68rem;font-weight:800;padding:0 4px;border:1px solid var(--line)}
+.vk-same{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.vk-two{background:var(--sea-soft);color:var(--ink)}
+.vk-diff{background:var(--bg);color:var(--ink);border-style:dashed}
+.vdet{padding:0 10px 12px 48px;display:flex;flex-direction:column;gap:6px;font-size:.9rem}
+.vipa b{font-family:var(--mono)}.vgtag{color:var(--muted)}.vgtag b{color:var(--ink)}
+.vgrp{border:1px solid var(--line);border-radius:18px;padding:14px;display:flex;flex-direction:column;gap:10px;scroll-margin-top:12px;transition:box-shadow .3s}
+.vgrp.flash{box-shadow:0 0 0 3px var(--ink)}
+.vgrp-h{display:flex;gap:12px;align-items:center}
+.vgn{width:32px;height:32px;border-radius:10px;background:var(--ink);color:var(--bg);display:flex;align-items:center;justify-content:center;font-weight:800;flex:none}
+.vset{border:1px solid var(--line);border-radius:12px;padding:6px 12px;background:var(--surface)}
+.vline{display:grid;grid-template-columns:minmax(0,1fr) 18px minmax(0,1fr) minmax(0,1fr);gap:6px;padding:5px 0;font-size:.98rem;align-items:baseline}
+.vline .varr{color:var(--muted);text-align:center}.vline .vpp{font-weight:800}
+.vset .vline:not(:has(.vpp)){grid-template-columns:minmax(0,1fr) 18px minmax(0,2fr)}
 .hub{display:flex;flex-direction:column;gap:14px}
 .env{border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:10px;border:2px solid}
 .env-day{background:var(--day-soft);border-color:var(--day-bg)}
@@ -385,6 +410,7 @@ body{padding:4px 0 32px!important}
     <button role="tab" id="t-read" class="t-day" aria-selected="false" data-tab="read">Read</button>
     <button role="tab" id="t-speak" class="t-day" aria-selected="false" data-tab="speak">Speak</button>
     <button role="tab" id="t-tobe" class="t-day" aria-selected="false" data-tab="tobe">To be</button>
+    <button role="tab" id="t-verbs" class="t-cls" aria-selected="false" data-tab="verbs">Verbs</button>
     <button role="tab" id="t-rec" aria-selected="false" data-tab="rec">Recent</button>
     <button role="tab" id="t-all" aria-selected="false" data-tab="all">Phrases<span class="count" id="cnt"></span></button>
     <button role="tab" id="t-rev" aria-selected="false" data-tab="rev">Review</button>
@@ -686,6 +712,7 @@ function renderCore(){
   if(tab==="speak") renderSpeak(p);
   if(tab==="home") renderHome(p);
   if(tab==="ask") renderAsk(p);
+  if(tab==="verbs") renderVerbs(p);
   if(tab==="class") renderClass(p);
 }
 
@@ -2623,6 +2650,7 @@ function renderClass(p){
   let h = `<div class="env env-cls"><div class="env-tag">🎓 In class · exchange</div>
       <div class="env-title">Unit ${UNIT.n} · ${esc(UNIT.title)}</div>
       <div class="meta">${fmtD(UNIT.from,{day:"numeric",month:"short"})} to ${fmtD(UNIT.to,{day:"numeric",month:"short"})}</div>
+      <div class="actions"><button class="ghost" type="button" data-hgo="verbs">📖 Irregular verbs ›</button></div>
       <ul class="obj">${["Talk about attitudes to money and about spending money","Talk about philanthropy and charities","Discuss your skills and how they could help others","Go shopping for clothes and ask for a refund","Write a 'for sale' advert"].map(o => `<li>${esc(o)}</li>`).join("")}</ul></div>
     <div class="section-title">Class diary</div>
     <ul class="cls-list">${cl.map(c => { const pr = clsProgress(c);
@@ -2880,6 +2908,103 @@ document.addEventListener("input", e => { if(e.target.id === "qIn2") qInput = e.
 document.addEventListener("keydown", e => {
   if(e.target.id === "qIn2" && e.key === "Enter" && !e.shiftKey){ e.preventDefault(); askSend(qInput); }
   if(e.key === "Escape" && qSheet) closeSheet();
+});
+
+
+/* ===== Irregular verbs: reference (from the class book, Appendix) ===== */
+const VERBS = [
+["be","was/were","been","ser, estar"],["beat","beat","beaten","bater, vencer"],["become","became","become","tornar-se"],["begin","began","begun","começar"],
+["bend","bent","bent","dobrar, curvar"],["bet","bet","bet","apostar"],["bite","bit","bitten","morder"],["blow","blew","blown","soprar"],
+["break","broke","broken","quebrar"],["bring","brought","brought","trazer","/brɔːt/"],["build","built","built","construir","/bɪld/ /bɪlt/"],["burn","burnt/burned","burnt/burned","queimar"],
+["burst","burst","burst","estourar"],["buy","bought","bought","comprar","/baɪ/ /bɔːt/"],["can","could","(been able)","poder, conseguir","/kʊd/"],["catch","caught","caught","pegar, apanhar","/kɔːt/"],
+["choose","chose","chosen","escolher"],["come","came","come","vir"],["cost","cost","cost","custar"],["cut","cut","cut","cortar"],
+["deal","dealt","dealt","lidar, negociar","/diːl/ /delt/"],["dig","dug","dug","cavar"],["do","did","done","fazer"],["draw","drew","drawn","desenhar"],
+["dream","dreamt/dreamed","dreamt/dreamed","sonhar","/dremt/"],["drink","drank","drunk","beber"],["drive","drove","driven","dirigir"],["eat","ate","eaten","comer"],
+["fall","fell","fallen","cair"],["feed","fed","fed","alimentar"],["feel","felt","felt","sentir"],["fight","fought","fought","lutar, brigar","/fɔːt/"],
+["find","found","found","encontrar"],["fly","flew","flown","voar"],["forget","forgot","forgotten","esquecer"],["forgive","forgave","forgiven","perdoar"],
+["freeze","froze","frozen","congelar"],["get","got","got","conseguir, pegar, ficar"],["give","gave","given","dar"],["go","went","gone/been","ir"],
+["grow","grew","grown","crescer"],["hang","hung/hanged","hung/hanged","pendurar"],["have","had","had","ter"],["hear","heard","heard","ouvir","/hɜːd/"],
+["hide","hid","hidden","esconder"],["hit","hit","hit","bater, atingir"],["hold","held","held","segurar"],["hurt","hurt","hurt","machucar, doer","/hɜːt/"],
+["keep","kept","kept","manter, guardar"],["kneel","knelt/kneeled","knelt/kneeled","ajoelhar"],["know","knew","known","saber, conhecer","/njuː/"],["lay","laid","laid","colocar, deitar algo"],
+["lead","led","led","liderar, conduzir"],["learn","learnt","learnt","aprender"],["leave","left","left","sair, deixar"],["lend","lent","lent","emprestar (para alguém)"],
+["let","let","let","deixar, permitir"],["lie","lay/lied","lied/lain","deitar-se / mentir"],["light","lit/lighted","lit/lighted","acender"],["lose","lost","lost","perder"],
+["make","made","made","fazer, fabricar"],["mean","meant","meant","significar, querer dizer","/ment/"],["meet","met","met","encontrar, conhecer"],["must","had to","(had to)","dever, ter que"],
+["pay","paid","paid","pagar"],["put","put","put","colocar"],["read","read","read","ler","/red/ no passado"],["ride","rode","ridden","andar (de bike, cavalo)"],
+["ring","rang","rung","tocar (campainha), ligar"],["rise","rose","risen","subir, levantar-se"],["run","ran","run","correr"],["say","said","said","dizer","/sed/"],
+["see","saw","seen","ver","/sɔː/"],["sell","sold","sold","vender"],["send","sent","sent","enviar"],["set","set","set","definir, pôr"],
+["shake","shook","shaken","sacudir"],["shine","shone","shone","brilhar"],["shoot","shot","shot","atirar, filmar"],["show","showed","shown","mostrar"],
+["shrink","shrank","shrunk","encolher"],["shut","shut","shut","fechar"],["sing","sang","sung","cantar"],["sink","sank","sunk","afundar"],
+["sit","sat","sat","sentar"],["sleep","slept","slept","dormir"],["slide","slid","slid","deslizar"],["smell","smelt/smelled","smelt/smelled","cheirar"],
+["speak","spoke","spoken","falar"],["spell","spelt/spelled","spelt/spelled","soletrar"],["spend","spent","spent","gastar, passar (tempo)"],["spill","spilt/spilled","spilt/spilled","derramar"],
+["split","split","split","dividir"],["spoil","spoilt/spoiled","spoilt/spoiled","estragar, mimar"],["spread","spread","spread","espalhar"],["stand","stood","stood","ficar de pé"],
+["steal","stole","stolen","roubar"],["stick","stuck","stuck","grudar, colar"],["swear","swore","sworn","jurar, xingar"],["swell","swelled","swollen/swelled","inchar"],
+["swim","swam","swum","nadar"],["take","took","taken","pegar, levar","/tʊk/"],["teach","taught","taught","ensinar","/tɔːt/"],["tear","tore","torn","rasgar"],
+["tell","told","told","contar, dizer (a alguém)"],["think","thought","thought","pensar, achar","/θɔːt/"],["throw","threw","thrown","jogar, arremessar"],["understand","understood","understood","entender"],
+["wake","woke","woken","acordar"],["wear","wore","worn","vestir, usar (roupa)","/wɔː/"],["win","won","won","ganhar, vencer","/wʌn/"],["write","wrote","written","escrever"],
+];
+const VGROUPS = [
+ {same:true, n:1, title:"Tudo igual", rule:"As três formas são iguais.", memo:"Verbos curtos terminados em -t: não mudam nada.", sets:[["cost","cut","hit","hurt"],["let","put","shut"]]},
+ {same:true, n:2, title:"Viram -t", rule:"Passado e particípio terminam em -t.", memo:"-d vira -t (lend → lent). Vogal longa encurta: keep → kept, feel → felt.", sets:[["lend","send","spend","build"],["lose","shoot","get","light","sit"],["burn","learn","smell"],["keep","sleep"],["feel","leave","meet","dream","mean"]]},
+ {same:true, n:3, title:"-ought / -aught", rule:"Todos terminam com o mesmo som: /ɔːt/.", memo:"Brought, bought, fought, thought, caught, taught: rimam entre si (\"ót\").", sets:[["bring","buy","fight","think"],["catch","teach"]]},
+ {same:true, n:4, title:"Outros com 2ª = 3ª", rule:"Passado e particípio iguais, cada um com sua forma.", memo:"Read se escreve igual, mas no passado soa \"réd\". Said soa \"séd\".", sets:[["sell","tell"],["find","have","hear","hold","read","say"],["pay","make"],["stand","understand"]]},
+ {same:false, n:1, title:"o + en", rule:"Passado com o; particípio com o + en.", memo:"break → broke → broken: o particípio é o passado + n.", sets:[["break","choose","speak","steal","wake"]]},
+ {same:false, n:2, title:"i → o → i+en", rule:"O particípio volta à vogal do infinitivo e ganha -en.", memo:"write → wrote → written; beat, bite e hide seguem a mesma ideia.", sets:[["drive","ride","rise","write"],["beat","bite","hide"]]},
+ {same:false, n:3, title:"infinitivo + en", rule:"O particípio é quase o infinitivo + n/en.", memo:"eat → eaten, give → given, take → taken.", sets:[["eat","fall","forget","give","see","take"]]},
+ {same:false, n:4, title:"-ew → -own", rule:"Passado em -ew; particípio em -own.", memo:"blow, grow, know, throw, fly, draw: blew/blown. Show é a exceção: showed/shown.", sets:[["blow","grow","know","throw","fly","draw","show"]]},
+ {same:false, n:5, title:"i → a → u", rule:"A vogal muda em sequência: i, a, u.", memo:"begin → began → begun, sing → sang → sung. Run: ran → run.", sets:[["begin","drink","swim"],["ring","sing"],["run"]]},
+ {same:false, n:6, title:"Volta ao infinitivo", rule:"O particípio é igual ao infinitivo.", memo:"come → came → come; become → became → become.", sets:[["come","become"]]},
+];
+const vMap = Object.fromEntries(VERBS.map(v => [v[0], v]));
+const vKind = v => { const a = v[0], b = v[1].split("/")[0], c = v[2].split("/")[0]; return a === b && b === c ? "same" : b === c ? "two" : "diff"; };
+const VKIND = {same:["=","Tudo igual"], two:["2=3","Passado = particípio"], diff:["≠","Todas diferentes"]};
+let vQ = "", vMode = "az", vOpen = null, vKindF = "";
+const vNorm = s => String(s).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"");
+function vGroupOf(inf){ for(const g of VGROUPS) if(g.sets.some(s => s.includes(inf))) return g; return null; }
+function vRow(v){
+  const k = vKind(v), open = vOpen === v[0], g = vGroupOf(v[0]);
+  return `<li class="vrow${open?" open":""}"><button type="button" class="vmain" data-vopen="${esc(v[0])}" aria-expanded="${open}">
+      <span class="vk vk-${k}" title="${esc(VKIND[k][1])}">${VKIND[k][0]}</span>
+      <span class="vc vinf"><b>${esc(v[0])}</b><small>${esc(v[3])}</small></span>
+      <span class="vc">${esc(v[1])}</span><span class="vc">${esc(v[2])}</span></button>
+    ${open?`<div class="vdet">
+      ${v[4]?`<div class="vipa">Pronúncia: <b>${esc(v[4])}</b></div>`:""}
+      ${g?`<div class="vgtag">Padrão: <b>${esc(g.title)}</b> · ${esc(g.rule)}</div>`:""}
+      <div class="actions">${canSpeak?`<button class="ghost mini" type="button" data-vsay="${esc(v[0]+". "+v[1].replace("/", " or ")+". "+v[2].replace("/"," or ").replace(/[()]/g,""))}">▶ Ouvir as 3 formas</button>`:""}
+      ${g?`<button class="ghost mini" type="button" data-vgroup="${g.same?"s":"d"}${g.n}">Ver grupo</button>`:""}</div></div>`:""}</li>`;
+}
+function renderVerbs(p){
+  const f = document.activeElement?.id === "vSearch", pos = f ? document.activeElement.selectionStart : 0;
+  const q = vNorm(vQ.trim());
+  let list = VERBS.filter(v => !q || v.slice(0,4).some(x => vNorm(x).includes(q)));
+  if(vKindF) list = list.filter(v => vKind(v) === vKindF);
+  const cnt = k => VERBS.filter(v => vKind(v) === k).length;
+  let h = `<div class="env env-cls"><div class="env-tag">📖 Reference · class book</div>
+      <div class="env-title">Irregular verbs</div>
+      <div class="meta">${VERBS.length} verbos: infinitivo, passado e particípio. Toque num verbo para ouvir.</div>
+      <input class="search" id="vSearch" type="search" placeholder="Buscar: bought, comprar..." value="${esc(vQ)}" aria-label="Buscar verbo" autocomplete="off" autocapitalize="none" spellcheck="false">
+      <div class="vseg" role="tablist"><button type="button" role="tab" data-vmode="az" aria-selected="${vMode==="az"}">A–Z</button><button type="button" role="tab" data-vmode="groups" aria-selected="${vMode==="groups"}">Por padrão</button></div></div>`;
+  if(vMode === "az"){
+    h += `<div class="chips">${["same","two","diff"].map(k => `<button class="chip" type="button" data-vkind="${k}" aria-pressed="${vKindF===k}"><span class="vk vk-${k}">${VKIND[k][0]}</span> ${VKIND[k][1]} · ${cnt(k)}</button>`).join("")}</div>
+      <div class="vhead"><span></span><span>Infinitive</span><span>Past simple</span><span>Past participle</span></div>
+      ${list.length ? `<ul class="vlist">${list.map(vRow).join("")}</ul>` : `<div class="empty"><strong>Nenhum verbo encontrado</strong>Tente outra palavra, em inglês ou em português.</div>`}`;
+  } else {
+    h += ["same","diff"].map(kind => `<div class="section-title">${kind==="same"?"Passado e particípio iguais":"Passado e particípio diferentes"}</div>
+      ${VGROUPS.filter(g => g.same === (kind==="same")).map(g => `<section class="vgrp" id="vg-${kind==="same"?"s":"d"}${g.n}">
+        <div class="vgrp-h"><span class="vgn">${g.n}</span><div><b>${esc(g.title)}</b><div class="meta">${esc(g.rule)}</div></div></div>
+        ${g.sets.map(s => `<div class="vset">${s.map(inf => { const v = vMap[inf]; return v ? `<div class="vline"><span>${esc(v[0])}</span><span class="varr">→</span><b>${esc(v[1])}</b>${g.same?"":`<b class="vpp">${esc(v[2])}</b>`}</div>` : ""; }).join("")}</div>`).join("")}
+        <div class="memo"><span class="lang">Para gravar</span>${esc(g.memo)}</div></section>`).join("")}`).join("");
+  }
+  p.innerHTML = `<div style="display:flex;flex-direction:column;gap:12px">${h}</div>`;
+  if(f){ const n = $("#vSearch"); if(n){ n.focus(); n.setSelectionRange(pos,pos); } }
+}
+$("#panel").addEventListener("input", e => { if(e.target.id === "vSearch"){ vQ = e.target.value; vOpen = null; render(); } });
+$("#panel").addEventListener("click", e => {
+  const b = e.target.closest("button"); if(!b) return; const ds = b.dataset;
+  if(ds.vopen){ vOpen = vOpen === ds.vopen ? null : ds.vopen; render(); }
+  else if(ds.vmode){ vMode = ds.vmode; render(); }
+  else if(ds.vkind){ vKindF = vKindF === ds.vkind ? "" : ds.vkind; render(); }
+  else if(ds.vsay) speak(ds.vsay);
+  else if(ds.vgroup){ vMode = "groups"; render(); setTimeout(() => { const el = document.getElementById("vg-" + ds.vgroup); if(el){ el.scrollIntoView({block:"start", behavior:"smooth"}); el.classList.add("flash"); setTimeout(() => el.classList.remove("flash"), 1200); } }, 30); }
 });
 
 render();
