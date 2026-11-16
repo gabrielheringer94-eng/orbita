@@ -4928,8 +4928,8 @@
         <div class="voice-status" id="voice-status">Ouvindo…</div>
         <button class="voice-mic" id="voice-mic" aria-label="Microfone"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10v1a7 7 0 0014 0v-1"/><line x1="12" y1="18" x2="12" y2="22"/></svg></button>
         <div class="voice-transcript" id="voice-transcript"></div>
-        <textarea class="input voice-text" id="voice-text" placeholder="Fale ou digite: ligar pro contador amanhã e mandar a proposta sexta, urgente" style="display:none"></textarea>
-        <div class="voice-hint" id="voice-hint">Pode ditar várias tarefas de uma vez, com data, prioridade e projeto.</div>
+        <textarea class="input voice-text" id="voice-text" placeholder="Ex.: ligar para o contador" style="display:none"></textarea>
+        <div class="voice-hint" id="voice-hint">Fale a tarefa. Ela entra na lista do jeito que você falou.</div>
         <div id="voice-result"></div>
         <div class="voice-actions" id="voice-actions"></div>
       </div>
@@ -7349,14 +7349,14 @@ function addTask() {
     resultEl.innerHTML = ''; transcriptEl.innerHTML = ''; textEl.value = '';
     hintEl.style.display = '';
     hintEl.textContent = opts.defaultToday
-      ? 'Pode passar várias tarefas de uma vez. Sem data, entram para hoje.'
-      : 'Pode ditar várias tarefas de uma vez, com data, prioridade e projeto.';
+      ? 'Escreva a tarefa. Ela entra na sua lista de hoje.'
+      : 'Fale a tarefa. Ela entra na lista do jeito que você falou.';
     overlay.classList.add('open');
     if (opts.mode === 'text') {
       textEl.style.display = ''; transcriptEl.style.display = 'none';
       statusEl.textContent = 'Escreva suas tarefas';
       micEl.classList.remove('listening');
-      setActions('<button class="btn" id="voice-send">Criar tarefas</button><button class="btn btn-ghost" id="voice-cancel">Cancelar</button>');
+      setActions('<button class="btn" id="voice-send">Adicionar</button><button class="btn btn-ghost" id="voice-cancel">Cancelar</button>');
       bindCommon();
       setTimeout(() => textEl.focus(), 50);
     } else if (SR) {
@@ -7366,7 +7366,7 @@ function addTask() {
       textEl.style.display = ''; transcriptEl.style.display = 'none';
       statusEl.textContent = 'Use o microfone do teclado';
       micEl.classList.remove('listening');
-      setActions('<button class="btn" id="voice-send">Criar tarefas</button><button class="btn btn-ghost" id="voice-cancel">Cancelar</button>');
+      setActions('<button class="btn" id="voice-send">Adicionar</button><button class="btn btn-ghost" id="voice-cancel">Cancelar</button>');
       bindCommon();
       setTimeout(() => textEl.focus(), 50);
     }
@@ -7423,7 +7423,7 @@ function addTask() {
         else {
           if (textEl.style.display === 'none') statusEl.textContent = 'Toque no microfone para falar';
           setActions('<button class="btn btn-ghost" id="voice-cancel">Fechar</button>' +
-            (textEl.style.display === '' ? '<button class="btn" id="voice-send">Criar tarefas</button>' : ''));
+            (textEl.style.display === '' ? '<button class="btn" id="voice-send">Adicionar</button>' : ''));
           bindCommon();
         }
       };
@@ -7433,8 +7433,8 @@ function addTask() {
       statusEl.textContent = 'Ouvindo…';
       hintEl.style.display = '';
       hintEl.textContent = opts.defaultToday
-        ? 'Pode ditar várias tarefas de uma vez. Sem data, entram para hoje.'
-        : 'Pode ditar várias tarefas de uma vez, com data, prioridade e projeto.';
+        ? 'Fale a tarefa. Ela entra na sua lista de hoje do jeito que você falou.'
+        : 'Fale a tarefa. Ela entra na lista do jeito que você falou.';
       setActions('<button class="btn" id="voice-send">Pronto</button><button class="btn btn-ghost" id="voice-cancel">Cancelar</button>');
       bindCommon();
     } catch (err) {
@@ -7455,20 +7455,18 @@ function addTask() {
     stopListening(true);
     micEl.classList.remove('listening');
     micEl.classList.add('busy');
-    statusEl.textContent = 'Criando tarefas…';
+    statusEl.textContent = 'Adicionando…';
     hintEl.style.display = 'none';
     setActions('');
     if (SR && transcriptEl.style.display !== 'none') { finalText = text; interimText = ''; renderTranscript(); }
 
     try {
-      const projects = [...new Set((state.tasks || []).map(t => t.project).filter(Boolean))];
-      const { data, error } = await sb.functions.invoke('voice-tasks', {
-        body: { text, today: localToday(), projects },
-      });
-      if (error) throw new Error(error.message || 'Falha ao chamar voice-tasks');
-      if (data?.error) throw new Error(data.error);
-      const tasks = data?.tasks || [];
-      if (!tasks.length) throw new Error('Não identifiquei nenhuma tarefa nessa fala.');
+      // O que foi dito vira a tarefa, sem a IA reinterpretar: só ajusta espaços,
+      // primeira letra maiúscula e tira o ponto final.
+      let title = text.replace(/\s+/g, ' ').trim().replace(/[.。]+$/, '');
+      title = title.charAt(0).toUpperCase() + title.slice(1);
+      if (!title) throw new Error('Não ouvi nada. Tente de novo.');
+      const tasks = [{ title, date: null, priority: 'med', project: null }];
 
       lastCreatedIds = [];
       for (const t of tasks) {
@@ -7480,7 +7478,7 @@ function addTask() {
       saveState();
       refreshViews();
 
-      statusEl.textContent = tasks.length === 1 ? '1 tarefa criada' : `${tasks.length} tarefas criadas`;
+      statusEl.textContent = 'Tarefa adicionada';
       resultEl.innerHTML = '<div class="voice-result">' + tasks.map(t => {
         const meta = [t.date ? formatTaskDate(t.date) : 'sem data', 'prioridade ' + labelPriority(t.priority).toLowerCase(), t.project].filter(Boolean).join(' · ');
         return `<div class="voice-result-item"><strong>${escapeHTML(t.title)}</strong><div class="voice-result-meta">${escapeHTML(meta)}</div></div>`;
