@@ -6626,7 +6626,7 @@ function renderDashboard() {
   let saudacao = 'dia';
   if (hour >= 12 && hour < 18) saudacao = 'tarde';
   else if (hour >= 18 || hour < 5) saudacao = 'noite';
-  document.getElementById('greeting').innerHTML = `Boa <em>${saudacao}</em>.`;
+  document.getElementById('greeting').innerHTML = `${saudacao === 'dia' ? 'Bom' : 'Boa'} <em>${saudacao}</em>.`;
   document.getElementById('today-date').textContent =
     now.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' }).toUpperCase();
 
@@ -7324,6 +7324,7 @@ function addTask() {
 
   let rec = null, finalText = '', interimText = '', listening = false, busy = false;
   let silenceTimer = null, closeTimer = null, lastCreatedIds = [];
+  let opts = { mode: 'voice', defaultToday: false };
   const SILENCE_MS = 2500;
 
   const localToday = () => {
@@ -7332,18 +7333,33 @@ function addTask() {
   };
 
   function setActions(html) { actionsEl.innerHTML = html; }
+  function refreshViews() {
+    try { renderTasks(); } catch (e) { console.error(e); }
+    try { if (document.getElementById('page-dashboard')?.classList.contains('active')) window.renderDashboard(); } catch (e) { console.error(e); }
+  }
 
   function renderTranscript() {
     transcriptEl.innerHTML = escapeHTML(finalText) + (interimText ? ` <span class="interim">${escapeHTML(interimText)}</span>` : '');
   }
 
-  function open() {
+  function open(o) {
+    if (o && typeof o === 'object' && !(o instanceof Event)) opts = { mode: o.mode || 'voice', defaultToday: !!o.defaultToday };
     clearTimeout(closeTimer);
     finalText = ''; interimText = ''; lastCreatedIds = []; busy = false;
     resultEl.innerHTML = ''; transcriptEl.innerHTML = ''; textEl.value = '';
     hintEl.style.display = '';
+    hintEl.textContent = opts.defaultToday
+      ? 'Pode passar várias tarefas de uma vez. Sem data, entram para hoje.'
+      : 'Pode ditar várias tarefas de uma vez, com data, prioridade e projeto.';
     overlay.classList.add('open');
-    if (SR) {
+    if (opts.mode === 'text') {
+      textEl.style.display = ''; transcriptEl.style.display = 'none';
+      statusEl.textContent = 'Escreva suas tarefas';
+      micEl.classList.remove('listening');
+      setActions('<button class="btn" id="voice-send">Criar tarefas</button><button class="btn btn-ghost" id="voice-cancel">Cancelar</button>');
+      bindCommon();
+      setTimeout(() => textEl.focus(), 50);
+    } else if (SR) {
       textEl.style.display = 'none'; transcriptEl.style.display = '';
       startListening();
     } else {
@@ -7415,7 +7431,10 @@ function addTask() {
       listening = true;
       micEl.classList.add('listening');
       statusEl.textContent = 'Ouvindo…';
-      hintEl.textContent = 'Pode ditar várias tarefas de uma vez, com data, prioridade e projeto.';
+      hintEl.style.display = '';
+      hintEl.textContent = opts.defaultToday
+        ? 'Pode ditar várias tarefas de uma vez. Sem data, entram para hoje.'
+        : 'Pode ditar várias tarefas de uma vez, com data, prioridade e projeto.';
       setActions('<button class="btn" id="voice-send">Pronto</button><button class="btn btn-ghost" id="voice-cancel">Cancelar</button>');
       bindCommon();
     } catch (err) {
@@ -7455,10 +7474,11 @@ function addTask() {
       for (const t of tasks) {
         const id = uid();
         lastCreatedIds.push(id);
+        if (!t.date && opts.defaultToday) t.date = localToday();
         state.tasks.push({ id, text: t.title, priority: t.priority || 'med', project: t.project || null, date: t.date || null, done: false });
       }
       saveState();
-      renderTasks();
+      refreshViews();
 
       statusEl.textContent = tasks.length === 1 ? '1 tarefa criada' : `${tasks.length} tarefas criadas`;
       resultEl.innerHTML = '<div class="voice-result">' + tasks.map(t => {
@@ -7473,7 +7493,7 @@ function addTask() {
         state.tasks = state.tasks.filter(t => !ids.has(t.id));
         lastCreatedIds = [];
         saveState();
-        renderTasks();
+        refreshViews();
         close();
       };
       closeTimer = setTimeout(close, 6000);
@@ -7496,11 +7516,16 @@ function addTask() {
   overlay.addEventListener('click', (e) => { if (e.target === overlay && !busy) close(); });
   micEl.onclick = () => {
     if (busy || !SR) return;
+    opts.mode = 'voice';
     if (listening) stopListening(false);
     else { finalText = ''; interimText = ''; renderTranscript(); resultEl.innerHTML = ''; textEl.style.display = 'none'; transcriptEl.style.display = ''; startListening(); }
   };
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && overlay.classList.contains('open') && !busy) close(); });
-  document.getElementById('voice-task-btn').onclick = open;
+  textEl.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); const b = document.getElementById('voice-send'); if (b) b.click(); }
+  });
+  document.getElementById('voice-task-btn').onclick = () => open({ mode: 'voice', defaultToday: false });
+  window.orbitaVoice = { open };
 })();
 
 document.querySelectorAll('[data-filter]').forEach(b => {
@@ -17307,6 +17332,23 @@ initAuth();
   .o-fab:active { transform: scale(.92); }
   .o-fab svg { width: 26px; height: 26px; }
   .o-fab[hidden] { display: none; }
+
+  /* Página inicial: microfone (principal) + escrever */
+  .o-voice-fab {
+    position: fixed; right: max(20px, env(safe-area-inset-right, 0px)); bottom: 24px; z-index: 1940;
+    display: flex; flex-direction: column; align-items: center; gap: 12px;
+  }
+  .o-voice-fab[hidden] { display: none; }
+  .o-voice-fab button {
+    border: 0; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center;
+    -webkit-tap-highlight-color: transparent; transition: transform .15s ease;
+  }
+  .o-voice-fab button:active { transform: scale(.92); }
+  .o-voice-mic { width: 68px; height: 68px; background: var(--ink); color: var(--bg); box-shadow: 0 8px 24px rgba(0,0,0,.25); }
+  .o-voice-mic svg { width: 30px; height: 30px; }
+  .o-voice-write { width: 46px; height: 46px; background: var(--bg-elevated); color: var(--ink); border: 1px solid var(--line) !important; box-shadow: 0 4px 14px rgba(0,0,0,.14); }
+  .o-voice-write svg { width: 20px; height: 20px; }
+  @media (max-width: 900px) { .o-voice-fab { bottom: calc(80px + env(safe-area-inset-bottom, 0px)); right: 16px; } }
   @media (max-width: 900px) { .o-fab { bottom: calc(80px + env(safe-area-inset-bottom, 0px)); right: 16px; } }
 
   /* Folha que sobe de baixo (Mais, Personalizar, Adicionar) */
@@ -17395,11 +17437,15 @@ initAuth();
   .o-stop-meta { font-size: 12.5px; color: var(--ink-faint); margin-top: 2px; }
   .o-link { appearance: none; border: 0; background: none; color: var(--ink); font: 700 13px 'DM Sans', sans-serif; padding: 6px 0; cursor: pointer; align-self: flex-start; text-decoration: underline; text-underline-offset: 3px; }
   .o-empty { font-size: 13.5px; color: var(--ink-faint); }
-  body:not(.o-ready) .o-tabbar, body:not(.o-ready) .o-fab { display: none !important; }
+  body:not(.o-ready) .o-tabbar, body:not(.o-ready) .o-fab, body:not(.o-ready) .o-voice-fab { display: none !important; }
   .nav-item[data-o-hidden="1"], .nav-section[data-o-hidden="1"] { display: none !important; }
 </style>
 
 <nav class="o-tabbar" id="o-tabbar" aria-label="Navegação principal"></nav>
+<div class="o-voice-fab" id="o-voice-fab" hidden>
+  <button type="button" class="o-voice-write" id="o-voice-write" aria-label="Escrever tarefas" title="Escrever tarefas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4 12.5-12.5z"/></svg></button>
+  <button type="button" class="o-voice-mic" id="o-voice-mic" aria-label="Falar tarefas" title="Falar tarefas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10v1a7 7 0 0014 0v-1"/><line x1="12" y1="18" x2="12" y2="22"/></svg></button>
+</div>
 <button class="o-fab" id="o-fab" type="button" aria-label="Adicionar rapidamente" title="Adicionar (tarefa, evento, compra...)">
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
 </button>
@@ -17468,7 +17514,10 @@ initAuth();
       + `<button type="button" class="o-tab" data-omore="1" ${inTabs ? '' : 'aria-current="page"'}>${MORE_ICON}<span>Mais</span></button>`;
     $('#o-tabbar').style.gridTemplateColumns = `repeat(${items.length + 1}, 1fr)`;
     // O Inglês já tem os próprios atalhos (tradutor e Ask)
-    $('#o-fab').hidden = page === 'ingles' || !document.querySelector('.app') || getComputedStyle(document.querySelector('.app')).display === 'none';
+    const appHidden = !document.querySelector('.app') || getComputedStyle(document.querySelector('.app')).display === 'none';
+    // Na página inicial o + dá lugar ao microfone (principal) e ao botão de escrever
+    $('#o-fab').hidden = page === 'ingles' || page === 'dashboard' || appHidden;
+    $('#o-voice-fab').hidden = page !== 'dashboard' || appHidden;
   }
 
   // ---------- Folhas ----------
@@ -17589,7 +17638,7 @@ initAuth();
       const total = list.length + doneToday;
       cards.push(`<section class="o-tcard" aria-label="Tarefas de hoje"><div class="o-tcard-h"><b>✓ Tarefas de hoje</b><span class="o-count${total && !list.length ? ' full' : ''}">${doneToday}/${total}</span></div>
         ${list.length ? `<ul class="o-steps">${list.slice(0, 6).map(t => `<li><button type="button" class="o-step" data-otask="${esc(t.id)}"><span class="o-dot"></span><span class="o-name">${esc(t.text)}</span><span class="o-go">${t.date < today ? 'atrasada' : 'hoje'}</span></button></li>`).join('')}</ul>${list.length > 6 ? `<button type="button" class="o-link" data-ogo="tasks">Ver mais ${list.length - 6}</button>` : ''}`
-          : `<div class="o-empty">${doneToday ? 'Tudo feito por hoje.' : 'Nada marcado para hoje.'} Toque no + para adicionar.</div>`}</section>`);
+          : `<div class="o-empty">${doneToday ? 'Tudo feito por hoje.' : 'Nada marcado para hoje.'} Toque no microfone para adicionar.</div>`}</section>`);
     }
     if (!hidden.includes('ingles')) {
       const st = englishToday(), done = st.filter(s => s.st === 'done').length, sym = { done: '✓', part: '◐', todo: '' };
@@ -17655,6 +17704,8 @@ initAuth();
   });
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && sheet) closeSheet(); });
   $('#o-fab').addEventListener('click', () => openSheet('add'));
+  $('#o-voice-mic').addEventListener('click', () => window.orbitaVoice && window.orbitaVoice.open({ mode: 'voice', defaultToday: true }));
+  $('#o-voice-write').addEventListener('click', () => window.orbitaVoice && window.orbitaVoice.open({ mode: 'text', defaultToday: true }));
 
   // Estado novo (outro aparelho, sincronização): reaplica
   applyTheme();
