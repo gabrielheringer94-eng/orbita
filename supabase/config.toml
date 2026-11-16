@@ -14,3 +14,6 @@ verify_jwt = true
 
 [functions.pocket-english]
 verify_jwt = true
+
+[functions.voice-tasks]
+verify_jwt = true

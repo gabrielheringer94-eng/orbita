@@ -1038,6 +1038,28 @@
     display: block;
   }
 
+  /* VOICE TASKS */
+  .voice-btn { display:inline-flex; align-items:center; gap:8px; }
+  .voice-btn svg { flex:0 0 auto; }
+  .voice-overlay { position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,0.55); display:none; align-items:flex-end; justify-content:center; }
+  .voice-overlay.open { display:flex; }
+  .voice-sheet { width:100%; max-width:520px; background:var(--bg-elevated); color:var(--ink); border-radius:20px 20px 0 0; padding:28px 24px calc(24px + env(safe-area-inset-bottom)); box-shadow:var(--shadow-md); text-align:center; font-family:'DM Sans',sans-serif; }
+  @media (min-width: 901px) { .voice-overlay { align-items:center; } .voice-sheet { border-radius:20px; } }
+  .voice-status { font-size:11px; text-transform:uppercase; letter-spacing:0.15em; color:var(--ink-faint); margin-bottom:18px; }
+  .voice-mic { width:84px; height:84px; border-radius:50%; border:none; background:var(--accent); color:var(--bg); display:inline-flex; align-items:center; justify-content:center; cursor:pointer; position:relative; }
+  .voice-mic.listening::after { content:''; position:absolute; inset:-8px; border-radius:50%; border:2px solid var(--accent); animation:voicePulse 1.4s ease-out infinite; }
+  .voice-mic.busy { opacity:0.5; cursor:default; }
+  @keyframes voicePulse { from { transform:scale(0.9); opacity:0.9; } to { transform:scale(1.35); opacity:0; } }
+  .voice-transcript { min-height:48px; margin:20px 0 6px; font-size:17px; line-height:1.45; color:var(--ink); }
+  .voice-transcript .interim { color:var(--ink-faint); }
+  .voice-text { width:100%; min-height:90px; resize:vertical; margin:18px 0 6px; text-align:left; }
+  .voice-hint { font-size:12px; color:var(--ink-faint); margin-bottom:18px; }
+  .voice-result { text-align:left; margin:16px 0; border:1px solid var(--line); border-radius:12px; overflow:hidden; }
+  .voice-result-item { padding:10px 14px; border-bottom:1px solid var(--line-soft); font-size:14px; }
+  .voice-result-item:last-child { border-bottom:none; }
+  .voice-result-meta { font-size:11px; color:var(--ink-faint); margin-top:2px; }
+  .voice-actions { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
+
   /* TASKS */
   .task-toolbar {
     display: flex;
@@ -4900,6 +4922,19 @@
       <div class="schedule-grid" id="schedule-grid"></div>
     </section>
 
+    <!-- VOICE TASKS OVERLAY -->
+    <div class="voice-overlay" id="voice-overlay" role="dialog" aria-modal="true" aria-label="Criar tarefas por voz">
+      <div class="voice-sheet">
+        <div class="voice-status" id="voice-status">Ouvindo…</div>
+        <button class="voice-mic" id="voice-mic" aria-label="Microfone"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10v1a7 7 0 0014 0v-1"/><line x1="12" y1="18" x2="12" y2="22"/></svg></button>
+        <div class="voice-transcript" id="voice-transcript"></div>
+        <textarea class="input voice-text" id="voice-text" placeholder="Fale ou digite: ligar pro contador amanhã e mandar a proposta sexta, urgente" style="display:none"></textarea>
+        <div class="voice-hint" id="voice-hint">Pode ditar várias tarefas de uma vez, com data, prioridade e projeto.</div>
+        <div id="voice-result"></div>
+        <div class="voice-actions" id="voice-actions"></div>
+      </div>
+    </div>
+
     <!-- TASKS -->
     <section class="page" id="page-tasks">
       <div class="page-header">
@@ -4907,6 +4942,7 @@
           <h1 class="page-title">Ta<em>refas</em></h1>
           <div class="page-meta" id="tasks-meta">—</div>
         </div>
+        <button class="btn voice-btn" id="voice-task-btn" aria-label="Criar tarefa por voz"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10v1a7 7 0 0014 0v-1"/><line x1="12" y1="18" x2="12" y2="22"/></svg>Falar</button>
       </div>
 
       <div class="task-toolbar">
@@ -7267,6 +7303,205 @@ function addTask() {
   saveState();
   renderTasks();
 }
+
+// ============== VOICE TASKS (ditado → IA → tarefas) ==============
+// Abre o painel, já começa a ouvir (Web Speech API, pt-BR), envia a transcrição
+// pra Edge Function voice-tasks e cria as tarefas direto, com opção de desfazer.
+// Sem suporte a SpeechRecognition (ex.: alguns PWAs no iOS), cai num campo de
+// texto onde dá pra usar o ditado do teclado.
+(() => {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const overlay = document.getElementById('voice-overlay');
+  if (!overlay) return;
+  document.body.appendChild(overlay); // garante position:fixed relativo à viewport
+  const statusEl = document.getElementById('voice-status');
+  const micEl = document.getElementById('voice-mic');
+  const transcriptEl = document.getElementById('voice-transcript');
+  const textEl = document.getElementById('voice-text');
+  const hintEl = document.getElementById('voice-hint');
+  const resultEl = document.getElementById('voice-result');
+  const actionsEl = document.getElementById('voice-actions');
+
+  let rec = null, finalText = '', interimText = '', listening = false, busy = false;
+  let silenceTimer = null, closeTimer = null, lastCreatedIds = [];
+  const SILENCE_MS = 2500;
+
+  const localToday = () => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  };
+
+  function setActions(html) { actionsEl.innerHTML = html; }
+
+  function renderTranscript() {
+    transcriptEl.innerHTML = escapeHTML(finalText) + (interimText ? ` <span class="interim">${escapeHTML(interimText)}</span>` : '');
+  }
+
+  function open() {
+    clearTimeout(closeTimer);
+    finalText = ''; interimText = ''; lastCreatedIds = []; busy = false;
+    resultEl.innerHTML = ''; transcriptEl.innerHTML = ''; textEl.value = '';
+    hintEl.style.display = '';
+    overlay.classList.add('open');
+    if (SR) {
+      textEl.style.display = 'none'; transcriptEl.style.display = '';
+      startListening();
+    } else {
+      textEl.style.display = ''; transcriptEl.style.display = 'none';
+      statusEl.textContent = 'Use o microfone do teclado';
+      micEl.classList.remove('listening');
+      setActions('<button class="btn" id="voice-send">Criar tarefas</button><button class="btn btn-ghost" id="voice-cancel">Cancelar</button>');
+      bindCommon();
+      setTimeout(() => textEl.focus(), 50);
+    }
+  }
+
+  function close() {
+    clearTimeout(closeTimer); clearTimeout(silenceTimer);
+    stopListening(true);
+    overlay.classList.remove('open');
+  }
+
+  function bindCommon() {
+    const send = document.getElementById('voice-send');
+    const cancel = document.getElementById('voice-cancel');
+    if (send) send.onclick = () => submit(SR ? (finalText + ' ' + interimText).trim() : textEl.value.trim());
+    if (cancel) cancel.onclick = close;
+  }
+
+  function startListening() {
+    if (busy) return;
+    try {
+      rec = new SR();
+      rec.lang = 'pt-BR';
+      rec.continuous = true;
+      rec.interimResults = true;
+      rec.onresult = (e) => {
+        interimText = '';
+        for (let i = e.resultIndex; i < e.results.length; i++) {
+          const r = e.results[i];
+          if (r.isFinal) finalText = (finalText + ' ' + r[0].transcript).trim();
+          else interimText += r[0].transcript;
+        }
+        renderTranscript();
+        // Para sozinho depois de uma pausa: "fala e pronto".
+        clearTimeout(silenceTimer);
+        silenceTimer = setTimeout(() => stopListening(false), SILENCE_MS);
+      };
+      rec.onerror = (e) => {
+        if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
+          statusEl.textContent = 'Microfone bloqueado';
+          hintEl.textContent = 'Libere o microfone para o Órbita nas configurações do navegador, ou digite abaixo.';
+          textEl.style.display = ''; transcriptEl.style.display = 'none';
+        } else if (e.error === 'no-speech') {
+          statusEl.textContent = 'Não ouvi nada';
+        }
+      };
+      rec.onend = () => {
+        listening = false;
+        micEl.classList.remove('listening');
+        clearTimeout(silenceTimer);
+        if (busy || !overlay.classList.contains('open')) return;
+        const text = (finalText + ' ' + interimText).trim();
+        if (text) submit(text);
+        else {
+          if (textEl.style.display === 'none') statusEl.textContent = 'Toque no microfone para falar';
+          setActions('<button class="btn btn-ghost" id="voice-cancel">Fechar</button>' +
+            (textEl.style.display === '' ? '<button class="btn" id="voice-send">Criar tarefas</button>' : ''));
+          bindCommon();
+        }
+      };
+      rec.start();
+      listening = true;
+      micEl.classList.add('listening');
+      statusEl.textContent = 'Ouvindo…';
+      hintEl.textContent = 'Pode ditar várias tarefas de uma vez, com data, prioridade e projeto.';
+      setActions('<button class="btn" id="voice-send">Pronto</button><button class="btn btn-ghost" id="voice-cancel">Cancelar</button>');
+      bindCommon();
+    } catch (err) {
+      console.error(err);
+      statusEl.textContent = 'Não consegui acessar o microfone';
+    }
+  }
+
+  function stopListening(abort) {
+    if (!rec || !listening) return;
+    try { abort ? rec.abort() : rec.stop(); } catch (_) {}
+  }
+
+  async function submit(text) {
+    if (busy) return;
+    if (!text) { statusEl.textContent = 'Não ouvi nada'; return; }
+    busy = true;
+    stopListening(true);
+    micEl.classList.remove('listening');
+    micEl.classList.add('busy');
+    statusEl.textContent = 'Criando tarefas…';
+    hintEl.style.display = 'none';
+    setActions('');
+    if (SR && transcriptEl.style.display !== 'none') { finalText = text; interimText = ''; renderTranscript(); }
+
+    try {
+      const projects = [...new Set((state.tasks || []).map(t => t.project).filter(Boolean))];
+      const { data, error } = await sb.functions.invoke('voice-tasks', {
+        body: { text, today: localToday(), projects },
+      });
+      if (error) throw new Error(error.message || 'Falha ao chamar voice-tasks');
+      if (data?.error) throw new Error(data.error);
+      const tasks = data?.tasks || [];
+      if (!tasks.length) throw new Error('Não identifiquei nenhuma tarefa nessa fala.');
+
+      lastCreatedIds = [];
+      for (const t of tasks) {
+        const id = uid();
+        lastCreatedIds.push(id);
+        state.tasks.push({ id, text: t.title, priority: t.priority || 'med', project: t.project || null, date: t.date || null, done: false });
+      }
+      saveState();
+      renderTasks();
+
+      statusEl.textContent = tasks.length === 1 ? '1 tarefa criada' : `${tasks.length} tarefas criadas`;
+      resultEl.innerHTML = '<div class="voice-result">' + tasks.map(t => {
+        const meta = [t.date ? formatTaskDate(t.date) : 'sem data', 'prioridade ' + labelPriority(t.priority).toLowerCase(), t.project].filter(Boolean).join(' · ');
+        return `<div class="voice-result-item"><strong>${escapeHTML(t.title)}</strong><div class="voice-result-meta">${escapeHTML(meta)}</div></div>`;
+      }).join('') + '</div>';
+      setActions('<button class="btn" id="voice-again">Falar mais</button><button class="btn btn-ghost" id="voice-undo">Desfazer</button><button class="btn btn-ghost" id="voice-cancel">Fechar</button>');
+      bindCommon();
+      document.getElementById('voice-again').onclick = open;
+      document.getElementById('voice-undo').onclick = () => {
+        const ids = new Set(lastCreatedIds);
+        state.tasks = state.tasks.filter(t => !ids.has(t.id));
+        lastCreatedIds = [];
+        saveState();
+        renderTasks();
+        close();
+      };
+      closeTimer = setTimeout(close, 6000);
+    } catch (err) {
+      console.error(err);
+      statusEl.textContent = 'Não consegui criar';
+      resultEl.innerHTML = `<div class="capture-error" style="margin:12px 0">${escapeHTML(err.message)}</div>`;
+      textEl.value = text; textEl.style.display = ''; transcriptEl.style.display = 'none';
+      setActions('<button class="btn" id="voice-send">Tentar de novo</button><button class="btn btn-ghost" id="voice-cancel">Cancelar</button>');
+      bindCommon();
+      document.getElementById('voice-send').onclick = () => { resultEl.innerHTML = ''; submit(textEl.value.trim()); };
+    } finally {
+      busy = false;
+      micEl.classList.remove('busy');
+    }
+  }
+
+  // Mexer no painel cancela o fechamento automático.
+  overlay.addEventListener('pointerdown', () => clearTimeout(closeTimer));
+  overlay.addEventListener('click', (e) => { if (e.target === overlay && !busy) close(); });
+  micEl.onclick = () => {
+    if (busy || !SR) return;
+    if (listening) stopListening(false);
+    else { finalText = ''; interimText = ''; renderTranscript(); resultEl.innerHTML = ''; textEl.style.display = 'none'; transcriptEl.style.display = ''; startListening(); }
+  };
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && overlay.classList.contains('open') && !busy) close(); });
+  document.getElementById('voice-task-btn').onclick = open;
+})();
 
 document.querySelectorAll('[data-filter]').forEach(b => {
   b.onclick = () => {
