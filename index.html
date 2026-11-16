@@ -4929,7 +4929,7 @@
         <button class="voice-mic" id="voice-mic" aria-label="Microfone"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10v1a7 7 0 0014 0v-1"/><line x1="12" y1="18" x2="12" y2="22"/></svg></button>
         <div class="voice-transcript" id="voice-transcript"></div>
         <textarea class="input voice-text" id="voice-text" placeholder="Ex.: ligar para o contador" style="display:none"></textarea>
-        <div class="voice-hint" id="voice-hint">Fale a tarefa. Ela entra na lista do jeito que você falou.</div>
+        <div class="voice-hint" id="voice-hint">Fale a tarefa. A IA revisa e você confirma antes de entrar na lista.</div>
         <div id="voice-result"></div>
         <div class="voice-actions" id="voice-actions"></div>
       </div>
@@ -7349,8 +7349,8 @@ function addTask() {
     resultEl.innerHTML = ''; transcriptEl.innerHTML = ''; textEl.value = '';
     hintEl.style.display = '';
     hintEl.textContent = opts.defaultToday
-      ? 'Escreva a tarefa. Ela entra na sua lista de hoje.'
-      : 'Fale a tarefa. Ela entra na lista do jeito que você falou.';
+      ? 'Escreva a tarefa. A IA revisa e você confirma antes de entrar na lista de hoje.'
+      : 'Fale a tarefa. A IA revisa e você confirma antes de entrar na lista.';
     overlay.classList.add('open');
     if (opts.mode === 'text') {
       textEl.style.display = ''; transcriptEl.style.display = 'none';
@@ -7433,8 +7433,8 @@ function addTask() {
       statusEl.textContent = 'Ouvindo…';
       hintEl.style.display = '';
       hintEl.textContent = opts.defaultToday
-        ? 'Fale a tarefa. Ela entra na sua lista de hoje do jeito que você falou.'
-        : 'Fale a tarefa. Ela entra na lista do jeito que você falou.';
+        ? 'Fale a tarefa. A IA revisa e você confirma antes de entrar na lista de hoje.'
+        : 'Fale a tarefa. A IA revisa e você confirma antes de entrar na lista.';
       setActions('<button class="btn" id="voice-send">Pronto</button><button class="btn btn-ghost" id="voice-cancel">Cancelar</button>');
       bindCommon();
     } catch (err) {
@@ -7448,6 +7448,12 @@ function addTask() {
     try { abort ? rec.abort() : rec.stop(); } catch (_) {}
   }
 
+  // 1) IA revisa o que foi dito  2) mostra a prévia editável  3) só salva com o seu ok
+  function cleanRaw(text) {
+    let t = text.replace(/\s+/g, ' ').trim().replace(/[.。]+$/, '');
+    return t.charAt(0).toUpperCase() + t.slice(1);
+  }
+
   async function submit(text) {
     if (busy) return;
     if (!text) { statusEl.textContent = 'Não ouvi nada'; return; }
@@ -7455,58 +7461,89 @@ function addTask() {
     stopListening(true);
     micEl.classList.remove('listening');
     micEl.classList.add('busy');
-    statusEl.textContent = 'Adicionando…';
+    statusEl.textContent = 'Revisando com a IA…';
     hintEl.style.display = 'none';
     setActions('');
+    resultEl.innerHTML = '';
     if (SR && transcriptEl.style.display !== 'none') { finalText = text; interimText = ''; renderTranscript(); }
 
+    let tasks = [], note = '';
     try {
-      // O que foi dito vira a tarefa, sem a IA reinterpretar: só ajusta espaços,
-      // primeira letra maiúscula e tira o ponto final.
-      let title = text.replace(/\s+/g, ' ').trim().replace(/[.。]+$/, '');
-      title = title.charAt(0).toUpperCase() + title.slice(1);
-      if (!title) throw new Error('Não ouvi nada. Tente de novo.');
-      const tasks = [{ title, date: null, priority: 'med', project: null }];
-
-      lastCreatedIds = [];
-      for (const t of tasks) {
-        const id = uid();
-        lastCreatedIds.push(id);
-        if (!t.date && opts.defaultToday) t.date = localToday();
-        state.tasks.push({ id, text: t.title, priority: t.priority || 'med', project: t.project || null, date: t.date || null, done: false });
-      }
-      saveState();
-      refreshViews();
-
-      statusEl.textContent = 'Tarefa adicionada';
-      resultEl.innerHTML = '<div class="voice-result">' + tasks.map(t => {
-        const meta = [t.date ? formatTaskDate(t.date) : 'sem data', 'prioridade ' + labelPriority(t.priority).toLowerCase(), t.project].filter(Boolean).join(' · ');
-        return `<div class="voice-result-item"><strong>${escapeHTML(t.title)}</strong><div class="voice-result-meta">${escapeHTML(meta)}</div></div>`;
-      }).join('') + '</div>';
-      setActions('<button class="btn" id="voice-again">Falar mais</button><button class="btn btn-ghost" id="voice-undo">Desfazer</button><button class="btn btn-ghost" id="voice-cancel">Fechar</button>');
-      bindCommon();
-      document.getElementById('voice-again').onclick = open;
-      document.getElementById('voice-undo').onclick = () => {
-        const ids = new Set(lastCreatedIds);
-        state.tasks = state.tasks.filter(t => !ids.has(t.id));
-        lastCreatedIds = [];
-        saveState();
-        refreshViews();
-        close();
-      };
-      closeTimer = setTimeout(close, 6000);
+      const projects = [...new Set((state.tasks || []).map(t => t.project).filter(Boolean))];
+      const { data, error } = await sb.functions.invoke('voice-tasks', {
+        body: { text, today: localToday(), projects },
+      });
+      if (error) throw new Error(error.message || 'Falha ao chamar voice-tasks');
+      if (data?.error) throw new Error(data.error);
+      tasks = data?.tasks || [];
     } catch (err) {
       console.error(err);
-      statusEl.textContent = 'Não consegui criar';
-      resultEl.innerHTML = `<div class="capture-error" style="margin:12px 0">${escapeHTML(err.message)}</div>`;
-      textEl.value = text; textEl.style.display = ''; transcriptEl.style.display = 'none';
-      setActions('<button class="btn" id="voice-send">Tentar de novo</button><button class="btn btn-ghost" id="voice-cancel">Cancelar</button>');
-      bindCommon();
-      document.getElementById('voice-send').onclick = () => { resultEl.innerHTML = ''; submit(textEl.value.trim()); };
-    } finally {
-      busy = false;
-      micEl.classList.remove('busy');
+      note = 'Não consegui revisar com a IA agora. Confira o texto antes de adicionar.';
     }
+    if (!tasks.length) tasks = [{ title: cleanRaw(text), date: null, priority: 'med', project: null }];
+    tasks.forEach(t => { if (!t.date && opts.defaultToday) t.date = localToday(); });
+
+    busy = false;
+    micEl.classList.remove('busy');
+    showReview(tasks, note);
+  }
+
+  function showReview(tasks, note) {
+    statusEl.textContent = tasks.length === 1 ? 'Confira a tarefa' : `Confira as ${tasks.length} tarefas`;
+    resultEl.innerHTML = (note ? `<div class="capture-error" style="margin:12px 0">${escapeHTML(note)}</div>` : '') +
+      '<div class="voice-result">' + tasks.map((t, i) => {
+        const meta = [t.date ? formatTaskDate(t.date) : 'sem data', 'prioridade ' + labelPriority(t.priority).toLowerCase(), t.project].filter(Boolean).join(' · ');
+        return `<div class="voice-result-item" data-vi="${i}">
+          <div style="display:flex;gap:8px;align-items:center">
+            <input class="input voice-edit" data-vt="${i}" value="${escapeHTML(t.title)}" style="flex:1;padding:8px 10px;font-weight:600" />
+            ${tasks.length > 1 ? `<button class="btn btn-ghost" data-vrm="${i}" aria-label="Remover" style="padding:6px 10px">✕</button>` : ''}
+          </div>
+          <div class="voice-result-meta" style="margin-top:6px">${escapeHTML(meta)}</div>
+        </div>`;
+      }).join('') + '</div>';
+    setActions('<button class="btn" id="voice-ok">Ok, adicionar</button><button class="btn btn-ghost" id="voice-again">Falar de novo</button><button class="btn btn-ghost" id="voice-cancel">Cancelar</button>');
+    bindCommon();
+    resultEl.querySelectorAll('[data-vrm]').forEach(b => b.onclick = () => {
+      const i = +b.dataset.vrm;
+      syncTitles(tasks);
+      tasks.splice(i, 1);
+      showReview(tasks, note);
+    });
+    resultEl.querySelectorAll('.voice-edit').forEach(inp => inp.addEventListener('keydown', e => {
+      if (e.key === 'Enter') { e.preventDefault(); document.getElementById('voice-ok').click(); }
+    }));
+    document.getElementById('voice-again').onclick = () => open();
+    document.getElementById('voice-ok').onclick = () => { syncTitles(tasks); commit(tasks.filter(t => t.title.trim())); };
+  }
+
+  function syncTitles(tasks) {
+    resultEl.querySelectorAll('.voice-edit').forEach(inp => { const t = tasks[+inp.dataset.vt]; if (t) t.title = inp.value.trim(); });
+  }
+
+  function commit(tasks) {
+    if (!tasks.length) { close(); return; }
+    lastCreatedIds = [];
+    for (const t of tasks) {
+      const id = uid();
+      lastCreatedIds.push(id);
+      state.tasks.push({ id, text: t.title.trim(), priority: t.priority || 'med', project: t.project || null, date: t.date || null, done: false });
+    }
+    saveState();
+    refreshViews();
+    statusEl.textContent = tasks.length === 1 ? 'Tarefa adicionada' : `${tasks.length} tarefas adicionadas`;
+    resultEl.querySelectorAll('.voice-edit').forEach(inp => inp.disabled = true);
+    setActions('<button class="btn" id="voice-again">Falar mais</button><button class="btn btn-ghost" id="voice-undo">Desfazer</button><button class="btn btn-ghost" id="voice-cancel">Fechar</button>');
+    bindCommon();
+    document.getElementById('voice-again').onclick = () => open();
+    document.getElementById('voice-undo').onclick = () => {
+      const ids = new Set(lastCreatedIds);
+      state.tasks = state.tasks.filter(t => !ids.has(t.id));
+      lastCreatedIds = [];
+      saveState();
+      refreshViews();
+      close();
+    };
+    closeTimer = setTimeout(close, 4000);
   }
 
   // Mexer no painel cancela o fechamento automático.
