@@ -17,3 +17,6 @@ verify_jwt = true
 
 [functions.voice-tasks]
 verify_jwt = true
+
+[functions.google-calendar]
+verify_jwt = true

@@ -4917,7 +4917,9 @@
           </button>
         </div>
         <button class="btn btn-ghost" id="today-btn">Hoje</button>
+        <button class="btn btn-ghost" id="gcal-btn" style="display:none">Conectar Google Agenda</button>
       </div>
+      <div class="page-meta" id="gcal-status" style="display:none;margin:-8px 0 12px"></div>
 
       <div class="schedule-grid" id="schedule-grid"></div>
     </section>
@@ -5547,6 +5549,13 @@
         <button type="button" class="color-swatch" data-color="#db2777" style="background:#db2777" title="Rosa"></button>
       </div>
       <input type="color" id="event-custom-color" class="form-control" style="margin-top:8px;height:42px;cursor:pointer" />
+    </div>
+
+    <div class="form-group" id="event-gcal-group" style="display:none">
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:14px">
+        <input type="checkbox" id="event-gcal" checked style="width:18px;height:18px" />
+        Também criar no Google Agenda
+      </label>
     </div>
 
     <div class="modal-actions">
@@ -6800,6 +6809,9 @@ function renderSchedule() {
     });
   });
 
+  // Eventos do Google Agenda (só leitura), quando conectado
+  if (window.__gcal) window.__gcal.addSpans(spansByHour, base, weekStartKey, weekEndKey);
+
   // Header
   let html = '<div class="schedule-header"></div>';
   for (let i = 0; i < 7; i++) {
@@ -6839,7 +6851,9 @@ function renderSchedule() {
         const widthPct = (widthCols / 7) * 100;
         const top = 3 + laneIdx * 22; // empilhamento vertical em pixels
         let bgColor, borderColor, textColor;
-        if (s.isTask) {
+        if (s.isGoogle) {
+          bgColor = '#e8f0fe'; borderColor = '#1a73e8'; textColor = '#174ea6';
+        } else if (s.isTask) {
           // Cor por prioridade: high=red, med=yellow, low=grey
           if (e._taskPriority === 'high') {
             bgColor = '#fef2f2'; borderColor = '#dc2626'; textColor = '#7f1d1d';
@@ -6865,7 +6879,9 @@ function renderSchedule() {
         const isMulti = (e.startDate || s.eventDate) !== (e.endDate || s.eventDate);
         const arrowLeft = continuesLeft ? '◂ ' : '';
         const arrowRight = continuesRight ? ' ▸' : '';
-        const dataAttrs = s.isTask
+        const dataAttrs = s.isGoogle
+          ? `data-gcal-link="${escapeHTML(e.link || '')}" title="Google Agenda"`
+          : s.isTask
           ? `data-task-id="${e.id}"`
           : `data-event-id="${e.id}" data-event-date="${s.eventDate}"`;
         const doneStyle = s.isTask && e._done ? 'text-decoration: line-through;' : '';
@@ -6894,13 +6910,14 @@ function renderSchedule() {
             text-overflow: ellipsis;
             z-index: 2;
           ">
-          ${arrowLeft}${escapeHTML(e.title)}${isMulti ? '' : ` <span style="font-weight:400;opacity:0.7">${e.start}–${e.end}</span>`}${arrowRight}
+          ${s.isGoogle ? '<span style="font-weight:800;margin-right:4px">G</span>' : ''}${arrowLeft}${escapeHTML(e.title)}${isMulti || e.allDay ? '' : ` <span style="font-weight:400;opacity:0.7">${e.start}–${e.end}</span>`}${arrowRight}
         </div>`;
       });
     });
     html += `</div>`; // fecha hour-row
   }
   grid.innerHTML = html;
+  if (window.__gcal) window.__gcal.ensureWeek(weekStartKey);
 
   // click cells (criar)
   grid.querySelectorAll('.schedule-cell').forEach(c => {
@@ -6913,7 +6930,9 @@ function renderSchedule() {
   grid.querySelectorAll('.multi-event').forEach(ev => {
     ev.addEventListener('click', (e) => {
       e.stopPropagation();
-      if (ev.dataset.taskId) {
+      if (ev.dataset.gcalLink !== undefined) {
+        if (ev.dataset.gcalLink) window.open(ev.dataset.gcalLink, '_blank', 'noopener');
+      } else if (ev.dataset.taskId) {
         openTaskModal(ev.dataset.taskId);
       } else {
         openEventModal(ev.dataset.eventDate, null, ev.dataset.eventId);
@@ -6934,6 +6953,172 @@ function getContrastInk(hex) {
 document.getElementById('prev-week').onclick = () => { weekOffset--; renderSchedule(); };
 document.getElementById('next-week').onclick = () => { weekOffset++; renderSchedule(); };
 document.getElementById('today-btn').onclick = () => { weekOffset = 0; renderSchedule(); };
+
+// ============== GOOGLE AGENDA (ver e criar) ==============
+// Conexão: login Google com o escopo da Agenda e acesso offline. O refresh token
+// vai para a Edge Function google-calendar, que guarda no banco (fora do alcance
+// do cliente) e fala com a API do Google. Eventos do Google aparecem no
+// Cronograma (só leitura); blocos novos podem ser criados também no Google.
+window.__gcal = (() => {
+  const SCOPE = 'https://www.googleapis.com/auth/calendar.events';
+  const PENDING = 'orbita_gcal_pending';
+  const KNOWN = 'orbita_gcal_connected';
+  const cache = {}; // weekStartKey -> { at, events }
+  const loading = new Set();
+  const g = { connected: localStorage.getItem(KNOWN) === '1' };
+
+  const call = async (body) => {
+    const { data, error } = await sb.functions.invoke('google-calendar', { body });
+    if (error) throw new Error(error.message || 'Falha ao falar com o Google Agenda');
+    if (data?.needsReconnect) { setConnected(false); throw new Error(data.error); }
+    if (data?.error) throw new Error(data.error);
+    return data;
+  };
+
+  function setConnected(v) {
+    g.connected = !!v;
+    try { localStorage.setItem(KNOWN, v ? '1' : '0'); } catch (_) {}
+    if (!v) Object.keys(cache).forEach(k => delete cache[k]);
+    paintButton();
+  }
+
+  function paintButton(msg) {
+    const btn = document.getElementById('gcal-btn');
+    const st = document.getElementById('gcal-status');
+    if (!btn) return;
+    btn.style.display = '';
+    btn.textContent = g.connected ? 'Google Agenda ✓' : 'Conectar Google Agenda';
+    btn.title = g.connected ? 'Conectado. Toque para desconectar.' : 'Mostrar seus eventos do Google aqui';
+    if (st) { st.style.display = msg ? '' : 'none'; st.textContent = msg || ''; }
+  }
+
+  async function connect() {
+    try { localStorage.setItem(PENDING, '1'); } catch (_) {}
+    const { error } = await sb.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: window.location.href.split('#')[0],
+        scopes: SCOPE,
+        queryParams: { access_type: 'offline', prompt: 'consent' },
+      },
+    });
+    if (error) { localStorage.removeItem(PENDING); paintButton('Não consegui abrir o Google: ' + error.message); }
+  }
+
+  async function disconnect() {
+    if (!confirm('Desconectar o Google Agenda do Órbita?')) return;
+    try { await call({ action: 'disconnect' }); } catch (e) { console.error(e); }
+    setConnected(false);
+    if (typeof renderSchedule === 'function') renderSchedule();
+  }
+
+  // Volta do Google: guarda o refresh token na função
+  async function finishConnect(session) {
+    if (localStorage.getItem(PENDING) !== '1' || !session) return false;
+    const refresh = session.provider_refresh_token;
+    localStorage.removeItem(PENDING);
+    if (!refresh) { paintButton('O Google não devolveu a autorização. Tente conectar de novo.'); return true; }
+    try {
+      await call({ action: 'connect', refresh_token: refresh });
+      setConnected(true);
+      paintButton('Google Agenda conectado. Seus eventos aparecem no Cronograma.');
+      if (typeof renderSchedule === 'function') renderSchedule();
+    } catch (e) { console.error(e); paintButton('Não consegui conectar: ' + e.message); }
+    return true;
+  }
+
+  async function init() {
+    paintButton();
+    const btn = document.getElementById('gcal-btn');
+    if (btn) btn.onclick = () => (g.connected ? disconnect() : connect());
+    const { data } = await sb.auth.getSession();
+    const session = data?.session;
+    if (!session) return;
+    if (await finishConnect(session)) return;
+    try { const r = await call({ action: 'status' }); setConnected(r.connected); }
+    catch (e) { console.error(e); }
+  }
+
+  g.ensureWeek = async (weekStartKey) => {
+    if (!g.connected) return;
+    const c = cache[weekStartKey];
+    if ((c && Date.now() - c.at < 5 * 60 * 1000) || loading.has(weekStartKey)) return;
+    loading.add(weekStartKey);
+    try {
+      const start = new Date(weekStartKey + 'T00:00:00');
+      const end = new Date(start); end.setDate(end.getDate() + 7);
+      const r = await call({ action: 'list', timeMin: start.toISOString(), timeMax: end.toISOString() });
+      cache[weekStartKey] = { at: Date.now(), events: r.events || [] };
+      paintButton();
+      if (document.getElementById('page-schedule')?.classList.contains('active')) renderSchedule();
+    } catch (e) {
+      console.error(e);
+      cache[weekStartKey] = { at: Date.now(), events: [] };
+      paintButton('Google Agenda: ' + e.message);
+    } finally { loading.delete(weekStartKey); }
+  };
+
+  const pad = n => String(n).padStart(2, '0');
+  const ymdLocal = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  const hm = d => `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+
+  g.addSpans = (spansByHour, base, weekStartKey, weekEndKey) => {
+    const c = cache[weekStartKey];
+    if (!g.connected || !c) return;
+    const mine = new Set();
+    Object.values(state.events || {}).forEach(list => (list || []).forEach(x => { if (x.gcalId) mine.add(x.gcalId); }));
+    for (const ge of c.events) {
+      if (mine.has(ge.id)) continue; // já aparece como bloco do Órbita
+      let startDate, endDate, sH, start = '', end = '';
+      if (ge.allDay) {
+        startDate = ge.start;
+        const ed = new Date(ge.end + 'T12:00:00'); ed.setDate(ed.getDate() - 1); // fim exclusivo
+        endDate = ymdLocal(ed) < startDate ? startDate : ymdLocal(ed);
+        sH = 6;
+      } else {
+        const sd = new Date(ge.start), ed = new Date(ge.end);
+        startDate = ymdLocal(sd); endDate = ymdLocal(new Date(ed.getTime() - 1));
+        if (endDate < startDate) endDate = startDate;
+        sH = Math.min(23, Math.max(6, sd.getHours()));
+        start = hm(sd); end = hm(ed);
+      }
+      if (endDate < weekStartKey || startDate > weekEndKey) continue;
+      const vs = startDate < weekStartKey ? weekStartKey : startDate;
+      const ve = endDate > weekEndKey ? weekEndKey : endDate;
+      spansByHour[sH].push({
+        event: { id: ge.id, title: ge.title, start, end, startDate, endDate, allDay: ge.allDay, link: ge.link },
+        eventDate: startDate,
+        startCol: Math.max(0, Math.round((new Date(vs + 'T00:00:00') - base) / 86400000)),
+        endCol: Math.min(6, Math.round((new Date(ve + 'T00:00:00') - base) / 86400000)),
+        isFirstVisible: startDate >= weekStartKey,
+        isLastVisible: endDate <= weekEndKey,
+        isTask: false,
+        isGoogle: true,
+      });
+    }
+  };
+
+  g.createFromLocal = async (ev) => {
+    try {
+      const r = await call({
+        action: 'create', title: ev.title, startDate: ev.startDate, endDate: ev.endDate,
+        start: ev.start || null, end: ev.end || null,
+        timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'America/Sao_Paulo',
+      });
+      if (r.event?.id) {
+        Object.values(state.events).forEach(list => (list || []).forEach(x => { if (x.id === ev.id) x.gcalId = r.event.id; }));
+        saveState();
+        paintButton();
+      }
+    } catch (e) {
+      console.error(e);
+      paintButton('O bloco foi salvo no Órbita, mas não no Google: ' + e.message);
+    }
+  };
+
+  setTimeout(() => { init().catch(e => console.error(e)); }, 0);
+  return g;
+})();
 
 function openEventModal(date, hour, eventId = null) {
   const modal = document.getElementById('event-modal');
@@ -6979,6 +7164,8 @@ function openEventModal(date, hour, eventId = null) {
     document.getElementById('event-custom-color').value = '#000000';
     document.getElementById('event-delete').style.display = 'none';
   }
+  const gGroup = document.getElementById('event-gcal-group');
+  if (gGroup) gGroup.style.display = (!eventId && window.__gcal && window.__gcal.connected) ? '' : 'none';
   setTimeout(() => document.getElementById('event-title').focus(), 50);
 }
 
@@ -7012,7 +7199,13 @@ document.getElementById('event-save').onclick = () => {
   // Validar: endDate >= startDate
   const finalEndDate = endDate && endDate >= startDate ? endDate : startDate;
   const colorChoice = document.getElementById('event-color').value;
+  let prevGcalId = null;
+  if (editingEvent.id) Object.values(state.events).forEach(list => (list || []).forEach(x => { if (x.id === editingEvent.id && x.gcalId) prevGcalId = x.gcalId; }));
+  const sendToGoogle = !editingEvent.id && window.__gcal && window.__gcal.connected
+    && document.getElementById('event-gcal-group').style.display !== 'none'
+    && document.getElementById('event-gcal').checked;
   const ev = {
+    gcalId: prevGcalId,
     id: editingEvent.id || uid(),
     title,
     startDate,
@@ -7035,6 +7228,7 @@ document.getElementById('event-save').onclick = () => {
   saveState();
   closeAllModals();
   renderSchedule();
+  if (sendToGoogle) window.__gcal.createFromLocal(ev);
 };
 document.getElementById('event-delete').onclick = () => {
   if (!editingEvent || !editingEvent.id) return;
